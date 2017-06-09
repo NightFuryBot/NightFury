@@ -64,7 +64,7 @@ public class Config {
         } catch(IndexOutOfBoundsException e) {
             throw new IllegalArgumentException("One of the necessary values in configuration file was not found!");
         }
-        this.prefix = "||";
+        this.prefix = "|";
         this.success = "\uD83D\uDC32";
         this.warning = "\uD83D\uDC22";
         this.error = "\uD83D\uDD25";
