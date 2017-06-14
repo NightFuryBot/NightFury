@@ -15,7 +15,6 @@
  */
 package me.kgustave.nightfury;
 
-import java.io.File;
 import java.nio.file.Paths;
 
 import javax.security.auth.login.LoginException;
@@ -45,9 +44,11 @@ public class NightFury {
     
     public static final SimpleLog LOG = SimpleLog.getLog("NightFury");
     
-    public static void main(String[] args) throws LoginException, IllegalArgumentException, RateLimitedException {
-        
-        Config config = new Config(Paths.get("C:","Users","Kaidan","Desktop","NightFury-Data","config.txt").toFile());
+    public static void main(String[] args) throws LoginException, IllegalArgumentException, RateLimitedException
+    {
+        LOG.info("Starting NightFury...");
+
+        Config config = new Config(Paths.get(System.getProperty("user.home"),"Desktop","NightFury-Data","config.txt").toFile());
         
         EventWaiter waiter = new EventWaiter();
         
@@ -66,9 +67,8 @@ public class NightFury {
             jda.addEventListener(new SettingsListener(manager), new LogsListener(manager));
         }
         
-        // Google API
+        // APIs
         GoogleAPI gapi = new GoogleAPI();
-        
         E621API eapi = new E621API();
         
         CommandClient client = new CommandClientBuilder()
