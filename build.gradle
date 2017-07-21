@@ -13,37 +13,96 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-plugins {
-    id'java'
-    id'application'
-    id'com.github.johnrengelman.shadow' version '1.2.4'
+class Version {
+    String major, minor, build
+
+    @Override
+    String toString() {
+        "${major}.${minor}.${this.build}"
+    }
 }
 
-group = 'me.kgustave'
-version '1.0'
+buildscript {
+    ext.kotlin_version = '1.1.3-2'
 
-mainClassName = group+'.nightfury.NightFury'
+    repositories.mavenCentral()
+
+    dependencies { classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" }
+}
+
+plugins {
+    id 'idea'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+}
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+group = 'me.kgustave'
+version = new Version(major: 0, minor: 2, build: 5)
+mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}"
+
+def dirChar = File.separatorChar
+def jdaUtilsVersion = '1.3'
+def localLibDir = "${System.getProperty('user.home')}${dirChar}Desktop${dirChar}"
 
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     jcenter()
+    mavenCentral()
+    maven { url 'https://jitpack.io/'}
     maven { url 'https://mvnrepository.com/artifact/com.mashape.unirest/unirest-java' }
-    flatDir { dir('C:\\Users\\Kaidan\\Desktop\\JagTag0.5') }
+    flatDir { dir("${localLibDir}JagTag0.5") }
+    flatDir { dir("${localLibDir}JDA-Utilities${dirChar}build${dirChar}libs")}
 }
 
 dependencies {
-	compile 'net.dv8tion:JDA:3.1.1_210'
-	compile 'org.jsoup:jsoup:1.10.2'
-	compile 'com.jagrosh:JDA-Utilities:1.2'
-	compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.3.1'
-    compile name: 'NashTag'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.14'
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+
+    compile 'net.dv8tion:JDA:3.1.1_219'
+    compile 'com.github.JDA-Applications:Kotlin-JDA:56a6c22'
+
+    compile 'com.h2database:h2:1.3.148'
+
+    compile 'org.jsoup:jsoup:1.10.2'
+    compile 'com.mashape.unirest:unirest-java:1.4.9'
+    compile 'com.github.TheMonitorLizard:je621:0.2'
+
+    compile group: 'com.jagrosh', name: 'JDA-Utilities', version: jdaUtilsVersion
+    compile group: 'com.jagrosh', name: 'JagTag', version: '0.5'
+
+    compileOnly([group: 'com.jagrosh', name: 'JagTag', version: '0.5', classifier: 'javadoc'],
+            [group: 'com.jagrosh', name: 'JagTag', version: '0.5', classifier: 'sources'])
+
+    compileOnly([group: 'com.jagrosh', name: 'JDA-Utilities', version: jdaUtilsVersion, classifier: 'javadoc'],
+            [group: 'com.jagrosh', name: 'JDA-Utilities', version: jdaUtilsVersion, classifier: 'sources'])
 }
 
-println('Compiling '+project.name+"-"+version+".jar")
 shadowJar {
+    version = ''
     classifier = ''
-    execute()
+    manifest {
+        attributes 'Implementation-Version': version
+    }
 }
+
+build {
+    dependsOn clean
+    dependsOn classes
+    dependsOn shadowJar
+
+    classes.mustRunAfter clean
+    shadowJar.mustRunAfter classes
+}
+
+kotlin.experimental.coroutines 'enable'
 
 compileJava.options.encoding = 'UTF-8'
+compileKotlin.kotlinOptions.jvmTarget = "1.8"
+compileTestJava.options.encoding = 'UTF-8'
+compileTestKotlin.kotlinOptions.jvmTarget = "1.8"

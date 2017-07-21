@@ -1,11 +1,14 @@
 # IntelliJ project files
 .idea
 *.iml
-out
-gen
+/out/
 
 # Gradle Files
-.gradle
+/.gradle/
+/build/
 
-# Java Files
-build
+# Data Files
+config.txt
+
+# Misc Files
+/bash/
