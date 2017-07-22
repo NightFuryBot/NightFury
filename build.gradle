@@ -40,7 +40,7 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 group = 'me.kgustave'
-version = new Version(major: 0, minor: 2, build: 5)
+version = new Version(major: 0, minor: 2, build: 8)
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}"
 
 def dirChar = File.separatorChar
@@ -49,6 +49,14 @@ def localLibDir = "${System.getProperty('user.home')}${dirChar}Desktop${dirChar}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+sourceSets {
+    test.kotlin.srcDirs += 'src/test/kotlin'
+    test {
+        compileClasspath = main.output + main.resources
+        runtimeClasspath = main.output + main.resources
+    }
+}
 
 repositories {
     jcenter()
@@ -84,10 +92,10 @@ dependencies {
 }
 
 shadowJar {
-    version = ''
+    version = version
     classifier = ''
     manifest {
-        attributes 'Implementation-Version': version
+        attributes 'Implementation-Version': version, 'Main-Class': mainClassName
     }
 }
 

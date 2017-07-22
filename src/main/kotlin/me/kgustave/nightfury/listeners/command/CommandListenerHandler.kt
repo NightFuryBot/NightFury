@@ -37,8 +37,6 @@ interface CommandListener
             override fun onCommandCompleted(event: CommandEvent, command: Command){}
             override fun onException(event: CommandEvent, command: Command, exception: Throwable){}
         }
-
-        class DefaultBlankListener : BlankListener()
     }
 
     fun checkCall(event: MessageReceivedEvent, client: Client, name: String, args: String) : Boolean
@@ -46,47 +44,6 @@ interface CommandListener
     fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?)
     fun onCommandCompleted(event: CommandEvent, command: Command)
     fun onException(event: CommandEvent, command: Command, exception: Throwable)
-}
-
-class CommandListenerHandler : CommandListener
-{
-    var target : CommandListener = Companion.DEFAULT
-
-    companion object
-    {
-        private val DEFAULT : CommandListener = CommandListener.Companion.DefaultBlankListener()
-    }
-
-    override fun checkCall(event: MessageReceivedEvent, client: Client, name: String, args: String): Boolean
-    {
-        return target.checkCall(event,client,name,args)
-    }
-
-    override fun onCommandCall(event: CommandEvent, command: Command)
-    {
-        target.onCommandCall(event,command)
-    }
-
-    override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?)
-    {
-        target.onCommandTerminated(event,command,msg)
-    }
-
-    override fun onCommandCompleted(event: CommandEvent, command: Command)
-    {
-        target.onCommandCompleted(event,command)
-    }
-
-    override fun onException(event: CommandEvent, command: Command, exception: Throwable)
-    {
-        target.onException(event,command,exception)
-    }
-
-    @Suppress("unused")
-    fun resetTarget()
-    {
-        target = DEFAULT
-    }
 }
 
 class StandardListener : CommandListener.Companion.BlankListener()

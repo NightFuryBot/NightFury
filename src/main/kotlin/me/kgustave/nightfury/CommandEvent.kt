@@ -31,7 +31,8 @@ class CommandEvent internal constructor
     var args: String = args
         internal set(value) {field = value}
     val isOwner : Boolean = author.idLong == client.ownerID
-    val selfMember : Member = guild.selfMember
+    val selfMember : Member
+        get() = guild.selfMember
     val selfUser: SelfUser = jda.selfUser
 
     fun reply(string: String) = sendMessage(string, channel)

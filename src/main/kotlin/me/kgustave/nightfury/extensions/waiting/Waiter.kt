@@ -22,7 +22,7 @@ import java.util.function.Consumer
 import java.util.function.Predicate
 
 @Suppress("UNCHECKED_CAST")
-infix fun <T : Event> EventWaiter.waitFor(init: KWaitingEventBuilder<T>.() -> Unit) : Unit = with(KWaitingEventBuilder<T>(this))
+infix fun <T : Event> EventWaiter.waitFor(init: KWaitingEventBuilder<T>.() -> Boolean) : Unit = with(KWaitingEventBuilder<T>(this))
 {
     init()
     build()

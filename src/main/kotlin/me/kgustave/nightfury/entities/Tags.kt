@@ -44,5 +44,7 @@ class Tag constructor()
     fun toDBArgs() : Array<Any> = arrayOf(name, content, ownerId, location, isGlobal)
 }
 
+class GlobalTag(val name: String, val ownerId: Long, val content: String)
+
 @Suppress("unused")
 class CustomCommand(val tag: Tag, val guildId: Long)

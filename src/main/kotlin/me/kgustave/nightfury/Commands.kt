@@ -59,7 +59,7 @@ abstract class Command
     var cooldown: Int = 0
         protected set(value) {field = value}
 
-    var cooldownScope: CooldownScope = CooldownScope.USER
+    var cooldownScope: CooldownScope = CooldownScope.USER_GUILD
         protected set(value) {field = value}
 
     var children: Array<Command> = emptyArray()
@@ -84,15 +84,23 @@ abstract class Command
         {
             return {event, command ->
                 val b = StringBuilder()
+                val aliases = command.aliases
+                val arguments = command.arguments
+                val children = command.children
                 val ownerId = event.client.ownerID
                 val serverInvite = event.client.server
-                val aliases = command.aliases
-                val children = command.children
                 b.append("Available help for **${command.name} command** in " +
-                        "${if(event.isFromType(ChannelType.PRIVATE)) "DM" else "<#" + event.channel.id + ">"}\n\n")
+                        "${if(event.isFromType(ChannelType.PRIVATE)) "DM" else "<#" + event.channel.id + ">"}\n")
 
-                if(aliases.isNotEmpty()) {
-                    b.append("**Aliases:** `")
+                b.append("\n**Usage:** `")
+                        .append(event.client.prefix)
+                        .append(command.name)
+                        .append(if(arguments.args.isNotEmpty()) " ${arguments.args}`" else "`")
+                        .append("\n")
+
+                if(aliases.isNotEmpty())
+                {
+                    b.append("\n**Alias${if(aliases.size>1) "es" else ""}:** `")
                     for(i in aliases.indices) {
                         b.append("${aliases[i]}`")
                         if(i != aliases.size - 1)
@@ -105,13 +113,18 @@ abstract class Command
                     b.append("\n$explanation\n")
 
                 b.append("\n**Sub-Commands:**\n")
+                var cat : Category? = null
                 for(child in children) {
-                    val category = child.category
-                    if(event.isOwner || category == null || category.test(event))
-                        b.append("\n`").append(child.name)
-                                .append(if(child.arguments.args.isEmpty()) "`" else " ${child.arguments}`")
-                                .append(" ")
-                                .append(child.help)
+                    if(cat!=child.category) {
+                        if(!child.category!!.test(event))
+                            continue
+                        cat = child.category
+                        if(cat!=null)
+                            b.append("\n__${cat.name}__\n\n")
+                    }
+                    b.append("`").append(event.client.prefix).append(child.fullname)
+                            .append(if(child.arguments.toString().isNotEmpty()) " ${child.arguments}" else "")
+                            .append("` ").append(child.help).append("\n")
                 }
                 val owner = event.jda.getUserById(ownerId)
                 if(owner != null)
@@ -291,6 +304,7 @@ class Argument(val args: String, val error: String?, val pattern: Pattern?)
     override fun toString(): String = args
 }
 
+// TODO Move Category to enum
 class Category(val name: String, private val predicate: Predicate<CommandEvent>?)
 {
     companion object

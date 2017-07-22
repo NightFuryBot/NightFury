@@ -21,8 +21,7 @@ import com.mashape.unirest.http.exceptions.UnirestException
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
 import me.kgustave.nightfury.listeners.DatabaseListener
-import me.kgustave.nightfury.listeners.command.CommandListener
-import me.kgustave.nightfury.listeners.command.CommandListenerHandler
+import me.kgustave.nightfury.listeners.command.*
 import me.kgustave.nightfury.resources.FixedSizeCache
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.OnlineStatus
@@ -63,13 +62,20 @@ class Client internal constructor
     private val uses : HashMap<String, Int> = HashMap()
     private val linkedCache : FixedSizeCache<Long, HashSet<Message>> = FixedSizeCache(300)
     private val listeners : HashMap<String, CommandListener> = HashMap()
-    internal val listener = CommandListenerHandler()
+    internal var listener : CommandListener
 
     val commands : ArrayList<Command> = ArrayList()
     val logger : ModLogger = ModLogger(manager)
 
     var totalGuilds : Int = 0
         private set
+
+    init {
+        listeners.put(StandardListener.name, StandardListener())
+        listeners.put(IdleListener.name, IdleListener())
+        listeners.put(DebugListener.name, DebugListener())
+        listener = listeners[StandardListener.name]!!
+    }
 
     companion object
     {
@@ -131,27 +137,12 @@ class Client internal constructor
         commands.removeAt(targetIndex)
     }
 
-    fun addListener(name: String, listener: CommandListener)
-    {
-        if(listeners.containsKey(name.toLowerCase()))
-            throw IllegalArgumentException("Name provided has already been registered!")
-        listeners.put(name.toLowerCase(), listener)
-    }
-
-    @Suppress("unused")
-    fun removeListener(name: String)
-    {
-        if(!listeners.containsKey(name.toLowerCase()))
-            throw IllegalArgumentException("Name provided has not been registered!")
-        listeners.remove(name.toLowerCase())
-    }
-
     fun targetListener(name: String)
     {
         if(!listeners.containsKey(name.toLowerCase()))
             throw IllegalArgumentException("Name provided has not been registered!")
         else {
-            listener.target = listeners[name.toLowerCase()]!!
+            listener = listeners[name.toLowerCase()]!!
         }
     }
 

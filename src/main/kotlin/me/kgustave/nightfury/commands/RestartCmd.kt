@@ -22,7 +22,6 @@ import me.kgustave.nightfury.NightFury
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.entities.Game
 
-
 /**
  * @author Kaidan Gustave
  */
@@ -33,6 +32,7 @@ class RestartCmd : Command()
         this.help = "restarts NightFury"
         this.devOnly = true
         this.category = Category.OWNER
+        this.guildOnly = true
     }
 
     override fun execute(event: CommandEvent)

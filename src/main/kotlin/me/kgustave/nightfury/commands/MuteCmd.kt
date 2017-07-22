@@ -21,7 +21,7 @@ import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.extensions.Find
-import me.kgustave.nightfury.extensions.buildPromise
+import me.kgustave.nightfury.extensions.promise
 import me.kgustave.nightfury.extensions.giveRole
 import me.kgustave.nightfury.extensions.refreshMutedRole
 import me.kgustave.nightfury.utils.*
@@ -110,7 +110,7 @@ private class SetupMuteCmd : Command()
             return event.replyError("**Muted role already exists on this server!**\n" +
                     "To change it, use `${event.prefixUsed}mute set`!")
         else {
-            event.guild.controller.createRole() buildPromise {
+            event.guild.controller.createRole() promise {
                 name = if(event.args.isEmpty()) "Muted" else event.args
                 color = Color.BLACK
             } then {

@@ -43,6 +43,8 @@ class HelpCmd : Command() {
         var cat : Category? = null
         for(c in commands) {
             if(cat!=c.category) {
+                if(!c.category!!.test(event))
+                    continue
                 cat = c.category
                 if(cat!=null)
                     b.append("\n__${cat.name}__\n\n")

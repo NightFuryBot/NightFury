@@ -19,9 +19,7 @@ import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.api.GoogleAPI
 import me.kgustave.nightfury.commands.*
 import me.kgustave.nightfury.db.DatabaseManager
-import me.kgustave.nightfury.listeners.command.DebugListener
-import me.kgustave.nightfury.listeners.command.IdleListener
-import me.kgustave.nightfury.listeners.command.StandardListener
+import me.monitor.je621.JE621Builder
 import net.dv8tion.jda.core.*
 import net.dv8tion.jda.core.entities.Game
 import net.dv8tion.jda.core.utils.SimpleLog
@@ -58,7 +56,7 @@ class NightFury
     }
 
     init {
-        val jda : JDABuilder = JDABuilder(AccountType.BOT)
+        val jda : JDABuilder = JDABuilder(AccountType.BOT)//.setEventManager(AsyncEventManager())
 
         val config = Config(Paths.get(System.getProperty("user.dir"), "config.txt").toFile())
 
@@ -71,6 +69,7 @@ class NightFury
                 config.warning, config.error, config.server, config.dbotskey, waiter)
 
         val google = GoogleAPI()
+        val e621 = JE621Builder("NightFury").build()
 
         jda.addEventListener(client)
         jda.setToken(config.token).setStatus(OnlineStatus.DO_NOT_DISTURB).setGame(Game.of("Starting Up..."))
@@ -87,6 +86,9 @@ class NightFury
                 PrefixCmd(),
                 RoleMeCmd(),
                 ServerCmd(waiter),
+                TagCommand(),
+
+                E621Cmd(e621,waiter),
 
                 BanCmd(),
                 CleanCmd(),
@@ -101,12 +103,6 @@ class NightFury
                 RestartCmd(),
                 ShutdownCmd()
         )
-
-        client.addListener(StandardListener.name, StandardListener())
-        client.addListener(IdleListener.name, IdleListener())
-        client.addListener(DebugListener.name, DebugListener())
-
-        client.targetListener(StandardListener.name)
 
         executor.scheduleAtFixedRate({
             client.cleanCooldowns()

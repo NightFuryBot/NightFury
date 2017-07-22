@@ -22,7 +22,6 @@ import me.kgustave.nightfury.NightFury
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.entities.Game
 
-
 /**
  * @author Kaidan Gustave
  */
@@ -31,15 +30,20 @@ class ShutdownCmd : Command()
     init {
         this.name = "shutdown"
         this.help = "shuts down NightFury"
+        this.devOnly = true
         this.category = Category.OWNER
         this.guildOnly = false
     }
 
-    override fun execute(event: CommandEvent) {
+    override fun execute(event: CommandEvent)
+    {
         event.replyWarning("Shutting Down...")
         event.jda.presence.status = OnlineStatus.DO_NOT_DISTURB
         event.jda.presence.game = Game.of("Shutting Down...")
         NightFury.LOG.info("Shutting Down...")
+        synchronized(this) {
+            try { Thread.sleep(2500) } catch (ignored: InterruptedException) {}
+        }
         event.jda.shutdown(true)
         NightFury.shutdown(1)
     }

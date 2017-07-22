@@ -35,7 +35,9 @@ class EvalCmd : Command()
         this.name = "eval"
         this.help = "evaluates using Nashorn"
         this.arguments = Argument("<script>")
+        this.devOnly = true
         this.category = Category.OWNER
+        this.guildOnly = true
     }
 
     val engine : ScriptEngine = ScriptEngineManager().getEngineByName("nashorn")
@@ -53,7 +55,6 @@ class EvalCmd : Command()
         } catch (e: Exception) {
             event.reply("```java\n$args```An exception was thrown:\n```\n$e```")
         }
-
     }
 
     private fun loadSE(se: ScriptEngine, event: CommandEvent) : ScriptEngine

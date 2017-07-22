@@ -13,32 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("UNUSED")
 package me.kgustave.nightfury.extensions
 
 import club.minnced.kjda.RestPromise
 import club.minnced.kjda.promise
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Role
+import net.dv8tion.jda.core.managers.GuildController
 import net.dv8tion.jda.core.requests.restaction.RoleAction
 import java.awt.Color
 
-infix fun RoleAction.build(init: RoleBuilder.() -> Unit) : Unit = with(RoleBuilder(this))
+infix fun RoleAction.promise(init: RolePromise.() -> Unit) : RestPromise<Role> = with(RolePromise(this))
 {
     init()
-    build()
+    promise()
 }
 
-infix fun RoleAction.buildPromise(init: RoleBuilder.() -> Unit) : RestPromise<Role> = with(RoleBuilder(this))
-{
-    init()
-    buildPromise()
-}
+infix fun GuildController.createRole(init: RolePromise.() -> Unit) : RestPromise<Role> = this.createRole().promise(init)
 
-class RoleBuilder internal constructor(private val roleAction: RoleAction)
+class RolePromise internal constructor(private val roleAction: RoleAction)
 {
     var name : String? = null
     var color : Color? = null
-    var permissions : List<Permission> = ArrayList()
+    val permissions : MutableList<Permission> = ArrayList()
     var isHoisted : Boolean = false
     var isMentionable : Boolean = false
 
@@ -48,31 +46,56 @@ class RoleBuilder internal constructor(private val roleAction: RoleAction)
     operator fun component4() = isHoisted
     operator fun component5() = isMentionable
 
-    fun build() = with(roleAction)
+    internal fun promise() = with(roleAction)
     {
-        val(name, color, permissions, isHoisted, isMentionable) = this@RoleBuilder
-        if(name!=null)
-            setName(name)
-        if(color!=null)
-            setColor(color)
-        if(permissions.isNotEmpty())
-            setPermissions(permissions)
-        setHoisted(isHoisted)
-        setMentionable(isMentionable)
-        return@with queue()
-    }
-
-    fun buildPromise() = with(roleAction)
-    {
-        val(name, color, permissions, isHoisted, isMentionable) = this@RoleBuilder
-        if(name!=null)
-            setName(name)
-        if(color!=null)
-            setColor(color)
-        if(permissions.isNotEmpty())
-            setPermissions(permissions)
+        val(name, color, permissions, isHoisted, isMentionable) = this@RolePromise
+        setName(name)
+        setColor(color)
+        setPermissions(permissions)
         setHoisted(isHoisted)
         setMentionable(isMentionable)
         return@with promise()
+    }
+
+    /** Lazy setter for [name]. */
+    infix inline fun name(lazy: () -> String?) : RolePromise
+    {
+        this.name = lazy()
+        return this
+    }
+
+    /** Lazy setter for [color]. */
+    infix inline fun color(lazy: () -> Color?) : RolePromise
+    {
+        this.color = lazy()
+        return this
+    }
+
+    /** Lazy block for modifying [permissions]. */
+    infix inline fun permissions(lazy: MutableList<Permission>.() -> Unit) : RolePromise
+    {
+        lazy(permissions)
+        return this
+    }
+
+    /** Clears all existing [Permission] set for this [RolePromise]. */
+    fun clearPermissions() : RolePromise
+    {
+        permissions.clear()
+        return this
+    }
+
+    /** Lazy setter for [isHoisted]. */
+    infix inline fun hoisted(lazy: () -> Boolean) : RolePromise
+    {
+        this.isHoisted = lazy()
+        return this
+    }
+
+    /** Lazy setter for [isMentionable]. */
+    infix inline fun mentionable(lazy: () -> Boolean) : RolePromise
+    {
+        this.isMentionable = lazy()
+        return this
     }
 }
