@@ -75,8 +75,8 @@ class UnmuteCmd : Command()
         if(error!=null) return event.replyError(error)
 
         target.removeRole(mutedRole).apply { if(reason!=null) reason(reason) }.promise() then {
-            if(reason != null) event.client.logger.newUnmute(target, event.author, reason)
-            else               event.client.logger.newUnmute(target, event.author)
+            if(reason != null) event.client.logger.newUnmute(event.member, target.user, reason)
+            else               event.client.logger.newUnmute(event.member, target.user)
             event.replySuccess("${formatUserName(target.user,true)} was unmuted!")
         } catch {
             event.replyError("Unmuting ${formatUserName(target.user,true)} failed for an unexpected reason!")

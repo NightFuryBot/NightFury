@@ -29,6 +29,7 @@ class Case
     companion object
     {
         val FORMAT : String = "`[  CASE  ]` `[%d]` %s %s %s **%s** (ID: %d)\n" + "`[ REASON ]` %s"
+        val default_case_reason = "none"
     }
 
     var number : Int = 0
@@ -38,7 +39,7 @@ class Case
     var targetId : Long = 0L
     var isOnUser : Boolean = true
     var action : LogAction = LogAction.OTHER
-    var reason : String = "No Reason Specified"
+    var reason : String = default_case_reason
 
     fun toDBArgs() : Array<Any> = arrayOf(number,guildId,messageId,modId,targetId,isOnUser,action.act,reason)
 }
@@ -93,7 +94,7 @@ class ModLogger(val manager: DatabaseManager)
                     case.action.action,
                     target.name,
                     target.idLong,
-                    case.reason
+                    if(reason != null) case.reason else "${mod.asMention} please use `reason` command at your earliest convenience!"
             ).queue({
                 case.messageId = it.idLong
                 manager.addCase(case)
@@ -124,7 +125,7 @@ class ModLogger(val manager: DatabaseManager)
                     case.action.action,
                     target.name,
                     target.idLong,
-                    case.reason
+                    if(reason != null) case.reason else "${mod.asMention} please use `reason` command at your earliest convenience!"
             ).queue({
                 case.messageId = it.idLong
                 manager.addCase(case)
@@ -155,7 +156,7 @@ class ModLogger(val manager: DatabaseManager)
                     case.action.action,
                     target.name,
                     target.idLong,
-                    case.reason
+                    if(reason != null) case.reason else "${mod.asMention} please use `reason` command at your earliest convenience!"
             ).queue({
                 case.messageId = it.idLong
                 manager.addCase(case)
@@ -186,7 +187,7 @@ class ModLogger(val manager: DatabaseManager)
                     case.action.action,
                     target.name,
                     target.idLong,
-                    case.reason
+                    if(reason != null) case.reason else "${mod.asMention} please use `reason` command at your earliest convenience!"
             ).queue({
                 case.messageId = it.idLong
                 manager.addCase(case)
@@ -217,7 +218,7 @@ class ModLogger(val manager: DatabaseManager)
                     case.action.action,
                     target.name,
                     target.idLong,
-                    case.reason
+                    if(reason != null) case.reason else "${mod.asMention} please use `reason` command at your earliest convenience!"
             ).queue({
                 case.messageId = it.idLong
                 manager.addCase(case)
@@ -249,7 +250,7 @@ class ModLogger(val manager: DatabaseManager)
                     case.action.action.format(number),
                     target.name,
                     target.idLong,
-                    case.reason
+                    if(reason != null) case.reason else "${mod.asMention} please use `reason` command at your earliest convenience!"
             ).queue({
                 case.messageId = it.idLong
                 manager.addCase(case)

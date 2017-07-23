@@ -79,12 +79,13 @@ class KickCmd : Command() {
         }
 
         if(error!=null) return event.replyError(error)
-
         if(reason != null) {
             target.kick(reason)
         } else {
             target.kick()
         }.promise() then {
+            if(reason != null) event.client.logger.newKick(event.member, target.user, reason)
+            else               event.client.logger.newKick(event.member, target.user)
             event.replySuccess("${formatUserName(target.user,true)} was kicked from the server.")
         } catch {
             event.replyError("Kicking ${formatUserName(target.user,true)} failed for an unexpected reason!")

@@ -83,13 +83,12 @@ class BanCmd : Command()
 
             val target = it
             if(reason != null) {
-                event.client.logger.newBan(event.member, target, reason)
                 it.banFrom(event.guild, 1, reason)
-            }
-            else {
-                event.client.logger.newBan(event.member, target)
+            } else {
                 it.banFrom(event.guild, 1)
             }.promise() then {
+                if(reason != null) event.client.logger.newBan(event.member, target, reason)
+                else               event.client.logger.newBan(event.member, target)
                 event.replySuccess("${formatUserName(target,true)} was banned from the server.")
             } catch {
                 event.replyError("Banning ${formatUserName(target,true)} failed for an unexpected reason!")

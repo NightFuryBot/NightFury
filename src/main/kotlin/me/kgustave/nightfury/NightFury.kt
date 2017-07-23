@@ -15,15 +15,13 @@
  */
 package me.kgustave.nightfury
 
+import club.minnced.kjda.events.AsyncEventManager
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.api.GoogleAPI
-import me.kgustave.nightfury.commands.admin.ModeratorCmd
+import me.kgustave.nightfury.commands.admin.*
 import me.kgustave.nightfury.commands.moderator.*
-import me.kgustave.nightfury.commands.dev.EvalCmd
-import me.kgustave.nightfury.commands.dev.ModeCmd
-import me.kgustave.nightfury.commands.dev.RestartCmd
-import me.kgustave.nightfury.commands.dev.ShutdownCmd
-import me.kgustave.nightfury.commands.other.E621Cmd
+import me.kgustave.nightfury.commands.dev.*
+import me.kgustave.nightfury.commands.other.*
 import me.kgustave.nightfury.commands.standard.*
 import me.kgustave.nightfury.db.DatabaseManager
 import me.monitor.je621.JE621Builder
@@ -46,6 +44,7 @@ fun main(args: Array<String>)
 {
     NightFury.LOG.info("Starting NightFury...")
     NightFury()
+    Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
 }
 
 internal val executor : ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
@@ -63,11 +62,9 @@ class NightFury
     }
 
     init {
-        val jda : JDABuilder = JDABuilder(AccountType.BOT)//.setEventManager(AsyncEventManager())
+        val jda : JDABuilder = JDABuilder(AccountType.BOT).setEventManager(AsyncEventManager())
 
         val config = Config(Paths.get(System.getProperty("user.dir"), "config.txt").toFile())
-
-        Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
 
         val manager = DatabaseManager(config.dbURL, config.dbUser, config.dbPass)
 
@@ -83,7 +80,17 @@ class NightFury
 
         jda.buildAsync()
 
-        client.addCommands(ColorMeCmd(), GoogleCmd(google), HelpCmd(), InfoCmd(), InviteCmd(*config.permissions), PingCmd(), PrefixCmd(), RoleMeCmd(), ServerCmd(waiter), TagCommand(),
+        client.addCommands(
+                ColorMeCmd(),
+                GoogleCmd(google),
+                HelpCmd(),
+                InfoCmd(),
+                InviteCmd(*config.permissions),
+                PingCmd(),
+                PrefixCmd(),
+                RoleMeCmd(),
+                ServerCmd(waiter),
+                TagCommand(),
 
                 E621Cmd(e621, waiter),
 
@@ -91,12 +98,16 @@ class NightFury
                 CleanCmd(),
                 KickCmd(),
                 MuteCmd(),
+                ReasonCmd(),
                 SettingsCmd(),
                 UnmuteCmd(),
 
                 ModeratorCmd(),
 
-                EvalCmd(), ModeCmd(), RestartCmd(), ShutdownCmd()
+                EvalCmd(),
+                ModeCmd(),
+                RestartCmd(),
+                ShutdownCmd()
         )
 
         executor.scheduleAtFixedRate({

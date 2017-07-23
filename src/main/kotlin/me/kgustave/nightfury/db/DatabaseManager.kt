@@ -118,12 +118,12 @@ class DatabaseManager(url: String, user: String, pass: String) {
     fun getCaseMatching(guild: Guild, toMatch: (Case) -> Boolean) : Case {
         val cases = getCases(guild)
         if(cases.isEmpty()) return Case()
-        return cases.stream().filter(toMatch).findFirst().get()
+        return cases.stream().filter(toMatch).findFirst().takeIf { it.isPresent }?.get()?:Case()
     }
     fun getFirstCaseMatching(guild: Guild, toMatch: (Case) -> Boolean) : Case {
         val cases = getCases(guild)
         if(cases.isEmpty()) return Case()
-        return cases.stream().filter(toMatch).sorted(Comparator.comparing(Case::number)).findFirst().get()
+        return cases.stream().filter(toMatch).sorted(Comparator.comparing(Case::number)).findFirst().takeIf { it.isPresent }?.get()?: Case()
     }
     fun getCases(guild: Guild) = cases.get(guild, guild.idLong)
     fun addCase(case: Case) = cases.add(*case.toDBArgs())
