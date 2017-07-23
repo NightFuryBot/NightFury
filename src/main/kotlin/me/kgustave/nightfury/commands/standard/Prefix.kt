@@ -93,6 +93,8 @@ private class ListPrefixCmd: Command() {
     init {
         this.name = "list"
         this.help = "lists all custom prefixes for this server"
+        this.cooldown = 10
+        this.cooldownScope = CooldownScope.USER_GUILD
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }

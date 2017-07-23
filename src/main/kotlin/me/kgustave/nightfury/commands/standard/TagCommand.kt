@@ -25,7 +25,6 @@ import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.utils.formatUserName
 import net.dv8tion.jda.core.entities.ChannelType
 
-
 /**
  * @author Kaidan Gustave
  */

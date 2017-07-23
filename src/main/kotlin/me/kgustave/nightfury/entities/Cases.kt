@@ -17,6 +17,7 @@ package me.kgustave.nightfury.entities
 
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.utils.formatUserName
+import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.core.entities.User
@@ -72,29 +73,30 @@ enum class LogAction(val action: String, val act: String, val emoji: String)
 class ModLogger(val manager: DatabaseManager)
 {
     fun newBan(mod: Member, target: User) = newBan(mod, target, null)
-    fun newBan(mod: Member, target: User, reason: String?) {
+    fun newBan(mod: Member, target: User, reason: String?) = newBan(mod.guild, mod.user, target, reason)
+    fun newBan(guild: Guild, mod: User, target: User, reason: String?) {
         val case = Case()
-        case.number = manager.getCases(mod.guild).size+1
-        case.guildId = mod.guild.idLong
-        case.modId = mod.user.idLong
+        case.number = manager.getCases(guild).size+1
+        case.guildId = guild.idLong
+        case.modId = mod.idLong
         case.targetId = target.idLong
         case.isOnUser = true
         case.action = LogAction.BAN
         if(reason != null)
             case.reason = reason
 
-        val log = manager.getModLog(mod.guild)
+        val log = manager.getModLog(guild)
         if(log!=null && log.canTalk())
         {
             log.sendMessageFormat(
                     Case.FORMAT,
                     case.number,
                     case.action.emoji,
-                    formatUserName(mod.user, true),
+                    formatUserName(mod, true),
                     case.action.action,
                     target.name,
                     target.idLong,
-                    if(reason != null) case.reason else "${mod.asMention} please use `reason` command at your earliest convenience!"
+                    if(reason != null) case.reason else "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
             ).queue({
                 case.messageId = it.idLong
                 manager.addCase(case)
@@ -103,29 +105,30 @@ class ModLogger(val manager: DatabaseManager)
     }
 
     fun newUnban(mod: Member, target: User) = newUnban(mod, target, null)
-    fun newUnban(mod: Member, target: User, reason: String?) {
+    fun newUnban(mod: Member, target: User, reason: String?) = newUnban(mod.guild, mod.user, target, reason)
+    fun newUnban(guild: Guild, mod: User, target: User, reason: String?) {
         val case = Case()
-        case.number = manager.getCases(mod.guild).size+1
-        case.guildId = mod.guild.idLong
-        case.modId = mod.user.idLong
+        case.number = manager.getCases(guild).size+1
+        case.guildId = guild.idLong
+        case.modId = mod.idLong
         case.targetId = target.idLong
         case.isOnUser = true
         case.action = LogAction.UNBAN
         if(reason != null)
             case.reason = reason
 
-        val log = manager.getModLog(mod.guild)
+        val log = manager.getModLog(guild)
         if(log!=null && log.canTalk())
         {
             log.sendMessageFormat(
                     Case.FORMAT,
                     case.number,
                     case.action.emoji,
-                    formatUserName(mod.user, true),
+                    formatUserName(mod, true),
                     case.action.action,
                     target.name,
                     target.idLong,
-                    if(reason != null) case.reason else "${mod.asMention} please use `reason` command at your earliest convenience!"
+                    if(reason != null) case.reason else "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
             ).queue({
                 case.messageId = it.idLong
                 manager.addCase(case)
@@ -134,29 +137,30 @@ class ModLogger(val manager: DatabaseManager)
     }
 
     fun newKick(mod: Member, target: User) = newKick(mod, target, null)
-    fun newKick(mod: Member, target: User, reason: String?) {
+    fun newKick(mod: Member, target: User, reason: String?) = newKick(mod.guild, mod.user, target, reason)
+    fun newKick(guild: Guild, mod: User, target: User, reason: String?) {
         val case = Case()
-        case.number = manager.getCases(mod.guild).size+1
-        case.guildId = mod.guild.idLong
-        case.modId = mod.user.idLong
+        case.number = manager.getCases(guild).size+1
+        case.guildId = guild.idLong
+        case.modId = mod.idLong
         case.targetId = target.idLong
         case.isOnUser = true
         case.action = LogAction.KICK
         if(reason != null)
             case.reason = reason
 
-        val log = manager.getModLog(mod.guild)
+        val log = manager.getModLog(guild)
         if(log!=null && log.canTalk())
         {
             log.sendMessageFormat(
                     Case.FORMAT,
                     case.number,
                     case.action.emoji,
-                    formatUserName(mod.user, true),
+                    formatUserName(mod, true),
                     case.action.action,
                     target.name,
                     target.idLong,
-                    if(reason != null) case.reason else "${mod.asMention} please use `reason` command at your earliest convenience!"
+                    if(reason != null) case.reason else "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
             ).queue({
                 case.messageId = it.idLong
                 manager.addCase(case)
@@ -165,29 +169,30 @@ class ModLogger(val manager: DatabaseManager)
     }
 
     fun newMute(mod: Member, target: User) = newMute(mod, target, null)
-    fun newMute(mod: Member, target: User, reason: String?) {
+    fun newMute(mod: Member, target: User, reason: String?) = newMute(mod.guild, mod.user, target, reason)
+    fun newMute(guild: Guild, mod: User, target: User, reason: String?) {
         val case = Case()
-        case.number = manager.getCases(mod.guild).size+1
-        case.guildId = mod.guild.idLong
-        case.modId = mod.user.idLong
+        case.number = manager.getCases(guild).size+1
+        case.guildId = guild.idLong
+        case.modId = mod.idLong
         case.targetId = target.idLong
         case.isOnUser = true
         case.action = LogAction.MUTE
         if(reason != null)
             case.reason = reason
 
-        val log = manager.getModLog(mod.guild)
+        val log = manager.getModLog(guild)
         if(log!=null && log.canTalk())
         {
             log.sendMessageFormat(
                     Case.FORMAT,
                     case.number,
                     case.action.emoji,
-                    formatUserName(mod.user, true),
+                    formatUserName(mod, true),
                     case.action.action,
                     target.name,
                     target.idLong,
-                    if(reason != null) case.reason else "${mod.asMention} please use `reason` command at your earliest convenience!"
+                    if(reason != null) case.reason else "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
             ).queue({
                 case.messageId = it.idLong
                 manager.addCase(case)
@@ -196,29 +201,30 @@ class ModLogger(val manager: DatabaseManager)
     }
 
     fun newUnmute(mod: Member, target: User) = newUnmute(mod, target, null)
-    fun newUnmute(mod: Member, target: User, reason: String?) {
+    fun newUnmute(mod: Member, target: User, reason: String?) = newUnmute(mod.guild, mod.user, target, reason)
+    fun newUnmute(guild: Guild, mod: User, target: User, reason: String?) {
         val case = Case()
-        case.number = manager.getCases(mod.guild).size+1
-        case.guildId = mod.guild.idLong
-        case.modId = mod.user.idLong
+        case.number = manager.getCases(guild).size+1
+        case.guildId = guild.idLong
+        case.modId = mod.idLong
         case.targetId = target.idLong
         case.isOnUser = true
         case.action = LogAction.UNMUTE
         if(reason != null)
             case.reason = reason
 
-        val log = manager.getModLog(mod.guild)
+        val log = manager.getModLog(guild)
         if(log!=null && log.canTalk())
         {
             log.sendMessageFormat(
                     Case.FORMAT,
                     case.number,
                     case.action.emoji,
-                    formatUserName(mod.user, true),
+                    formatUserName(mod, true),
                     case.action.action,
                     target.name,
                     target.idLong,
-                    if(reason != null) case.reason else "${mod.asMention} please use `reason` command at your earliest convenience!"
+                    if(reason != null) case.reason else "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
             ).queue({
                 case.messageId = it.idLong
                 manager.addCase(case)
@@ -227,26 +233,26 @@ class ModLogger(val manager: DatabaseManager)
     }
 
     fun newClean(mod: Member, target: TextChannel, number: Int) = newClean(mod, target, number, null)
-    fun newClean(mod: Member, target: TextChannel, number: Int, reason: String?) {
+    fun newClean(mod: Member, target: TextChannel, number: Int, reason: String?) = newClean(mod.guild, mod.user, target, number, reason)
+    fun newClean(guild: Guild, mod: User, target: TextChannel, number: Int, reason: String?) {
         val case = Case()
-
-        case.number = manager.getCases(mod.guild).size+1
-        case.guildId = mod.guild.idLong
-        case.modId = mod.user.idLong
+        case.number = manager.getCases(guild).size+1
+        case.guildId = guild.idLong
+        case.modId = mod.idLong
         case.targetId = target.idLong
         case.isOnUser = false
         case.action = LogAction.CLEAN
         if(reason != null)
             case.reason = reason
 
-        val log = manager.getModLog(mod.guild)
+        val log = manager.getModLog(guild)
         if(log!=null && log.canTalk())
         {
             log.sendMessageFormat(
                     Case.FORMAT,
                     case.number,
                     case.action.emoji,
-                    formatUserName(mod.user, true),
+                    formatUserName(mod, true),
                     case.action.action.format(number),
                     target.name,
                     target.idLong,

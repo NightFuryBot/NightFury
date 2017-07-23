@@ -18,6 +18,7 @@ package me.kgustave.nightfury.commands.standard
 import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
+import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.api.GoogleAPI
 
 /**
@@ -31,6 +32,7 @@ class GoogleCmd(private val api: GoogleAPI) : Command() {
         this.arguments = Argument("<query>")
         this.help = "searches google"
         this.cooldown = 30
+        this.cooldownScope = CooldownScope.USER
         this.guildOnly = false
     }
 

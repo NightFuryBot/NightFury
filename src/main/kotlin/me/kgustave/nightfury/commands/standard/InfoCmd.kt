@@ -20,6 +20,7 @@ import club.minnced.kjda.builders.embed
 import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
+import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.extensions.Find
 import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.Permission
@@ -63,6 +64,7 @@ class InfoCmd : Command() {
         this.arguments = Argument("<user>")
         this.help = "gets info on a user"
         this.cooldown = 5
+        this.cooldownScope = CooldownScope.USER_GUILD
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 

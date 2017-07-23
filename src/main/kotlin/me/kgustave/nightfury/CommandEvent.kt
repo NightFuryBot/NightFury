@@ -158,9 +158,9 @@ class CommandEvent internal constructor
         else {
             val msgs = processMessage(string)
             if(msgs.size==1) {
-                channel.sendMessage(msgs[0]).queue({ client.linkIds(messageId, it); }, {})
+                channel.sendMessage(msgs[0]).queue({ linkMessage(it) }, {})
             } else {
-                msgs.forEach { msg -> channel.sendMessage(msg).queue({ client.linkIds(messageId, it) }, {}) }
+                msgs.forEach { msg -> channel.sendMessage(msg).queue({ linkMessage(it) }, {}) }
             }
         }
     }
@@ -170,13 +170,13 @@ class CommandEvent internal constructor
         else {
             val msgs = processMessage(string)
             if(msgs.size==1) {
-                channel.sendMessage(msgs[0]).queue({ client.linkIds(messageId, it); success.accept(it) }, {})
+                channel.sendMessage(msgs[0]).queue({ linkMessage(it); success.accept(it) }, {})
             } else {
                 msgs.forEachIndexed { index, msg ->
                     if(index + 1 == msgs.size)
-                        channel.sendMessage(msg).queue({ client.linkIds(messageId, it); success.accept(it) }, {})
+                        channel.sendMessage(msg).queue({ linkMessage(it); success.accept(it) }, {})
                     else
-                        channel.sendMessage(msg).queue({ client.linkIds(messageId, it) }, {})
+                        channel.sendMessage(msg).queue({ linkMessage(it) }, {})
                 }
             }
         }
@@ -188,14 +188,14 @@ class CommandEvent internal constructor
             val msgs = processMessage(string)
             if(msgs.size==1) {
                 channel.sendMessage(msgs[0]).queue(
-                        { client.linkIds(messageId, it); success.accept(it) }, { failure.accept(it) })
+                        { linkMessage(it); success.accept(it) }, { failure.accept(it) })
             } else {
                 msgs.forEachIndexed { index, msg ->
                     if(index + 1 == msgs.size)
                         channel.sendMessage(msg).queue(
-                                { client.linkIds(messageId, it); success.accept(it) }, { failure.accept(it) })
+                                { linkMessage(it); success.accept(it) }, { failure.accept(it) })
                     else
-                        channel.sendMessage(msg).queue({ client.linkIds(messageId, it) }, {})
+                        channel.sendMessage(msg).queue({ linkMessage(it) }, {})
                 }
             }
         }
@@ -205,14 +205,14 @@ class CommandEvent internal constructor
         if(channel is TextChannel && !channel.canTalk())
             return
         else {
-            channel.sendMessage(embed).queue({ client.linkIds(messageId, it) }, {})
+            channel.sendMessage(embed).queue({ linkMessage(it) }, {})
         }
     }
     fun sendMessage(embed: MessageEmbed, channel: MessageChannel, success: Consumer<Message>) {
         if(channel is TextChannel && !channel.canTalk())
             return
         else {
-            channel.sendMessage(embed).queue({ client.linkIds(messageId, it); success.accept(it) }, {})
+            channel.sendMessage(embed).queue({ linkMessage(it); success.accept(it) }, {})
         }
     }
     fun sendMessage(embed: MessageEmbed, channel: MessageChannel, success: Consumer<Message>, failure: Consumer<Throwable>) {
@@ -220,7 +220,7 @@ class CommandEvent internal constructor
             return
         else {
             channel.sendMessage(embed).queue(
-                    { client.linkIds(messageId, it); success.accept(it) },
+                    { linkMessage(it); success.accept(it) },
                     { failure.accept(it)}
             )
         }
@@ -230,14 +230,14 @@ class CommandEvent internal constructor
         if(channel is TextChannel && !channel.canTalk())
             return
         else {
-            channel.sendMessage(message).queue({ client.linkIds(messageId, it) }, {})
+            channel.sendMessage(message).queue({ linkMessage(it) }, {})
         }
     }
     fun sendMessage(message: Message, channel: MessageChannel, success: Consumer<Message>) {
         if(channel is TextChannel && !channel.canTalk())
             return
         else {
-            channel.sendMessage(message).queue({ client.linkIds(messageId, it); success.accept(it) }, {})
+            channel.sendMessage(message).queue({ linkMessage(it); success.accept(it) }, {})
         }
     }
     fun sendMessage(message: Message, channel: MessageChannel, success: Consumer<Message>, failure: Consumer<Throwable>) {
@@ -245,7 +245,7 @@ class CommandEvent internal constructor
             return
         else {
             channel.sendMessage(message).queue(
-                    { client.linkIds(messageId, it); success.accept(it) },{ failure.accept(it)})
+                    { linkMessage(it); success.accept(it) },{ failure.accept(it)})
         }
     }
 
@@ -260,6 +260,11 @@ class CommandEvent internal constructor
     fun reactSuccess() = message.addReaction(client.success).queue()
     fun reactWarning() = message.addReaction(client.warning).queue()
     fun reactError() = message.addReaction(client.error).queue()
+
+    fun linkMessage(message: Message)
+    {
+        client.linkIds(messageId, message)
+    }
 
     companion object
     {

@@ -40,11 +40,11 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 group = 'me.kgustave'
-version = new Version(major: 0, minor: 3, build: 2)
+version = new Version(major: 0, minor: 3, build: 3)
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}"
 
 def dirChar = File.separatorChar
-def jdaVersion = '3.2.0_232'
+def jdaVersion = '3.2.0_234'
 def jdaUtilsVersion = '1.3'
 def localLibDir = "${System.getProperty('user.home')}${dirChar}Desktop${dirChar}"
 

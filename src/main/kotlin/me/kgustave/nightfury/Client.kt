@@ -20,6 +20,7 @@ import com.mashape.unirest.http.Unirest
 import com.mashape.unirest.http.exceptions.UnirestException
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
+import me.kgustave.nightfury.listeners.AutoLoggingListener
 import me.kgustave.nightfury.listeners.DatabaseListener
 import me.kgustave.nightfury.listeners.command.*
 import me.kgustave.nightfury.resources.FixedSizeCache
@@ -213,10 +214,10 @@ class Client internal constructor
         }
     }
 
-    fun incrementUses(command: Command)
-    {
-        uses.put(command.name, uses.getOrDefault(command.name, 0)+1)
-    }
+    @Suppress("unused")
+    fun getUsesFor(command: Command) = synchronized(uses) { uses.getOrDefault(command.name, 0) }
+
+    fun incrementUses(command: Command) = synchronized(uses) { uses.put(command.name, uses.getOrDefault(command.name, 0)+1) }
 
     internal fun linkIds(id: Long, message: Message)
     {
@@ -236,8 +237,11 @@ class Client internal constructor
     @Override
     override fun onReady(event: ReadyEvent)
     {
-        event.jda.addEventListener(waiter)
-        event.jda.addEventListener(DatabaseListener(manager))
+        event.jda.addEventListener(
+                waiter,
+                DatabaseListener(manager),
+                AutoLoggingListener(manager, logger)
+        )
         event.jda.presence.status = OnlineStatus.ONLINE
         event.jda.presence.game = Game.of("Type ${prefix}help")
         LOG.info("NightFury is Online!")
@@ -252,10 +256,7 @@ class Client internal constructor
     }
 
     @Override
-    override fun onGuildLeave(event: GuildLeaveEvent)
-    {
-        updateStats(event.jda)
-    }
+    override fun onGuildLeave(event: GuildLeaveEvent) = updateStats(event.jda)
 
     @Override
     override fun onMessageReceived(event: MessageReceivedEvent)
@@ -288,10 +289,10 @@ class Client internal constructor
             val args : String = parts[1]?:""
             if(listener.checkCall(event, this, name, args))
             {
-                val index = commandIndex.getOrDefault(name.toLowerCase(), -1)
+                val index = synchronized(commandIndex) { commandIndex.getOrDefault(name.toLowerCase(), -1) }
                 if(index != -1)
                 {
-                    val command = commands[index]
+                    val command = synchronized(commands) { commands[index] }
                     val commandEvent = CommandEvent(event.jda,event.responseNumber,event.message,args.trim(),this,prefixUsed)
                     listener.onCommandCall(commandEvent, command)
                     command.run(commandEvent)
@@ -319,10 +320,7 @@ class Client internal constructor
     }
 
     @Override
-    override fun onShutdown(event: ShutdownEvent)
-    {
-        manager.shutdown()
-    }
+    override fun onShutdown(event: ShutdownEvent) = manager.shutdown()
 
     private fun updateStats(jda: JDA)
     {
