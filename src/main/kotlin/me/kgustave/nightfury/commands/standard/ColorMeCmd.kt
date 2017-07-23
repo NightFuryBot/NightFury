@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.commands
+package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.promise
 import com.jagrosh.jdautilities.utils.FinderUtil
@@ -37,9 +37,7 @@ class ColorMeCmd : Command() {
         this.guildOnly = true
         this.cooldownScope = CooldownScope.USER_GUILD
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
-        this.children = arrayOf(
-                ColorMeAddCmd(),
-                ColorMeRemoveCmd()
+        this.children = arrayOf(ColorMeAddCmd(), ColorMeRemoveCmd()
         )
     }
 

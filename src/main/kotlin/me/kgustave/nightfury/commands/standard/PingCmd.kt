@@ -13,38 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.commands
+package me.kgustave.nightfury.commands.standard
 
-import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
-import me.kgustave.nightfury.NightFury
-import net.dv8tion.jda.core.OnlineStatus
-import net.dv8tion.jda.core.entities.Game
+import java.time.temporal.ChronoUnit
+
 
 /**
  * @author Kaidan Gustave
  */
-class ShutdownCmd : Command()
-{
+class PingCmd : Command() {
     init {
-        this.name = "shutdown"
-        this.help = "shuts down NightFury"
-        this.devOnly = true
-        this.category = Category.OWNER
+        this.name = "ping"
+        this.aliases = arrayOf("pong", "pang", "pyng", "pung", "peng", "png")
+        this.help = "tests the bot's latency"
         this.guildOnly = false
     }
 
     override fun execute(event: CommandEvent)
     {
-        event.replyWarning("Shutting Down...")
-        event.jda.presence.status = OnlineStatus.DO_NOT_DISTURB
-        event.jda.presence.game = Game.of("Shutting Down...")
-        NightFury.LOG.info("Shutting Down...")
-        synchronized(this) {
-            try { Thread.sleep(2500) } catch (ignored: InterruptedException) {}
-        }
-        event.jda.shutdown(true)
-        NightFury.shutdown(1)
+        event.reply("Ping...",{
+            it.editMessage("Ping: ${event.message.creationTime.until(it.creationTime, ChronoUnit.MILLIS)}ms").queue()
+        })
     }
 }

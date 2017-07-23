@@ -18,7 +18,6 @@ package me.kgustave.nightfury
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import java.util.*
-import java.util.function.Predicate
 import java.util.regex.Pattern
 
 /**
@@ -120,7 +119,7 @@ abstract class Command
                             continue
                         cat = child.category
                         if(cat!=null)
-                            b.append("\n__${cat.name}__\n\n")
+                            b.append("\n__${cat.title}__\n\n")
                     }
                     b.append("`").append(event.client.prefix).append(child.fullname)
                             .append(if(child.arguments.toString().isNotEmpty()) " ${child.arguments}" else "")
@@ -304,32 +303,24 @@ class Argument(val args: String, val error: String?, val pattern: Pattern?)
     override fun toString(): String = args
 }
 
-// TODO Move Category to enum
-class Category(val name: String, private val predicate: Predicate<CommandEvent>?)
+enum class Category(val title: String, private val predicate: (CommandEvent) -> Boolean)
 {
-    companion object
-    {
-        val OWNER: Category = Category("Owner", { event -> event.isOwner })
-        val SERVER_OWNER: Category =  Category("Server Owner", { event ->
-            OWNER.test(event) || event.member.isOwner
+    // Primary Hierarchy
+    OWNER("Owner", { it.isOwner }),
+    SERVER_OWNER("Server Owner", { OWNER.test(it) || it.member.isOwner }),
+    ADMIN("Administrator", {
+        SERVER_OWNER.test(it) || (it.isFromType(ChannelType.TEXT) && it.member.hasPermission(Permission.ADMINISTRATOR))
+    }),
+    MODERATOR("Moderator", {
+        ADMIN.test(it) || (it.isFromType(ChannelType.TEXT) && with(it.client.manager.getModRole(it.guild)) {
+            this!=null && it.member.roles.contains(this)
         })
-        val ADMIN: Category = Category("Administrator", { event ->
-            SERVER_OWNER.test(event)
-                    || (event.isFromType(ChannelType.TEXT)
-                    && event.member.hasPermission(Permission.ADMINISTRATOR))
+    }),
+    
+    // Other Categories
+    NSFW("NSFW", { Category.OWNER.test(it) || (it.isFromType(ChannelType.TEXT) && it.textChannel.isNSFW) });
 
-        })
-        val MODERATOR: Category = Category("Moderator", { event : CommandEvent ->
-            ADMIN.test(event)
-                    || (event.isFromType(ChannelType.TEXT)
-                    && event.client.manager.getModRole(event.guild)!=null
-                    && event.member.roles.contains(event.client.manager.getModRole(event.guild)))
-        })
-    }
-
-    constructor(name: String, predicate: (CommandEvent) -> Boolean) : this(name, Predicate(predicate))
-
-    fun test(event: CommandEvent) = predicate != null && predicate.test(event)
+    fun test(event: CommandEvent) = predicate.invoke(event)
 }
 
 enum class CooldownScope constructor(private val format: String, internal val errorFlair: String)

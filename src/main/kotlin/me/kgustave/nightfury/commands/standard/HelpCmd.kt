@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.commands
+package me.kgustave.nightfury.commands.standard
 
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
@@ -47,7 +47,7 @@ class HelpCmd : Command() {
                     continue
                 cat = c.category
                 if(cat!=null)
-                    b.append("\n__${cat.name}__\n\n")
+                    b.append("\n__${cat.title}__\n\n")
             }
             b.append("`").append(event.client.prefix).append(c.name)
                     .append(if(c.arguments.toString().isNotEmpty()) " ${c.arguments}" else "")

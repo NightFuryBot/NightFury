@@ -17,7 +17,14 @@ package me.kgustave.nightfury
 
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.api.GoogleAPI
-import me.kgustave.nightfury.commands.*
+import me.kgustave.nightfury.commands.admin.ModeratorCmd
+import me.kgustave.nightfury.commands.moderator.*
+import me.kgustave.nightfury.commands.dev.EvalCmd
+import me.kgustave.nightfury.commands.dev.ModeCmd
+import me.kgustave.nightfury.commands.dev.RestartCmd
+import me.kgustave.nightfury.commands.dev.ShutdownCmd
+import me.kgustave.nightfury.commands.other.E621Cmd
+import me.kgustave.nightfury.commands.standard.*
 import me.kgustave.nightfury.db.DatabaseManager
 import me.monitor.je621.JE621Builder
 import net.dv8tion.jda.core.*
@@ -76,19 +83,9 @@ class NightFury
 
         jda.buildAsync()
 
-        client.addCommands(
-                ColorMeCmd(),
-                GoogleCmd(google),
-                HelpCmd(),
-                InfoCmd(),
-                InviteCmd(*config.permissions),
-                PingCmd(),
-                PrefixCmd(),
-                RoleMeCmd(),
-                ServerCmd(waiter),
-                TagCommand(),
+        client.addCommands(ColorMeCmd(), GoogleCmd(google), HelpCmd(), InfoCmd(), InviteCmd(*config.permissions), PingCmd(), PrefixCmd(), RoleMeCmd(), ServerCmd(waiter), TagCommand(),
 
-                E621Cmd(e621,waiter),
+                E621Cmd(e621, waiter),
 
                 BanCmd(),
                 CleanCmd(),
@@ -99,9 +96,7 @@ class NightFury
 
                 ModeratorCmd(),
 
-                EvalCmd(),
-                RestartCmd(),
-                ShutdownCmd()
+                EvalCmd(), ModeCmd(), RestartCmd(), ShutdownCmd()
         )
 
         executor.scheduleAtFixedRate({

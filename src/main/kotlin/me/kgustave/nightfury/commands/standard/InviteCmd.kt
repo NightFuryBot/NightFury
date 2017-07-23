@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.commands
+package me.kgustave.nightfury.commands.standard
 
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
@@ -53,7 +53,7 @@ class InviteCmd(vararg requestedPerms : Permission) : Command()
             appendln("NightFury is a general discord bot for moderation, utility, and larger communities!")
             appendln("To add me to your server, click the link below:")
             appendln()
-            appendln("${event.client.success} **<$invite>**")
+            appendln("${event.client.success} **<${invite}>**")
             appendln()
             appendln("To see a full list of my commands, type `${event.prefixUsed}help`.")
             append("If you require additional help ")

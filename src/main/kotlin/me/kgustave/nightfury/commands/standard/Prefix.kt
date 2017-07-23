@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.commands
+package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.builders.colorAwt
 import club.minnced.kjda.builders.embed
@@ -29,10 +29,7 @@ class PrefixCmd : NoBaseExecutionCommand() {
         this.arguments = Argument("[add|remove|list]")
         this.help = "manages the server's custom prefixes"
         this.guildOnly = true
-        this.children = arrayOf(
-                AddPrefixCmd(),
-                ListPrefixCmd(),
-                RemovePrefixCmd()
+        this.children = arrayOf(AddPrefixCmd(), ListPrefixCmd(), RemovePrefixCmd()
         )
     }
 }

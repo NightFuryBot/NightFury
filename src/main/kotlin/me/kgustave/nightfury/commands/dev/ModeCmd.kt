@@ -13,28 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.commands
+package me.kgustave.nightfury.commands.dev
 
-import me.kgustave.nightfury.Command
-import me.kgustave.nightfury.CommandEvent
-import java.time.temporal.ChronoUnit
-
+import me.kgustave.nightfury.*
 
 /**
  * @author Kaidan Gustave
  */
-class PingCmd : Command() {
+class ModeCmd : Command() {
+
     init {
-        this.name = "ping"
-        this.aliases = arrayOf("pong", "pang", "pyng", "pung", "peng", "png")
-        this.help = "tests the bot's latency"
+        this.name = "mode"
+        this.arguments = Argument("<mode>")
+        this.help = "sets the bots mode"
         this.guildOnly = false
+        this.devOnly = true
+        this.category = Category.OWNER
     }
 
     override fun execute(event: CommandEvent)
     {
-        event.reply("Ping...",{
-            it.editMessage("Ping: ${event.message.creationTime.until(it.creationTime, ChronoUnit.MILLIS)}ms").queue()
-        })
+        try {
+            event.client.targetListener(event.args)
+            event.replySuccess("Targeted listener `${event.args.toLowerCase()}`!")
+        } catch (e : IllegalArgumentException) {
+            if(e.message!=null) event.replyError(e.message!!)
+            else throw e
+        }
     }
 }

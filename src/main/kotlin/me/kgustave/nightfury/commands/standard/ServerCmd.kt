@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.commands
+package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.builders.colorAwt
 import club.minnced.kjda.builders.embed
@@ -21,6 +21,8 @@ import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
+import me.kgustave.nightfury.commands.admin.ModeratorListBaseCmd
+import me.kgustave.nightfury.commands.moderator.SettingsCmd
 import me.kgustave.nightfury.extensions.waiting.orderedMenu
 import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.Permission
@@ -41,9 +43,7 @@ class ServerCmd(val waiter: EventWaiter) : Command()
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
         this.children = arrayOf(
-                ModeratorListBaseCmd.ServerModeratorsCmd(),
-                ServerOwnerCmd(),
-                SettingsCmd()
+                ModeratorListBaseCmd.ServerModeratorsCmd(), ServerOwnerCmd(), SettingsCmd()
         )
     }
 

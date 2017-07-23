@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.commands
+package me.kgustave.nightfury.commands.admin
 
 import club.minnced.kjda.builders.embed
 import club.minnced.kjda.promise
@@ -41,12 +41,7 @@ class ModeratorCmd : NoBaseExecutionCommand()
         this.help = "add, remove, and manage moderators"
         this.guildOnly = true
         this.category = Category.ADMIN
-        this.children = arrayOf(
-                ModeratorAddCmd(),
-                ModeratorListBaseCmd.ModeratorListCmd(),
-                ModeratorOnlineCmd(),
-                ModeratorRemoveCmd(),
-                ModeratorSetCmd()
+        this.children = arrayOf(ModeratorAddCmd(), ModeratorListBaseCmd.ModeratorListCmd(), ModeratorOnlineCmd(), ModeratorRemoveCmd(), ModeratorSetCmd()
         )
     }
 }

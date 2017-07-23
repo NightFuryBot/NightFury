@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.commands
+package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.promise
 import com.jagrosh.jagtag.JagTag
@@ -43,11 +43,7 @@ class TagCommand : Command()
                 true
         )
         this.guildOnly = false
-        this.children = arrayOf(
-                TagCreateGlobalCmd(),
-                TagCreateCmd(),
-                TagDeleteCmd(),
-                TagOwnerCmd()
+        this.children = arrayOf(TagCreateGlobalCmd(), TagCreateCmd(), TagDeleteCmd(), TagOwnerCmd()
         )
     }
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.commands
+package me.kgustave.nightfury.commands.other
 
 import com.jagrosh.jdautilities.menu.slideshow.SlideshowBuilder
 import com.jagrosh.jdautilities.waiter.EventWaiter
@@ -21,7 +21,6 @@ import me.kgustave.nightfury.*
 import me.monitor.je621.E621Array
 import me.monitor.je621.JE621
 import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.ChannelType
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import java.awt.Color
 import java.util.*
@@ -33,16 +32,12 @@ import kotlin.streams.toList
  */
 class E621Cmd(val e621 : JE621, val waiter: EventWaiter, val random: Random = Random()) : Command() {
 
-    companion object {
-        val NSFW = Category("NSFW", { Category.OWNER.test(it) || (it.isFromType(ChannelType.TEXT) && it.textChannel.isNSFW) })
-    }
-
     init {
         this.name = "e621"
         this.arguments = Argument("<number of posts> [tags...]")
         this.aliases = arrayOf("pron","porn")
         this.guildOnly = true
-        this.category = NSFW
+        this.category = Category.NSFW
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
         this.cooldown = 15
         this.cooldownScope = CooldownScope.USER_GUILD

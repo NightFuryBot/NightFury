@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.commands
+package me.kgustave.nightfury.commands.dev
 
 import club.minnced.kjda.entities.connectedChannel
 import me.kgustave.nightfury.Argument

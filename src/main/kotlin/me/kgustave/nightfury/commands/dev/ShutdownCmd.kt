@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.commands
+package me.kgustave.nightfury.commands.dev
 
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
@@ -25,26 +25,26 @@ import net.dv8tion.jda.core.entities.Game
 /**
  * @author Kaidan Gustave
  */
-class RestartCmd : Command()
+class ShutdownCmd : Command()
 {
     init {
-        this.name = "restart"
-        this.help = "restarts NightFury"
+        this.name = "shutdown"
+        this.help = "shuts down NightFury"
         this.devOnly = true
         this.category = Category.OWNER
-        this.guildOnly = true
+        this.guildOnly = false
     }
 
     override fun execute(event: CommandEvent)
     {
-        event.replyWarning("Restarting...")
+        event.replyWarning("Shutting Down...")
         event.jda.presence.status = OnlineStatus.DO_NOT_DISTURB
-        event.jda.presence.game = Game.of("Restarting...")
-        NightFury.LOG.info("Restarting...")
+        event.jda.presence.game = Game.of("Shutting Down...")
+        NightFury.LOG.info("Shutting Down...")
         synchronized(this) {
             try { Thread.sleep(2500) } catch (ignored: InterruptedException) {}
         }
         event.jda.shutdown(true)
-        NightFury.shutdown(0)
+        NightFury.shutdown(1)
     }
 }
