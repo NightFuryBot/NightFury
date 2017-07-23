@@ -15,10 +15,8 @@
  */
 package me.kgustave.nightfury.commands.moderator
 
-import club.minnced.kjda.entities.edit
 import club.minnced.kjda.entities.isSelf
 import club.minnced.kjda.promise
-import club.minnced.kjda.then
 import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
@@ -72,6 +70,9 @@ class ReasonCmd : Command() {
             reason = parts[1].trim()
         }
 
+        if(case.modId!=event.author.idLong)
+            return event.replyError("**You are not responsible for case number `$number`!**\n" +
+                    "Only the moderator responsible for a case may update it's reason.")
         if(reason.length>300)
             return event.replyError("Reasons must not be longer than 300 characters!")
         if(case.messageId==0L)
@@ -81,7 +82,7 @@ class ReasonCmd : Command() {
         case.reason = reason
         modLog.getMessageById(case.messageId).promise() then {
             if(it == null)
-                return@then event.replyError("Error")
+                return@then event.replyError("An unexpected error occurred while updating the reason for case number `$number`!")
             if(it.author.isSelf)
                 it.editMessage("${it.rawContent.split(Regex("\n"),2)[0]}\n`[ REASON ]` $reason").queue()
             event.client.manager.updateCase(case)

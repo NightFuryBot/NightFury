@@ -40,7 +40,7 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 group = 'me.kgustave'
-version = new Version(major: 0, minor: 3, build: 3)
+version = new Version(major: 0, minor: 3, build: 4)
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}"
 
 def dirChar = File.separatorChar
