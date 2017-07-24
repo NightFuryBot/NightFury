@@ -28,10 +28,6 @@ import me.kgustave.nightfury.entities.Case
  */
 class ReasonCmd : Command() {
 
-    companion object {
-        val invalid_case_number = "**Invalid case number!**\n"
-    }
-
     init {
         this.name = "reason"
         this.arguments = Argument("<case number> [reason]")
@@ -63,7 +59,8 @@ class ReasonCmd : Command() {
         {
             number = with(parts[0].toInt()) {
                 if(this>event.client.manager.getCases(event.guild).size)
-                    return event.replyError("${invalid_case_number}Specify a case number lower than the latest case number!")
+                    return event.replyError("**Invalid case number!**\n" +
+                            "Specify a case number lower than the latest case number!")
                 else this
             }
             case = event.client.manager.getCaseMatching(event.guild, { it.number == number})

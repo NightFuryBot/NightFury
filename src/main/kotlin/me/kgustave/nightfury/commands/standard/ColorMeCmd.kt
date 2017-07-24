@@ -29,9 +29,12 @@ import kotlin.streams.toList
  */
 class ColorMeCmd : Command() {
 
+    companion object {
+        private val pattern = Regex("#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]").toPattern()
+    }
     init {
         this.name = "colorme"
-        this.arguments = Argument("<hexcode>", Regex("#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]").toPattern())
+        this.arguments = Argument("<hexcode>")
         this.help = "set the color of your highest ColorMe role"
         this.cooldown = 10
         this.guildOnly = true
@@ -43,6 +46,8 @@ class ColorMeCmd : Command() {
 
     override fun execute(event: CommandEvent)
     {
+        if(event.args.isEmpty() || pattern.matcher(event.args).matches())
+            return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
         val allColormes = event.client.manager.getColorMes(event.guild)
         if(allColormes.isEmpty())
             return event.replyError("**No ColorMe roles on this server!**\n${SEE_HELP.format(event.prefixUsed, name)}")

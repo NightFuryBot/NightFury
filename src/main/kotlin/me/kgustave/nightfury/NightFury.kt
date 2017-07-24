@@ -69,18 +69,14 @@ class NightFury
         val manager = DatabaseManager(config.dbURL, config.dbUser, config.dbPass)
 
         val waiter = EventWaiter()
-        val client = Client(config.prefix, config.ownerId, manager, config.success,
-                config.warning, config.error, config.server, config.dbotskey, waiter)
 
         val google = GoogleAPI()
         val e621 = JE621Builder("NightFury").build()
 
-        jda.addEventListener(client)
-        jda.setToken(config.token).setStatus(OnlineStatus.DO_NOT_DISTURB).setGame(Game.of("Starting Up..."))
-
-        jda.buildAsync()
-
-        client.addCommands(
+        val client = Client(
+                config.prefix, config.ownerId, manager,
+                config.success, config.warning, config.error,
+                config.server, config.dbotskey, waiter,
                 ColorMeCmd(),
                 GoogleCmd(google),
                 HelpCmd(),
@@ -103,12 +99,19 @@ class NightFury
                 UnmuteCmd(),
 
                 ModeratorCmd(),
+                ModLogCmd(),
 
                 EvalCmd(),
                 ModeCmd(),
                 RestartCmd(),
                 ShutdownCmd()
         )
+
+        jda.addEventListener(client)
+                .setToken(config.token)
+                .setStatus(OnlineStatus.DO_NOT_DISTURB)
+                .setGame(Game.of("Starting Up..."))
+                .buildAsync()
 
         executor.scheduleAtFixedRate({
             client.cleanCooldowns()
@@ -132,7 +135,7 @@ internal class Config(key: File)
     internal val dbURL: String = tokens[3]
     internal val dbUser: String = tokens[4]
     internal val dbPass: String = tokens[5]
-    internal val prefix: String = "||"
+    internal val prefix: String = "|"
     internal val success: String = "\uD83D\uDC32"
     internal val warning: String = "\uD83D\uDC22"
     internal val error: String = "\uD83D\uDD25"

@@ -20,7 +20,7 @@ import net.dv8tion.jda.core.utils.SimpleLog
 import java.sql.Connection
 import java.sql.SQLException
 
-
+// TODO Implement tag list statements
 /**
  * @author Kaidan Gustave
  */
@@ -173,6 +173,7 @@ class SQLLocalTags(val connection: Connection)
     private val getTagOriginalName     = "SELECT $name FROM $local_tags WHERE LOWER($name) = LOWER(?) AND $guild_id = ?"
     private val getTagContentStatement = "SELECT $content FROM $local_tags WHERE LOWER($name) = LOWER(?) AND $guild_id = ?"
     private val getTagOwnerIdStatement = "SELECT $owner_id FROM $local_tags WHERE LOWER($name) = LOWER(?) AND $guild_id = ?"
+    private val overrideTagStatement   = "UPDATE $local_tags SET $content = ?, $owner_id = ? WHERE LOWER($name) = LOWER(?) AND $owner_id = ? AND $guild_id = ?\""
 
     fun isTag(name: String, guild: Guild) : Boolean
     {
@@ -290,6 +291,24 @@ class SQLLocalTags(val connection: Connection)
         } catch (e : SQLException) {
             LOG.warn(e)
             return 0L
+        }
+    }
+
+    fun overrideTag(newContent: String, name: String, originalOwnerId: Long, guild: Guild)
+    {
+        try {
+            with(connection.prepareStatement(overrideTagStatement))
+            {
+                setString(1, newContent)
+                setLong(2, 1L) // Overrides have an owner ID of 1L (likely won't have issues with this)
+                setString(3, name)
+                setLong(4, originalOwnerId)
+                setLong(5, guild.idLong)
+                execute()
+                close()
+            }
+        } catch (e : SQLException) {
+            LOG.warn(e)
         }
     }
 }

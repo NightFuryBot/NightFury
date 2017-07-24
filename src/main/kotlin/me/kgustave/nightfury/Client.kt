@@ -53,7 +53,8 @@ import kotlin.collections.HashSet
 class Client internal constructor
 (val prefix: String, val ownerID: Long, val manager: DatabaseManager,
  val success: String, val warning: String, val error: String,
- val server: String, val dBotsKey : String, val waiter: EventWaiter) : ListenerAdapter()
+ val server: String, val dBotsKey : String, val waiter: EventWaiter,
+ vararg commands: Command) : ListenerAdapter()
 {
     // TODO Remove all occurrences of @Suppress("unused")
 
@@ -76,6 +77,7 @@ class Client internal constructor
         listeners.put(IdleListener.name, IdleListener())
         listeners.put(DebugListener.name, DebugListener())
         listener = listeners[StandardListener.name]!!
+        addCommands(*commands)
     }
 
     companion object

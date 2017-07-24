@@ -111,20 +111,24 @@ abstract class Command
                 if(explanation != null)
                     b.append("\n$explanation\n")
 
-                b.append("\n**Sub-Commands:**\n")
-                var cat : Category? = null
-                for(child in children) {
-                    if(cat!=child.category) {
-                        if(!child.category!!.test(event))
-                            continue
-                        cat = child.category
-                        if(cat!=null)
-                            b.append("\n__${cat.title}__\n\n")
+                if(children.isNotEmpty())
+                {
+                    b.append("\n**Sub-Commands:**\n\n")
+                    var cat : Category? = null
+                    for(child in children) {
+                        if(cat!=child.category) {
+                            if(!child.category!!.test(event))
+                                continue
+                            cat = child.category
+                            if(cat!=null)
+                                b.append("\n__${cat.title}__\n\n")
+                        }
+                        b.append("`").append(event.client.prefix).append(child.fullname)
+                                .append(if(child.arguments.toString().isNotEmpty()) " ${child.arguments}" else "")
+                                .append("` ").append(child.help).append("\n")
                     }
-                    b.append("`").append(event.client.prefix).append(child.fullname)
-                            .append(if(child.arguments.toString().isNotEmpty()) " ${child.arguments}" else "")
-                            .append("` ").append(child.help).append("\n")
                 }
+
                 val owner = event.jda.getUserById(ownerId)
                 if(owner != null)
                     b.append("\n\nFor additional help, contact **")
@@ -296,7 +300,6 @@ abstract class Command
 class Argument(val args: String, val error: String?, val pattern: Pattern?)
 {
     constructor(args: String) : this(args, null, null)
-    constructor(args: String, pattern: Pattern) : this(args, Command.INVALID_ARGS_HELP, pattern)
 
     fun test(event: CommandEvent) = pattern?.matcher(event.args)?.matches()?:true
 
@@ -316,7 +319,7 @@ enum class Category(val title: String, private val predicate: (CommandEvent) -> 
             this!=null && it.member.roles.contains(this)
         })
     }),
-    
+
     // Other Categories
     NSFW("NSFW", { Category.OWNER.test(it) || (it.isFromType(ChannelType.TEXT) && it.textChannel.isNSFW) });
 

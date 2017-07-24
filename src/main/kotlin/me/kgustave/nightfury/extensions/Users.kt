@@ -17,7 +17,6 @@ package me.kgustave.nightfury.extensions
 
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.User
-import net.dv8tion.jda.core.requests.RestAction
 
 fun User.banFrom(guild: Guild) = this.banFrom(guild, 0)
 fun User.banFrom(guild: Guild, reason: String) = this.banFrom(guild, 0, reason)

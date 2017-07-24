@@ -28,10 +28,14 @@ import kotlin.streams.toList
  */
 class CleanCmd : Command() {
 
+    companion object {
+        private val pattern  = Regex("\\d+").toPattern()
+    }
+
     init {
         this.name = "clean"
         this.aliases = arrayOf("clear", "prune")
-        this.arguments = Argument("<number of messages>", Regex("\\d+").toPattern())
+        this.arguments = Argument("<number of messages>")
         this.help = "deletes a specified number of messages from the channel this is called in"
         this.category = Category.MODERATOR
         this.guildOnly = true
@@ -40,6 +44,8 @@ class CleanCmd : Command() {
 
     override fun execute(event: CommandEvent)
     {
+        if(event.args.isEmpty() || pattern.matcher(event.args).matches())
+            return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
         val number = event.args.toInt()
         // TODO Error
         if(number>100 || number<2)

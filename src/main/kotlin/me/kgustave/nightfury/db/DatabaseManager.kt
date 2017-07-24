@@ -151,6 +151,10 @@ class DatabaseManager(url: String, user: String, pass: String) {
     fun getContentForLocalTag(name: String, guild: Guild) = localTags.getTagContent(name, guild)
     fun isLocalTagOwner(name: String, owner: Member) = getOwnerIdForLocalTag(name, owner.guild) == owner.user.idLong
     fun getOwnerIdForLocalTag(name: String, guild: Guild) = localTags.getTagOwnerId(name, guild)
+    fun overrideLocalTag(name: String, newContent: String, guild: Guild) {
+        if(!isLocalTag(name,guild)) throw IllegalArgumentException("The specified name is not a local tag!")
+        else localTags.overrideTag(newContent, name, getOwnerIdForLocalTag(name,guild),guild)
+    }
 
     fun isGlobalTag(name: String) = globalTags.isTag(name)
     fun addGlobalTag(name: String, content: String, owner: User) {

@@ -18,10 +18,7 @@ package me.kgustave.nightfury.commands.standard
 import club.minnced.kjda.promise
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Parser
-import me.kgustave.nightfury.Argument
-import me.kgustave.nightfury.Command
-import me.kgustave.nightfury.CommandEvent
-import me.kgustave.nightfury.CooldownScope
+import me.kgustave.nightfury.*
 import me.kgustave.nightfury.utils.formatUserName
 import net.dv8tion.jda.core.entities.ChannelType
 
@@ -42,14 +39,22 @@ class TagCommand : Command()
                 true
         )
         this.guildOnly = false
-        this.children = arrayOf(TagCreateGlobalCmd(), TagCreateCmd(), TagDeleteCmd(), TagOwnerCmd()
+        this.children = arrayOf(
+                TagCreateGlobalCmd(),
+                TagCreateCmd(),
+                TagDeleteCmd(),
+                TagEditCmd(),
+                TagOwnerCmd(),
+                TagRawCmd(),
+
+                TagOverrideCmd()
         )
     }
 
     override fun execute(event: CommandEvent)
     {
         if(event.args.isEmpty())
-            return event.replyError(INVALID_ARGS_ERROR.format("Try specifying a tag name in the format `${event.prefixUsed}tag [tag name]`."))
+            return event.replyError(TOO_FEW_ARGS_ERROR.format("Try specifying a tag name in the format `${event.prefixUsed}tag [tag name]`."))
         val parts = event.args.split(Regex("\\s+"),2)
         val name = parts[0]
         val args = if(parts.size>1) parts[1] else ""
@@ -73,8 +78,8 @@ class TagCommand : Command()
             if(content.isEmpty())
                 return event.replyError("**No Global Tag Found Matching \"$name\"**\n${SEE_HELP.format(event.prefixUsed,this.name)}")
             else event.reply(parser.put("args", args).parse(content))
-            parser.clear()
         }
+        parser.clear()
     }
 }
 
@@ -119,58 +124,6 @@ private class TagCreateCmd : Command()
     }
 }
 
-private class TagDeleteCmd : Command()
-{
-    init {
-        this.name = "delete"
-        this.fullname = "tag delete"
-        this.arguments = Argument("[tag name]")
-        this.help = "deletes a tag you own"
-        this.guildOnly = true
-    }
-
-    override fun execute(event: CommandEvent)
-    {
-        if(event.args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
-        val name = event.args.split(Regex("\\s+"))[0]
-        if(event.isFromType(ChannelType.TEXT)) {
-            with(event.client.manager) {
-                if(!isLocalTag(name, event.guild)) {
-                    if(!isGlobalTag(name)) {
-                        event.replyError("Tag named \"$name\" does not exist!")
-                    } else if(isGlobalTagOwner(name, event.author)) {
-                        deleteGlobalTag(name, event.author)
-                        event.replySuccess("Successfully deleted local tag \"**$name**\"!")
-                    } else {
-                        event.replyError("**You cannot delete the global tag \"$name\" because you are not it's owner!**\n" +
-                                SEE_HELP.format(event.prefixUsed, fullname))
-                    }
-                } else if(isLocalTagOwner(name, event.member)) {
-                    deleteLocalTag(name, event.member)
-                    event.replySuccess("Successfully deleted local tag \"**$name**\"!")
-                } else {
-                    event.replyError("**You cannot delete the local tag \"$name\" because you are not it's owner!**\n" +
-                            SEE_HELP.format(event.prefixUsed, fullname))
-                }
-            }
-        } else {
-            with(event.client.manager)
-            {
-                if(!isGlobalTag(name)) {
-                    event.replyError("Tag named \"$name\" does not exist!")
-                } else if(isGlobalTagOwner(name, event.author)) {
-                    deleteGlobalTag(name, event.author)
-                    event.replySuccess("Successfully deleted local tag \"**$name**\"!")
-                } else {
-                    event.replyError("**You cannot delete the global tag \"$name\" because you are not it's owner!**\n" +
-                            SEE_HELP.format(event.prefixUsed, fullname))
-                }
-            }
-        }
-    }
-}
-
 private class TagCreateGlobalCmd : Command()
 {
     init {
@@ -208,6 +161,129 @@ private class TagCreateGlobalCmd : Command()
         else {
             event.client.manager.addGlobalTag(name,content,event.author)
             event.replySuccess("Successfully created global tag \"**$name**\"!")
+        }
+    }
+}
+
+private class TagDeleteCmd : Command()
+{
+    init {
+        this.name = "delete"
+        this.fullname = "tag delete"
+        this.arguments = Argument("[tag name]")
+        this.help = "deletes a tag you own"
+        this.guildOnly = true
+    }
+
+    override fun execute(event: CommandEvent)
+    {
+        if(event.args.isEmpty())
+            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
+        val name = event.args.split(Regex("\\s+"))[0]
+        if(event.isFromType(ChannelType.TEXT)) {
+            with(event.client.manager)
+            {
+                if(!isLocalTag(name, event.guild)) {
+                    if(!isGlobalTag(name)) {
+                        event.replyError("Tag named \"$name\" does not exist!")
+                    } else if(isGlobalTagOwner(name, event.author)) {
+                        deleteGlobalTag(name, event.author)
+                        event.replySuccess("Successfully deleted local tag \"**$name**\"!")
+                    } else {
+                        event.replyError("**You cannot delete the global tag \"$name\" because you are not it's owner!**\n" +
+                                SEE_HELP.format(event.prefixUsed, fullname))
+                    }
+                } else if(isLocalTagOwner(name, event.member)) {
+                    deleteLocalTag(name, event.member)
+                    event.replySuccess("Successfully deleted local tag \"**$name**\"!")
+                } else {
+                    event.replyError("**You cannot delete the local tag \"$name\" because you are not it's owner!**\n" +
+                            SEE_HELP.format(event.prefixUsed, fullname))
+                }
+            }
+        } else {
+            with(event.client.manager)
+            {
+                if(!isGlobalTag(name)) {
+                    event.replyError("Tag named \"$name\" does not exist!")
+                } else if(isGlobalTagOwner(name, event.author)) {
+                    deleteGlobalTag(name, event.author)
+                    event.replySuccess("Successfully deleted local tag \"**$name**\"!")
+                } else {
+                    event.replyError("**You cannot delete the global tag \"$name\" because you are not it's owner!**\n" +
+                            SEE_HELP.format(event.prefixUsed, fullname))
+                }
+            }
+        }
+    }
+}
+
+private class TagEditCmd : Command()
+{
+    init {
+        this.name = "edit"
+        this.fullname = "tag edit"
+        this.arguments = Argument("<tag name> <tag content>")
+        this.help = "edits a tag you own"
+        this.cooldown = 180
+        this.cooldownScope = CooldownScope.USER
+        this.guildOnly = false
+    }
+
+    override fun execute(event: CommandEvent)
+    {
+        if(event.args.isEmpty())
+            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
+        val parts = event.args.split(Regex("\\s+"),2)
+
+        val name = if(parts[0].length<=50)
+            parts[0]
+        else
+            return event.replyError("**Tag names cannot exceed 50 characters in length!**\n" +
+                    SEE_HELP.format(event.prefixUsed, fullname))
+
+        val newContent = if(parts.size==1)
+            return event.replyError("**You must specify content when editing a tag!**\n" +
+                    SEE_HELP.format(event.prefixUsed, fullname))
+        else if(parts[1].length>1900)
+            return event.replyError("**Tag content cannot exceed 1900 characters in length!**\n" +
+                    SEE_HELP.format(event.prefixUsed, fullname))
+        else parts[1]
+
+        if(event.isFromType(ChannelType.TEXT)) {
+            with(event.client.manager)
+            {
+                if(!isLocalTag(name, event.guild)) {
+                    if(!isGlobalTag(name)) {
+                        event.replyError("Tag named \"$name\" does not exist!")
+                    } else if(isGlobalTagOwner(name, event.author)) {
+                        editGlobalTag(name, newContent, event.author)
+                        event.replySuccess("Successfully edit local tag \"**$name**\"!")
+                    } else {
+                        event.replyError("**You cannot edit the global tag \"$name\" because you are not it's owner!**\n" +
+                                SEE_HELP.format(event.prefixUsed, fullname))
+                    }
+                } else if(isLocalTagOwner(name, event.member)) {
+                    editLocalTag(name, newContent, event.member)
+                    event.replySuccess("Successfully edit local tag \"**$name**\"!")
+                } else {
+                    event.replyError("**You cannot edit the local tag \"$name\" because you are not it's owner!**\n" +
+                            SEE_HELP.format(event.prefixUsed, fullname))
+                }
+            }
+        } else {
+            with(event.client.manager)
+            {
+                if(!isGlobalTag(name)) {
+                    event.replyError("Tag named \"$name\" does not exist!")
+                } else if(isGlobalTagOwner(name, event.author)) {
+                    editGlobalTag(name, newContent, event.author)
+                    event.replySuccess("Successfully edit local tag \"**$name**\"!")
+                } else {
+                    event.replyError("**You cannot edit the global tag \"$name\" because you are not it's owner!**\n" +
+                            SEE_HELP.format(event.prefixUsed, fullname))
+                }
+            }
         }
     }
 }
@@ -263,5 +339,63 @@ private class TagOwnerCmd : Command()
                 "local tag \"${event.client.manager.getOriginalNameOfLocalTag(name, event.guild)}\""
             } could not be retrieved for an unexpected reason!")
         }
+    }
+}
+
+private class TagRawCmd : Command()
+{
+    init {
+        this.name = "raw"
+        this.fullname = "tag raw"
+        this.arguments = Argument("[tag name]")
+        this.help = "gets the raw, non-parsed form of a tag"
+        this.guildOnly = false
+    }
+
+    override fun execute(event: CommandEvent)
+    {
+        if(event.args.isEmpty())
+            return event.replyError(TOO_FEW_ARGS_ERROR.format("Try specifying a tag name in the format `${event.prefixUsed}$fullname [tag name]`."))
+        val parts = event.args.split(Regex("\\s+"),2)
+        val name = parts[0]
+        if(event.isFromType(ChannelType.TEXT))
+        {
+            val content : String = if(event.client.manager.isLocalTag(name, event.guild)) {
+                event.client.manager.getContentForLocalTag(name, event.guild)
+            } else if(event.client.manager.isGlobalTag(name)) {
+                event.client.manager.getContentForGlobalTag(name)
+            } else ""
+            if(content.isEmpty())
+                return event.replyError("**No Tag Found Matching \"$name\"**\n${SEE_HELP.format(event.prefixUsed,this.fullname)}")
+            else event.reply("```\n$content```")
+        }
+        else
+        {
+            val content : String = if(event.client.manager.isGlobalTag(name)) {
+                event.client.manager.getContentForGlobalTag(name)
+            } else ""
+
+            if(content.isEmpty())
+                return event.replyError("**No Global Tag Found Matching \"$name\"**\n${SEE_HELP.format(event.prefixUsed,this.fullname)}")
+            else event.reply("```\n$content```")
+        }
+    }
+}
+
+private class TagOverrideCmd : Command()
+{
+    init {
+        this.name = "override"
+        this.fullname = "tag override"
+        this.arguments = Argument("<tag name> <tag content>")
+        this.help = "overrides a local tag"
+        this.category = Category.MODERATOR
+        this.guildOnly = true
+    }
+
+    override fun execute(event: CommandEvent)
+    {
+        // TODO Implement Tag Override Command
+        event.replyWarning("Override function coming soon!")
     }
 }
