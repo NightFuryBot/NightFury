@@ -15,22 +15,17 @@
  */
 package me.kgustave.nightfury.commands.moderator
 
-import club.minnced.kjda.promise
 import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import net.dv8tion.jda.core.Permission
-import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
  */
+@Suppress("unused")
 class CleanCmd : Command() {
-
-    companion object {
-        private val pattern  = Regex("\\d+").toPattern()
-    }
 
     init {
         this.name = "clean"
@@ -44,22 +39,5 @@ class CleanCmd : Command() {
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty() || pattern.matcher(event.args).matches())
-            return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
-        val number = event.args.toInt()
-        // TODO Error
-        if(number>100 || number<2)
-            return event.replyError("")
-        val history = event.textChannel.history
-        history.retrievePast(1).complete()
-        history.retrievePast(number).promise() then {
-            // TODO Error
-            if(it == null) return@then event.replyError("")
-            event.textChannel.deleteMessages(it.stream().skip(1).toList()).promise() then {
-                event.replySuccess("Successfully deleted $number messages!")
-            } catch { event.replyError("An error occurred while deleting the messages retrieved!") }
-        } catch {
-            event.replyError("An error occurred while retrieving the messages to delete!")
-        }
     }
 }

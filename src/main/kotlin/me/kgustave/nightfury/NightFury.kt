@@ -91,7 +91,6 @@ class NightFury
                 E621Cmd(e621, waiter),
 
                 BanCmd(),
-                CleanCmd(),
                 KickCmd(),
                 MuteCmd(),
                 ReasonCmd(),

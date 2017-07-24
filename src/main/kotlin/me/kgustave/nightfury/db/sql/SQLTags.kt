@@ -40,6 +40,7 @@ class SQLGlobalTags(val connection: Connection)
     private val deleteTagStatement     = "DELETE FROM $global_tags WHERE LOWER($name) = LOWER(?) AND $owner_id = ?"
     private val getTagOriginalName     = "SELECT $name FROM $global_tags WHERE LOWER($name) = LOWER(?)"
     private val getTagContentStatement = "SELECT $content FROM $global_tags WHERE LOWER($name) = LOWER(?)"
+    private val getAllForIdStatement   = "SELECT $name FROM $global_tags WHERE $owner_id = ?"
     private val getTagOwnerIdStatement = "SELECT $owner_id FROM $global_tags WHERE LOWER($name) = LOWER(?)"
 
     fun isTag(name: String) : Boolean
@@ -153,6 +154,22 @@ class SQLGlobalTags(val connection: Connection)
             return 0L
         }
     }
+
+    fun getAllTagsForUser(ownerId: Long) : Set<String>
+    {
+        val names = HashSet<String>()
+        try {
+            val statement = connection.prepareStatement(getAllForIdStatement)
+            statement.setLong(1, ownerId)
+            statement.executeQuery().use {
+                while(it.next())
+                    names.add(it.getString(name))
+            }
+        } catch (e : SQLException) {
+            LOG.warn(e)
+        }
+        return names
+    }
 }
 
 class SQLLocalTags(val connection: Connection)
@@ -173,6 +190,7 @@ class SQLLocalTags(val connection: Connection)
     private val getTagOriginalName     = "SELECT $name FROM $local_tags WHERE LOWER($name) = LOWER(?) AND $guild_id = ?"
     private val getTagContentStatement = "SELECT $content FROM $local_tags WHERE LOWER($name) = LOWER(?) AND $guild_id = ?"
     private val getTagOwnerIdStatement = "SELECT $owner_id FROM $local_tags WHERE LOWER($name) = LOWER(?) AND $guild_id = ?"
+    private val getAllForIdStatement   = "SELECT $name FROM $local_tags WHERE $owner_id = ? AND $guild_id = ?"
     private val overrideTagStatement   = "UPDATE $local_tags SET $content = ?, $owner_id = ? WHERE LOWER($name) = LOWER(?) AND $owner_id = ? AND $guild_id = ?\""
 
     fun isTag(name: String, guild: Guild) : Boolean
@@ -292,6 +310,23 @@ class SQLLocalTags(val connection: Connection)
             LOG.warn(e)
             return 0L
         }
+    }
+
+    fun getAllTagsForUser(ownerId: Long, guild: Guild) : Set<String>
+    {
+        val names = HashSet<String>()
+        try {
+            val statement = connection.prepareStatement(getAllForIdStatement)
+            statement.setLong(1, ownerId)
+            statement.setLong(2, guild.idLong)
+            statement.executeQuery().use {
+                while(it.next())
+                    names.add(it.getString(name))
+            }
+        } catch (e : SQLException) {
+            LOG.warn(e)
+        }
+        return names
     }
 
     fun overrideTag(newContent: String, name: String, originalOwnerId: Long, guild: Guild)
