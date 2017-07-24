@@ -71,17 +71,16 @@ class InfoCmd : Command() {
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        val temp : Member? = if(query.isEmpty()) {
-            event.member
-        } else {
-            if(event.isFromType(ChannelType.TEXT)) {
+        val temp : Member? = if(event.isFromType(ChannelType.TEXT)) {
+            if(query.isEmpty()) {
+                event.member
+            } else {
                 val found = Find.members(query, event.guild)
                 if(found.isEmpty()) null
                 else if(found.size>1) return event.replyError(multipleMembersFound(query, found))
                 else found[0]
             }
-            else null
-        }
+        } else null
 
         val user : User = if(temp!=null) {
             temp.user
@@ -94,7 +93,7 @@ class InfoCmd : Command() {
             else found[0]
         }
 
-        val member : Member? = if(temp == null && event.isFromType(ChannelType.TEXT)) event.guild.getMember(user) else null
+        val member : Member? = if(temp == null && event.isFromType(ChannelType.TEXT)) event.guild.getMember(user) else temp
 
         event.reply(embed {
             title = "${if(user.isBot) event.jda.getEmoteById(230105988211015680L).asMention else "\u2139"} " +

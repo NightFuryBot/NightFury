@@ -46,7 +46,7 @@ class ColorMeCmd : Command() {
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty() || pattern.matcher(event.args).matches())
+        if(event.args.isEmpty() || !pattern.matcher(event.args).matches())
             return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
         val allColormes = event.client.manager.getColorMes(event.guild)
         if(allColormes.isEmpty())
