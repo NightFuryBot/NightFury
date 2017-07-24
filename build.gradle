@@ -40,8 +40,8 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 group = 'me.kgustave'
-version = new Version(major: 0, minor: 3, build: 6)
-mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}"
+version = new Version(major: 0, minor: 3, build: 7)
+mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
 def dirChar = File.separatorChar
 def jdaVersion = '3.2.0_234'
@@ -93,7 +93,8 @@ dependencies {
 }
 
 shadowJar {
-    version = version
+    baseName = 'NightFury'
+    version = ''
     classifier = ''
     manifest {
         attributes 'Implementation-Version': version, 'Main-Class': mainClassName

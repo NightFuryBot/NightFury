@@ -31,27 +31,27 @@ import net.dv8tion.jda.core.utils.SimpleLog
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
+import java.sql.SQLException
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
 
-/**
- * @author Kaidan Gustave
- */
-fun main(args: Array<String>)
+fun main(args: Array<String>?)
 {
     NightFury.LOG.info("Starting NightFury...")
-    NightFury()
+    NightFury(if(args==null || args.isEmpty()) emptyArray<String>() else args)
     Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
 }
 
-internal val executor : ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
-
-class NightFury
+/**
+ * @author Kaidan Gustave
+ */
+class NightFury(args: Array<String>)
 {
     companion object {
+        private val executor : ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
         val LOG: SimpleLog = SimpleLog.getLog("NightFury")
         fun shutdown(exit: Int)
         {
@@ -67,7 +67,14 @@ class NightFury
         val config = Config(Paths.get(System.getProperty("user.dir"), "config.txt").toFile())
 
         val manager = DatabaseManager(config.dbURL, config.dbUser, config.dbPass)
-
+        if(args.isNotEmpty())
+        {
+            args.forEach {
+                if(it == "-setupdb")
+                    if(!manager.startup())
+                        throw SQLException("Failed to setup database!")
+            }
+        }
         val waiter = EventWaiter()
 
         val google = GoogleAPI()

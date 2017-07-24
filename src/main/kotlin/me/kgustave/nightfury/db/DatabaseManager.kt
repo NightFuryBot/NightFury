@@ -21,6 +21,7 @@ import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.utils.SimpleLog
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.Comparator
 
@@ -56,6 +57,29 @@ class DatabaseManager(url: String, user: String, pass: String) {
 
     private val localTags : SQLLocalTags = SQLLocalTags(connection)
     private val globalTags : SQLGlobalTags = SQLGlobalTags(connection)
+
+    fun startup() : Boolean
+    {
+        try {
+            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
+            statement.execute(
+                    "CREATE TABLE cases (" +
+                            "number int, guild_id long, message_id long, mod_id long, target_id long," +
+                            " is_on_user boolean, action varchar(20), reason varchar(200)" +
+                            "); " +
+                            "CREATE TABLE channels (guild_id long, channel_id long, type varchar(20)); " +
+                            "CREATE TABLE prefixes (guild_id long, prefix varchar(20)); " +
+                            "CREATE TABLE roles (guild_id long, role_id long, type varchar(20)); " +
+                            "CREATE TABLE global_tags (name varchar(50), owner_id long, content varchar(1900)); " +
+                            "CREATE TABLE local_tags (name varchar(50), guild_id long, owner_id long, content varchar(1900)); "
+            )
+            statement.close()
+            return true
+        } catch (e : SQLException) {
+            LOG.warn(e)
+            return false
+        }
+    }
 
     fun isRoleMe(role: Role) : Boolean {
         val rolemes = getRoleMes(role.guild)
