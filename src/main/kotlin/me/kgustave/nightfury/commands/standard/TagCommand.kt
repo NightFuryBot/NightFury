@@ -19,8 +19,14 @@ import club.minnced.kjda.promise
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Parser
 import me.kgustave.nightfury.*
+import me.kgustave.nightfury.extensions.Find
 import me.kgustave.nightfury.utils.formatUserName
+import me.kgustave.nightfury.utils.multipleMembersFound
+import me.kgustave.nightfury.utils.multipleUsersFound
+import me.kgustave.nightfury.utils.noMatch
 import net.dv8tion.jda.core.entities.ChannelType
+import net.dv8tion.jda.core.entities.Member
+import net.dv8tion.jda.core.entities.User
 
 /**
  * @author Kaidan Gustave
@@ -44,6 +50,7 @@ class TagCommand : Command()
                 TagCreateCmd(),
                 TagDeleteCmd(),
                 TagEditCmd(),
+                TagListCmd(),
                 TagOwnerCmd(),
                 TagRawCmd(),
 
@@ -288,6 +295,73 @@ private class TagEditCmd : Command()
     }
 }
 
+private class TagListCmd : Command()
+{
+    init {
+        this.name = "list"
+        this.fullname = "tag list"
+        this.arguments = Argument("<user>")
+        this.help = "gets all the tags owned by a user"
+        this.guildOnly = false
+        this.cooldown = 10
+        this.cooldownScope = CooldownScope.USER
+    }
+
+    override fun execute(event: CommandEvent)
+    {
+        val query = event.args
+        val temp : Member? = if(event.isFromType(ChannelType.TEXT)) {
+            if(query.isEmpty()) {
+                event.member
+            } else {
+                val found = Find.members(query, event.guild)
+                if(found.isEmpty()) null
+                else if(found.size>1) return event.replyError(multipleMembersFound(query, found))
+                else found[0]
+            }
+        } else null
+
+        val user : User = if(temp!=null) {
+            temp.user
+        } else if(query.isEmpty()) {
+            event.author
+        } else {
+            val found = Find.users(query, event.jda)
+            if(found.isEmpty()) return event.replyError(noMatch("users", query))
+            else if(found.size>1) return event.replyError(multipleUsersFound(query, found))
+            else found[0]
+        }
+        val member : Member? = if(temp == null && event.isFromType(ChannelType.TEXT)) event.guild.getMember(user) else temp
+        val response = buildString {
+            if(member!=null) {
+                val tags = event.client.manager.getAllLocalTagNames(member)
+                if(tags.isNotEmpty()) {
+                    append("\uD83C\uDFE0 __Local Tags owned by ${member.effectiveName} on ${event.guild.name}__:\n")
+                    tags.forEachIndexed { index, name ->
+                        append(name)
+                        if(index != tags.size - 1)
+                            append(", ")
+                    }
+                    append("\n\n")
+                }
+            }
+            val tags = event.client.manager.getAllGlobalTagNames(user)
+            if(tags.isNotEmpty()) {
+                append("\uD83C\uDF10 __Global Tags owned by ${member?.effectiveName ?: user.name}__:\n")
+                tags.forEachIndexed { index, name ->
+                    append(name)
+                    if(index != tags.size - 1)
+                        append(", ")
+                }
+            }
+        }
+        if(response.trim().isEmpty())
+            event.replyError("${if(event.author==user) "You" else formatUserName(user, true)} does not have any tags!")
+        else
+            event.reply(response)
+    }
+}
+
 private class TagOwnerCmd : Command()
 {
     init {
@@ -306,38 +380,35 @@ private class TagOwnerCmd : Command()
         if(event.args.isEmpty()) return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
 
         val name = event.args.split(Regex("\\s+"))[0]
-        val ownerId : Long = with(event.client.manager)
-        {
-            if(event.isFromType(ChannelType.TEXT))
-                if(isLocalTag(name, event.guild))
-                    return@with getOwnerIdForLocalTag(name, event.guild)
-            if(isGlobalTag(name))
-                return@with getOwnerIdForGlobalTag(name)
-            return@with 0L
-        }
-        if(ownerId == 0L) return event.replyError("Tag named \"$name\" does not exist!")
+        val ownerId : Long
+        val isLocal : Boolean = if(event.isFromType(ChannelType.TEXT)) {
+            if(event.client.manager.isLocalTag(name, event.guild)) {
+                ownerId = event.client.manager.getOwnerIdForLocalTag(name, event.guild)
+                true
+            } else if(event.client.manager.isGlobalTag(name)) {
+                ownerId = event.client.manager.getOwnerIdForGlobalTag(name)
+                false
+            } else return event.replyError("Tag named \"$name\" does not exist!")
+        } else if(event.client.manager.isGlobalTag(name)) {
+            ownerId = event.client.manager.getOwnerIdForGlobalTag(name)
+            false
+        } else return event.replyError("Tag named \"$name\" does not exist!")
+
+        // If this happens... Uh... Let's just put this here incase :/
+        if(ownerId==0L) return event.replyError("Tag named \"$name\" does not exist!")
+        // Cover overrides
+        if(isLocal && ownerId==1L) return event.replyWarning("Local tag named \"$name\" belongs to the server.")
+
+        val str = if(isLocal) "local tag \"${event.client.manager.getContentForLocalTag(name, event.guild)}\""
+        else "global tag \"${event.client.manager.getOriginalNameOfGlobalTag(name)}\""
 
         event.jda.retrieveUserById(ownerId).promise() then {
-            if(it == null)
-                return@then event.replyError("The owner of ${
-                if(event.client.manager.isGlobalTag(name))
-                    "global tag \"${event.client.manager.getOriginalNameOfGlobalTag(name)}\""
-                else
-                    "local tag \"${event.client.manager.getOriginalNameOfLocalTag(name, event.guild)}\""
-                } was improperly retrieved!")
-            event.replySuccess("The ${
-            if(event.client.manager.isGlobalTag(name))
-                "global tag \"${event.client.manager.getOriginalNameOfGlobalTag(name)}\""
-            else
-                "local tag \"${event.client.manager.getOriginalNameOfLocalTag(name, event.guild)}\""
-            } is owned by ${formatUserName(it, true)}")
+            if(it == null) event.replyError("The owner of $str was improperly retrieved!")
+            else           event.replySuccess("The $str is owned by ${formatUserName(it, true)}${
+            if(!event.jda.users.contains(it)) " (ID: ${it.id})." else "."
+            }")
         } catch {
-            event.replyError("The owner of ${
-            if(event.client.manager.isGlobalTag(name))
-                "global tag \"${event.client.manager.getOriginalNameOfGlobalTag(name)}\""
-            else
-                "local tag \"${event.client.manager.getOriginalNameOfLocalTag(name, event.guild)}\""
-            } could not be retrieved for an unexpected reason!")
+            event.replyError("The owner of $str could not be retrieved for an unexpected reason!")
         }
     }
 }
