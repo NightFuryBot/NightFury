@@ -57,42 +57,36 @@ class RolePromise internal constructor(private val roleAction: RoleAction)
         return@with promise()
     }
 
-    /** Lazy setter for [name]. */
     infix inline fun name(lazy: () -> String?) : RolePromise
     {
         this.name = lazy()
         return this
     }
 
-    /** Lazy setter for [color]. */
     infix inline fun color(lazy: () -> Color?) : RolePromise
     {
         this.color = lazy()
         return this
     }
 
-    /** Lazy block for modifying [permissions]. */
     infix inline fun permissions(lazy: MutableList<Permission>.() -> Unit) : RolePromise
     {
         lazy(permissions)
         return this
     }
 
-    /** Clears all existing [Permission] set for this [RolePromise]. */
     fun clearPermissions() : RolePromise
     {
         permissions.clear()
         return this
     }
 
-    /** Lazy setter for [isHoisted]. */
     infix inline fun hoisted(lazy: () -> Boolean) : RolePromise
     {
         this.isHoisted = lazy()
         return this
     }
 
-    /** Lazy setter for [isMentionable]. */
     infix inline fun mentionable(lazy: () -> Boolean) : RolePromise
     {
         this.isMentionable = lazy()

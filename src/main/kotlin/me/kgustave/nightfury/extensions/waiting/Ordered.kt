@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Kaidan Gustave
  */
-class KOrderedMenuBuilder(val orderedMenuBuilder: OrderedMenuBuilder)
+class KOrderedMenuBuilder internal constructor(val orderedMenuBuilder: OrderedMenuBuilder)
 {
 
     var description : String? = null
@@ -174,12 +174,6 @@ class OrderedChoice
         this.action = action
         return this
     }
-}
-
-class TimeOut(val delay: Long, val unit: TimeUnit)
-{
-
-    constructor(delay: Long) : this(delay,TimeUnit.SECONDS)
 }
 
 fun orderedMenu(waiter: EventWaiter, channel: MessageChannel, init: KOrderedMenuBuilder.() -> Unit) =

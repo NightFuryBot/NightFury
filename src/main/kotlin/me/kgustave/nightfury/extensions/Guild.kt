@@ -15,11 +15,53 @@
  */
 package me.kgustave.nightfury.extensions
 
+import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Role
+import net.dv8tion.jda.core.entities.TextChannel
+import net.dv8tion.jda.core.entities.VoiceChannel
 
 fun Guild.refreshMutedRole(role: Role)
 {
     textChannels.forEach    { it.muteRole(role) }
     voiceChannels.forEach   { it.muteRole(role) }
+}
+
+fun TextChannel.muteRole(role: Role)
+{
+    if(!guild.selfMember.hasPermission(Permission.MANAGE_PERMISSIONS))
+        return
+    val overrides = getPermissionOverride(role)
+    val denied = overrides?.denied
+    if(denied != null)
+    {
+        val cannotWrite = denied.contains(Permission.MESSAGE_WRITE)
+        val cannotAddReaction = denied.contains(Permission.MESSAGE_ADD_REACTION)
+        if(cannotWrite && cannotAddReaction)
+            return
+        with(overrides.managerUpdatable) {
+            if(!cannotWrite)
+                deny(Permission.MESSAGE_WRITE)
+            if(!cannotAddReaction)
+                deny(Permission.MESSAGE_ADD_REACTION)
+            update().queue()
+        }
+    }
+    else createPermissionOverride(role).setDeny(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION).queue()
+}
+
+
+fun VoiceChannel.muteRole(role: Role)
+{
+    if(!guild.selfMember.hasPermission(Permission.MANAGE_PERMISSIONS))
+        return
+    val overrides = getPermissionOverride(role)
+    val denied = overrides?.denied
+    if(denied != null)
+    {
+        val cannotSpeak = denied.contains(Permission.VOICE_SPEAK)
+        if(cannotSpeak) return
+        overrides.manager.deny(Permission.VOICE_SPEAK).queue()
+    }
+    else createPermissionOverride(role).setDeny(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION).queue()
 }

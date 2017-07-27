@@ -59,6 +59,9 @@ class NightFury(args: Array<String>)
             LOG.info("Shutdown Complete! "+if(exit == 0)"Restarting..." else "Exiting...")
             System.exit(exit)
         }
+
+        @JvmStatic val version : String = "0.4.1"
+        @JvmStatic val github : String = "https://github.com/TheMonitorLizard/NightFury/"
     }
 
     init {
@@ -87,16 +90,17 @@ class NightFury(args: Array<String>)
                 config.prefix, config.ownerId, manager,
                 config.success, config.warning, config.error,
                 config.server, config.dbotskey, waiter,
+
+                AboutCmd(*config.permissions),
                 ColorMeCmd(),
                 GoogleCmd(google),
                 HelpCmd(),
                 InfoCmd(),
                 InviteCmd(*config.permissions),
                 PingCmd(),
-                PrefixCmd(),
-                RoleMeCmd(),
+                RoleMeCmd(waiter),
                 ServerCmd(waiter),
-                TagCommand(),
+                TagCommand(waiter),
 
                 E621Cmd(e621, waiter),
 
@@ -109,6 +113,7 @@ class NightFury(args: Array<String>)
 
                 ModeratorCmd(),
                 ModLogCmd(),
+                PrefixCmd(),
 
                 EvalCmd(),
                 ModeCmd(),
@@ -150,22 +155,22 @@ internal class Config(key: File)
     internal val error: String = "\uD83D\uDD25"
     internal val server: String = "https://discord.gg/xkkw54u"
     internal val permissions: Array<Permission> = arrayOf(
-            Permission.BAN_MEMBERS,
-            Permission.KICK_MEMBERS,
-            Permission.MESSAGE_MANAGE,
-            Permission.MANAGE_ROLES,
+            Permission.MESSAGE_HISTORY,
+            Permission.MESSAGE_EMBED_LINKS,
+            Permission.MESSAGE_ATTACH_FILES,
             Permission.MESSAGE_ADD_REACTION,
-            Permission.VOICE_MOVE_OTHERS,
-            Permission.VOICE_MUTE_OTHERS,
-            Permission.MESSAGE_EMBED_LINKS
+
+            Permission.MANAGE_PERMISSIONS,
+            Permission.MANAGE_ROLES,
+            Permission.MANAGE_CHANNEL,
+            Permission.NICKNAME_MANAGE,
+            Permission.MESSAGE_MANAGE,
+
+            Permission.KICK_MEMBERS,
+            Permission.BAN_MEMBERS,
+
+            Permission.VIEW_AUDIT_LOGS
     )
-    //internal val description: String = "multipurpose discord bot"
-    /*internal val features: Array<String> = arrayOf(
-            "Moderation",
-            "Logs",
-            "Utility"
-    )*/
-    //internal val color: Color = Color.BLACK
 }
 
 internal class ConfigException(ioe: IOException) : Exception(ioe)

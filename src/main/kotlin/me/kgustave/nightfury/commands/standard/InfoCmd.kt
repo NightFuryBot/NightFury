@@ -68,6 +68,7 @@ class InfoCmd : Command() {
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
+    // FIXME Command is slow, most likely due to opening search. Figure out how to speed it up + implement.
     override fun execute(event: CommandEvent)
     {
         val query = event.args

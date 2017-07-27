@@ -15,10 +15,24 @@
  */
 package me.kgustave.nightfury.extensions
 
+import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Guild
+import net.dv8tion.jda.core.entities.Member
+import net.dv8tion.jda.core.entities.Role
 import net.dv8tion.jda.core.entities.User
 
-fun User.banFrom(guild: Guild) = this.banFrom(guild, 0)
-fun User.banFrom(guild: Guild, reason: String) = this.banFrom(guild, 0, reason)
+/**
+ * @author Kaidan Gustave
+ */
+val Member.isAdmin: Boolean
+    get() = permissions.contains(Permission.ADMINISTRATOR) || this.isOwner
+
+fun Member.kick() = guild.controller.kick(this)!!
+fun Member.kick(reason: String) = guild.controller.kick(this, reason)!!
+
+fun Member.giveRole(role: Role) = guild.controller.addRolesToMember(this, role)!!
+
+fun Member.removeRole(role: Role) = guild.controller.removeRolesFromMember(this, role)!!
+
 fun User.banFrom(guild: Guild, delDays: Int) = guild.controller.ban(this, delDays)!!
 fun User.banFrom(guild: Guild, delDays: Int, reason: String) = guild.controller.ban(this, delDays, reason)!!

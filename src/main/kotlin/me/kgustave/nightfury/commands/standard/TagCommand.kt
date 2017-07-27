@@ -18,8 +18,10 @@ package me.kgustave.nightfury.commands.standard
 import club.minnced.kjda.promise
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Parser
+import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.extensions.Find
+import me.kgustave.nightfury.extensions.waiting.paginator
 import me.kgustave.nightfury.utils.formatUserName
 import me.kgustave.nightfury.utils.multipleMembersFound
 import me.kgustave.nightfury.utils.multipleUsersFound
@@ -31,7 +33,7 @@ import net.dv8tion.jda.core.entities.User
 /**
  * @author Kaidan Gustave
  */
-class TagCommand : Command()
+class TagCommand(waiter: EventWaiter) : Command()
 {
     val parser : Parser = JagTag.newDefaultBuilder().build()
 
@@ -50,7 +52,7 @@ class TagCommand : Command()
                 TagCreateCmd(),
                 TagDeleteCmd(),
                 TagEditCmd(),
-                TagListCmd(),
+                TagListCmd(waiter),
                 TagOwnerCmd(),
                 TagRawCmd(),
 
@@ -295,7 +297,7 @@ private class TagEditCmd : Command()
     }
 }
 
-private class TagListCmd : Command()
+private class TagListCmd(val waiter: EventWaiter) : Command()
 {
     init {
         this.name = "list"
@@ -332,33 +334,25 @@ private class TagListCmd : Command()
             else found[0]
         }
         val member : Member? = if(temp == null && event.isFromType(ChannelType.TEXT)) event.guild.getMember(user) else temp
-        val response = buildString {
-            if(member!=null) {
-                val tags = event.client.manager.getAllLocalTagNames(member)
-                if(tags.isNotEmpty()) {
-                    append("\uD83C\uDFE0 __Local Tags owned by ${member.effectiveName} on ${event.guild.name}__:\n")
-                    tags.forEachIndexed { index, name ->
-                        append(name)
-                        if(index != tags.size - 1)
-                            append(", ")
-                    }
-                    append("\n\n")
-                }
-            }
-            val tags = event.client.manager.getAllGlobalTagNames(user)
-            if(tags.isNotEmpty()) {
-                append("\uD83C\uDF10 __Global Tags owned by ${member?.effectiveName ?: user.name}__:\n")
-                tags.forEachIndexed { index, name ->
-                    append(name)
-                    if(index != tags.size - 1)
-                        append(", ")
-                }
-            }
-        }
-        if(response.trim().isEmpty())
+
+
+        val localTags = (if(member!=null) event.client.manager.getAllLocalTagNames(member) else emptySet()).map { "$it (Global)" }
+        val globalTags = event.client.manager.getAllGlobalTagNames(user).map { "$it (Local)" }
+
+        if(localTags.isEmpty() && globalTags.isEmpty())
             event.replyError("${if(event.author==user) "You do" else "${formatUserName(user, true)} does"} not have any tags!")
-        else
-            event.reply(response)
+
+        paginator(waiter, event.channel)
+        {
+            text             { "Tags owned by ${formatUserName(user, true)}" }
+            timeout          { 20 }
+            items            { addAll(localTags) }
+            items            { addAll(globalTags) }
+            columns          { 3 }
+            finalAction      { it.editMessage(it).queue() }
+            showPageNumbers  { true }
+            waitOnSinglePage { false }
+        }
     }
 }
 

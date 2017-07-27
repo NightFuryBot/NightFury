@@ -25,6 +25,9 @@ class FixedSizeCache<in K : Any, V>(size: Int)
                 throw IllegalArgumentException("Cache size must be at least 1!")
             else arrayOfNulls<Any>(size) as Array<K?>
 
+    val size : Int
+        get() = currIndex
+
     private var currIndex = 0
 
     fun add(key: K, value: V)

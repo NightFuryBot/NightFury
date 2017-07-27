@@ -67,7 +67,10 @@ class Client internal constructor
     internal var listener : CommandListener
 
     val commands : ArrayList<Command> = ArrayList()
+    val startTime : OffsetDateTime = OffsetDateTime.now()
     val logger : ModLogger = ModLogger(manager)
+    val messageCacheSize : Int
+        get() {return linkedCache.size}
 
     var totalGuilds : Int = 0
         private set
@@ -216,7 +219,6 @@ class Client internal constructor
         }
     }
 
-    @Suppress("unused")
     fun getUsesFor(command: Command) = synchronized(uses) { uses.getOrDefault(command.name, 0) }
 
     fun incrementUses(command: Command) = synchronized(uses) { uses.put(command.name, uses.getOrDefault(command.name, 0)+1) }

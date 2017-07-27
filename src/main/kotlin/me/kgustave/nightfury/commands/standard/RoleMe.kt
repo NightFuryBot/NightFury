@@ -17,9 +17,12 @@ package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.promise
 import com.jagrosh.jdautilities.utils.FinderUtil
+import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.extensions.giveRole
 import me.kgustave.nightfury.extensions.removeRole
+import me.kgustave.nightfury.extensions.waiting.paginator
+import me.kgustave.nightfury.utils.formatUserName
 import me.kgustave.nightfury.utils.multipleRolesFound
 import me.kgustave.nightfury.utils.noMatch
 import net.dv8tion.jda.core.Permission
@@ -28,7 +31,7 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
-class RoleMeCmd : Command()
+class RoleMeCmd(waiter: EventWaiter) : Command()
 {
     init {
         this.name = "roleme"
@@ -38,7 +41,10 @@ class RoleMeCmd : Command()
         this.guildOnly = true
         this.cooldownScope = CooldownScope.USER_GUILD
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
-        this.children = arrayOf(RoleMeAddCmd(), RoleMeRemoveCmd()
+        this.children = arrayOf(
+                RoleMeAddCmd(),
+                RoleMeListCmd(waiter),
+                RoleMeRemoveCmd()
         )
     }
 
@@ -140,5 +146,34 @@ private class RoleMeRemoveCmd : Command()
             return event.replyError(multipleRolesFound(query, found))
         event.client.manager.removeRoleMe(found[0])
         event.replySuccess("The role **${found[0].name}** was removed from RoleMe!")
+    }
+}
+
+private class RoleMeListCmd(val waiter: EventWaiter) : Command()
+{
+    init {
+        this.name = "list"
+        this.fullname = "roleme list"
+        this.help = "gets a full list of all the roleme roles on this server"
+        this.guildOnly = true
+        this.cooldown = 10
+        this.cooldownScope = CooldownScope.USER_GUILD
+        this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
+    }
+
+    override fun execute(event: CommandEvent)
+    {
+        val rolemes = event.client.manager.getRoleMes(event.guild).map { it.name }
+        if(rolemes.isEmpty())
+            return event.replyError("**No RoleMe roles on this server!**\n${SEE_HELP.format(event.prefixUsed, name)}")
+        paginator(waiter, event.channel)
+        {
+            text             { "RoleMe Roles On ${event.guild.name}" }
+            timeout          { 20 }
+            items            { addAll(rolemes) }
+            finalAction      { it.editMessage(it).queue() }
+            showPageNumbers  { true }
+            waitOnSinglePage { false }
+        }
     }
 }
