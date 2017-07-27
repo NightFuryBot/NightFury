@@ -91,6 +91,7 @@ private class ServerOwnerCmd : Command()
     init
     {
         this.name = "owner"
+        this.fullname = "server owner"
         this.help = "gets info on the owner of this server"
         this.cooldown = 5
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)

@@ -32,6 +32,7 @@ class ColorMeCmd : Command() {
     companion object {
         private val pattern = Regex("#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]").toPattern()
     }
+
     init {
         this.name = "colorme"
         this.arguments = Argument("<hexcode>")
@@ -46,16 +47,46 @@ class ColorMeCmd : Command() {
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty() || !pattern.matcher(event.args).matches())
-            return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
+        if(event.args.isEmpty())
+            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, name))
         val allColormes = event.client.manager.getColorMes(event.guild)
         if(allColormes.isEmpty())
             return event.replyError("**No ColorMe roles on this server!**\n${SEE_HELP.format(event.prefixUsed, name)}")
         val colormes = event.member.roles.stream().filter { allColormes.contains(it) }.toList()
         if(colormes.isEmpty())
             return event.replyError("**You do not have any ColorMe roles!**\n${SEE_HELP.format(event.prefixUsed, name)}")
-        val color : Color = try { Color.decode(event.args) }
-        catch(e: NumberFormatException) { return@execute event.replyError("${event.args} is not a valid hexcode!") }
+
+        val color : Color = if(pattern.matcher(event.args).matches()) {
+            try {
+                Color.decode(event.args)
+            } catch(e: NumberFormatException) {
+                return event.replyError("${event.args} is not a valid hexcode!")
+            }
+        } else when(event.args.toLowerCase()) {
+
+            // Regular Colors
+            "red"                      -> Color.RED
+            "orange"                   -> Color.ORANGE
+            "yellow"                   -> Color.YELLOW
+            "green"                    -> Color.GREEN
+            "cyan"                     -> Color.CYAN
+            "blue"                     -> Color.BLUE
+            "magenta"                  -> Color.MAGENTA
+            "pink"                     -> Color.PINK
+            "black"                    -> Color.decode("#000001")
+            "purple"                   -> Color.decode("#800080")
+            "dark gray", "dark grey"   -> Color.DARK_GRAY
+            "gray", "grey"             -> Color.GRAY
+            "light_gray", "light_grey" -> Color.LIGHT_GRAY
+            "white"                    -> Color.WHITE
+
+            // Discord Colors
+            "blurple"                  -> Color.decode("#7289DA")
+            "greyple"                  -> Color.decode("#99AAB5")
+            "darktheme"                -> Color.decode("#2C2F33")
+
+            else                       -> return event.replyError("${event.args} is not a valid color!")
+        }
         val requested = colormes[0]
 
         if(!event.selfMember.canInteract(requested))

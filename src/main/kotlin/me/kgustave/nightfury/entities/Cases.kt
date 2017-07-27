@@ -41,6 +41,12 @@ class Case
     var isOnUser : Boolean = true
     var action : LogAction = LogAction.OTHER
     var reason : String = default_case_reason
+        set(value) {
+            if(value.length>200)
+                field = "${value.substring(0,197)}..."
+            else
+                field = value
+        }
 
     fun toDBArgs() : Array<Any> = arrayOf(number,guildId,messageId,modId,targetId,isOnUser,action.act,reason)
 }

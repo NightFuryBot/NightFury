@@ -68,12 +68,88 @@ class DatabaseManager(url: String, user: String, pass: String) {
                             " is_on_user boolean, action varchar(20), reason varchar(200)" +
                             "); " +
                             "CREATE TABLE channels (guild_id long, channel_id long, type varchar(20)); " +
-                            "CREATE TABLE prefixes (guild_id long, prefix varchar(20)); " +
+                            "CREATE TABLE prefixes (guild_id long, prefix varchar(50)); " +
                             "CREATE TABLE roles (guild_id long, role_id long, type varchar(20)); " +
                             "CREATE TABLE global_tags (name varchar(50), owner_id long, content varchar(1900)); " +
                             "CREATE TABLE local_tags (name varchar(50), guild_id long, owner_id long, content varchar(1900)); "
             )
             statement.close()
+            return true
+        } catch (e : SQLException) {
+            LOG.warn(e)
+            return false
+        }
+    }
+
+    fun createCasesTable() : Boolean
+    {
+        try {
+            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
+            statement.execute(
+                    "CREATE TABLE cases (" +
+                            "number int, guild_id long, message_id long, mod_id long, target_id long," +
+                            " is_on_user boolean, action varchar(20), reason varchar(200)" +
+                            ");"
+            )
+            statement.close()
+            println("Created Cases Table!")
+            return true
+        } catch (e : SQLException) {
+            LOG.warn(e)
+            return false
+        }
+    }
+
+    fun createChannelsTable() : Boolean
+    {
+        try {
+            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
+            statement.execute("CREATE TABLE channels (guild_id long, channel_id long, type varchar(20));")
+            statement.close()
+            println("Created Channels Table!")
+            return true
+        } catch (e : SQLException) {
+            LOG.warn(e)
+            return false
+        }
+    }
+
+    fun createPrefixesTable() : Boolean
+    {
+        try {
+            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
+            statement.execute("CREATE TABLE prefixes (guild_id long, prefix varchar(50));")
+            statement.close()
+            println("Created Prefixes Table!")
+            return true
+        } catch (e : SQLException) {
+            LOG.warn(e)
+            return false
+        }
+    }
+
+    fun createRolesTable() : Boolean
+    {
+        try {
+            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
+            statement.execute("CREATE TABLE roles (guild_id long, role_id long, type varchar(20));")
+            statement.close()
+            println("Created Prefixes Table!")
+            return true
+        } catch (e : SQLException) {
+            LOG.warn(e)
+            return false
+        }
+    }
+
+    fun createTagsTables() : Boolean
+    {
+        try {
+            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
+            statement.execute("CREATE TABLE global_tags (name varchar(50), owner_id long, content varchar(1900)); " +
+                    "CREATE TABLE local_tags (name varchar(50), guild_id long, owner_id long, content varchar(1900));")
+            statement.close()
+            println("Created Tags Tables!")
             return true
         } catch (e : SQLException) {
             LOG.warn(e)

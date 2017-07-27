@@ -38,6 +38,7 @@ private class AddPrefixCmd : Command() {
 
     init {
         this.name = "add"
+        this.fullname = "prefix add"
         this.arguments = Argument("<prefix>")
         this.help = "adds a custom prefix for the bot"
         this.guildOnly = true
@@ -48,11 +49,13 @@ private class AddPrefixCmd : Command() {
     {
         val args = event.args
         if(args.isEmpty())
-            return event.replyError(Command.TOO_FEW_ARGS_HELP.format(event.client.prefix,"prefix $name"))
+            return event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix,"prefix $name"))
         else if(args.equals(event.client.prefix, true))
             return event.replyError("`$args` cannot be added as a prefix because it is the default prefix!")
         else if(event.client.manager.isPrefixFor(event.guild, args))
             return event.replyError("`$args` cannot be added as a prefix because it is already a prefix!")
+        else if(args.length>50)
+            return event.replyError("`$args` cannot be added as a prefix because it's longer than 50 characters!")
         else
         {
             event.client.manager.addPrefix(event.guild, args)
@@ -65,6 +68,7 @@ private class RemovePrefixCmd : Command() {
 
     init {
         this.name = "remove"
+        this.name = "prefix remove"
         this.arguments = Argument("<prefix>")
         this.help = "removes a custom prefix for the bot"
         this.guildOnly = true
@@ -92,6 +96,7 @@ private class ListPrefixCmd: Command() {
 
     init {
         this.name = "list"
+        this.name = "prefix list"
         this.help = "lists all custom prefixes for this server"
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER_GUILD

@@ -356,7 +356,7 @@ private class TagListCmd : Command()
             }
         }
         if(response.trim().isEmpty())
-            event.replyError("${if(event.author==user) "You" else formatUserName(user, true)} does not have any tags!")
+            event.replyError("${if(event.author==user) "You do" else "${formatUserName(user, true)} does"} not have any tags!")
         else
             event.reply(response)
     }

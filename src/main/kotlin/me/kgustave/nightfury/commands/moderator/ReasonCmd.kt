@@ -70,8 +70,8 @@ class ReasonCmd : Command() {
         if(case.modId!=event.author.idLong)
             return event.replyError("**You are not responsible for case number `$number`!**\n" +
                     "Only the moderator responsible for a case may update it's reason.")
-        if(reason.length>300)
-            return event.replyError("Reasons must not be longer than 300 characters!")
+        if(reason.length>200)
+            return event.replyError("Reasons must not be longer than 200 characters!")
         if(case.messageId==0L)
             return event.replyError("**The message for this case could not be found!**\n" +
                     "This may be because the original case log message was deleted, or never sent at all!")

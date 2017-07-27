@@ -97,6 +97,7 @@ private class SetupMuteCmd : Command()
 {
     init {
         this.name = "setup"
+        this.fullname = "mute setup"
         this.arguments = Argument("<name of muted role>")
         this.help = "creates a muted role for this server"
         this.guildOnly = true

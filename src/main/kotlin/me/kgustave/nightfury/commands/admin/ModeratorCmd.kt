@@ -15,6 +15,7 @@
  */
 package me.kgustave.nightfury.commands.admin
 
+import club.minnced.kjda.builders.colorAwt
 import club.minnced.kjda.builders.embed
 import club.minnced.kjda.promise
 import me.kgustave.nightfury.*
@@ -206,7 +207,7 @@ abstract class ModeratorListBaseCmd : Command()
 
         event.reply(embed {
             title { "**Moderators On ${event.guild.name}**" }
-            color { event.selfMember.color.rgb }
+            colorAwt = event.selfMember.color
             mods.forEach {
                 append("${event.jda.getEmoteById(statusEmote(it.onlineStatus)).asMention} ")
                 append(formatUserName(it.user, true))
@@ -230,8 +231,8 @@ abstract class ModeratorListBaseCmd : Command()
     {
         init {
             this.name = "moderators"
-            this.aliases = arrayOf("mods")
             this.fullname = "server moderators"
+            this.aliases = arrayOf("mods")
         }
     }
 }
@@ -262,7 +263,7 @@ private class ModeratorOnlineCmd : Command()
 
         event.reply(embed {
             title { "**Moderators On ${event.guild.name}**" }
-            color { event.selfMember.color.rgb }
+            colorAwt = event.selfMember.color
             mods.forEach {
                 append("${event.jda.getEmoteById(statusEmote(it.onlineStatus)).asMention} ")
                 append(formatUserName(it.user, true))
