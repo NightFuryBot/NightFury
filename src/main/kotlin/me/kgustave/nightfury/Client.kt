@@ -308,15 +308,16 @@ class Client internal constructor
                 {
                     val commandEvent = CommandEvent(event.jda,event.responseNumber,event.message,args.trim(),this,prefixUsed)
                     listener.onCommandCall(commandEvent, command)
-                    command.run(commandEvent)
+                    return command.run(commandEvent)
                 }
-                else if(event.isFromType(ChannelType.TEXT) && manager.isCustomCommands(name, event.guild))
+                val customCommandContent = manager.customCommands.getContentFor(name,event.guild)
+                if(event.isFromType(ChannelType.TEXT) && customCommandContent.isNotEmpty())
                 {
                     val messages = CommandEvent.processMessage(parser.put("user", event.author)
                             .put("guild", event.guild)
                             .put("channel", event.textChannel)
                             .put("args", args)
-                            .parse(manager.getCustomCommandContent(name, event.guild))).toTypedArray()
+                            .parse(customCommandContent)).toTypedArray()
                     messages.forEachIndexed { i, msg ->
                         if(i<2) event.textChannel.sendMessage(msg).queue { linkIds(event.messageIdLong, it) }
                     }

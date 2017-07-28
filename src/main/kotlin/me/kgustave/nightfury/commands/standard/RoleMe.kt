@@ -22,7 +22,6 @@ import me.kgustave.nightfury.*
 import me.kgustave.nightfury.extensions.giveRole
 import me.kgustave.nightfury.extensions.removeRole
 import me.kgustave.nightfury.extensions.waiting.paginator
-import me.kgustave.nightfury.utils.formatUserName
 import me.kgustave.nightfury.utils.multipleRolesFound
 import me.kgustave.nightfury.utils.noMatch
 import net.dv8tion.jda.core.Permission
@@ -53,13 +52,13 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
         val query = event.args
         if(query.isEmpty())
             return event.replyError(Command.TOO_FEW_ARGS_HELP.format(event.prefixUsed, name))
-        val allRolemes = event.client.manager.getRoleMes(event.guild)
+        val allRolemes = event.manager.getRoleMes(event.guild)
         if(allRolemes.isEmpty())
             return event.replyError("**No RoleMe roles on this server!**\n${SEE_HELP.format(event.prefixUsed, name)}")
         val roles = FinderUtil.findRoles(query, event.guild)
         if(roles.isEmpty())
             return event.replyError(noMatch("roles", query))
-        val rolemes = roles.stream().filter { event.client.manager.isRoleMe(it) }.toList()
+        val rolemes = roles.stream().filter { event.manager.isRoleMe(it) }.toList()
         if(rolemes.isEmpty() && roles.isNotEmpty())
             return event.replyError("**${roles[0].name} is not a RoleMe role!**\n" +
                     SEE_HELP.format(event.prefixUsed, name))
@@ -108,9 +107,9 @@ private class RoleMeAddCmd : Command()
         if(found.size>1)
             return event.replyError(multipleRolesFound(query, found))
         val requested = found[0]
-        if(event.client.manager.isRoleMe(requested))
+        if(event.manager.isRoleMe(requested))
             return event.replyError("The role **${requested.name}** is already a RoleMe role!")
-        event.client.manager.addRoleMe(requested)
+        event.manager.addRoleMe(requested)
         if(event.selfMember.canInteract(requested))
             event.replySuccess("The role **${requested.name}** was added as RoleMe!")
         else
@@ -139,12 +138,12 @@ private class RoleMeRemoveCmd : Command()
         if(query.isEmpty())
             return event.replyError(Command.TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
         val found = FinderUtil.findRoles(query, event.guild).stream()
-                .filter { event.client.manager.isRoleMe(it) }.toList()
+                .filter { event.manager.isRoleMe(it) }.toList()
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
             return event.replyError(multipleRolesFound(query, found))
-        event.client.manager.removeRoleMe(found[0])
+        event.manager.removeRoleMe(found[0])
         event.replySuccess("The role **${found[0].name}** was removed from RoleMe!")
     }
 }
@@ -163,7 +162,7 @@ private class RoleMeListCmd(val waiter: EventWaiter) : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val rolemes = event.client.manager.getRoleMes(event.guild).map { it.name }
+        val rolemes = event.manager.getRoleMes(event.guild).map { it.name }
         if(rolemes.isEmpty())
             return event.replyError("**No RoleMe roles on this server!**\n${SEE_HELP.format(event.prefixUsed, name)}")
         paginator(waiter, event.channel)

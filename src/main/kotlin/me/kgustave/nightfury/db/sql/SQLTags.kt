@@ -154,12 +154,12 @@ class SQLGlobalTags(val connection: Connection)
         }
     }
 
-    fun getAllTagsForUser(ownerId: Long) : Set<String>
+    fun getAllTags(userid: Long) : Set<String>
     {
         val names = HashSet<String>()
         try {
             val statement = connection.prepareStatement(getAll)
-            statement.setLong(1, ownerId)
+            statement.setLong(1, userid)
             statement.executeQuery().use {
                 while(it.next())
                     names.add(it.getString(name))
@@ -295,7 +295,7 @@ class SQLLocalTags(val connection: Connection)
         }
     }
 
-    fun getTagOwner(name: String, guild: Guild) : Long
+    fun getTagOwnerId(name: String, guild: Guild) : Long
     {
         try {
             val statement = connection.prepareStatement(getTagOwnerId)

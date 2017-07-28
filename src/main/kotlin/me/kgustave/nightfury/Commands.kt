@@ -315,7 +315,7 @@ enum class Category(val title: String, private val predicate: (CommandEvent) -> 
         SERVER_OWNER.test(it) || (it.isFromType(ChannelType.TEXT) && it.member.hasPermission(Permission.ADMINISTRATOR))
     }),
     MODERATOR("Moderator", {
-        ADMIN.test(it) || (it.isFromType(ChannelType.TEXT) && with(it.client.manager.getModRole(it.guild)) {
+        ADMIN.test(it) || (it.isFromType(ChannelType.TEXT) && with(it.manager.getModRole(it.guild)) {
             this!=null && it.member.roles.contains(this)
         })
     }),

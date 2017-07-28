@@ -28,7 +28,6 @@ import java.util.Comparator
 /**
  * @author Kaidan Gustave
  */
-@Suppress("unused")
 class DatabaseManager(url: String, user: String, pass: String) {
 
     companion object {
@@ -55,10 +54,10 @@ class DatabaseManager(url: String, user: String, pass: String) {
 
     private val prefixes : SQLPrefixes = SQLPrefixes(connection)
 
-    private val localTags : SQLLocalTags = SQLLocalTags(connection)
-    private val globalTags : SQLGlobalTags = SQLGlobalTags(connection)
+    val localTags : SQLLocalTags = SQLLocalTags(connection)
+    val globalTags : SQLGlobalTags = SQLGlobalTags(connection)
 
-    private val customCommands : SQLCustomCommands = SQLCustomCommands(connection)
+    val customCommands : SQLCustomCommands = SQLCustomCommands(connection)
 
     fun startup() : Boolean
     {
@@ -226,11 +225,6 @@ class DatabaseManager(url: String, user: String, pass: String) {
     fun addIgnoredChannel(channel: TextChannel) = ignoredChannels.add(channel.guild.idLong, channel.idLong)
     fun removeIgnoredChannel(channel: TextChannel) = ignoredChannels.remove(channel.guild.idLong, channel.idLong)
 
-    fun getLatestCase(guild: Guild) : Case {
-        val cases = getCases(guild)
-        if(cases.isEmpty()) return Case()
-        return cases.stream().filter { c -> c.number == cases.size }.findFirst().get()
-    }
     fun getCaseMatching(guild: Guild, toMatch: (Case) -> Boolean) : Case {
         val cases = getCases(guild)
         if(cases.isEmpty()) return Case()
@@ -252,52 +246,6 @@ class DatabaseManager(url: String, user: String, pass: String) {
     fun getPrefixes(guild: Guild) = prefixes.get(guild, guild.idLong)
     fun addPrefix(guild: Guild, prefix: String) = prefixes.add(guild.idLong, prefix)
     fun removePrefix(guild: Guild, prefix: String) = prefixes.remove(guild.idLong, prefix)
-
-    fun isLocalTag(name: String, guild: Guild) = localTags.isTag(name, guild)
-    fun addLocalTag(name: String, content: String, owner: Member) {
-        localTags.addTag(name, owner.user.idLong, content, owner.guild)
-    }
-    fun editLocalTag(name: String, newContent: String, owner: Member) {
-        localTags.editTag(newContent, name, owner.user.idLong, owner.guild)
-    }
-    fun deleteLocalTag(name: String, owner: Member) {
-        localTags.deleteTag(name, owner.user.idLong, owner.guild)
-    }
-    fun getOriginalNameOfLocalTag(name: String, guild: Guild) = localTags.getOriginalName(name, guild)
-    fun getContentForLocalTag(name: String, guild: Guild) = localTags.getTagContent(name, guild)
-    fun isLocalTagOwner(name: String, owner: Member) = getOwnerIdForLocalTag(name, owner.guild) == owner.user.idLong
-    fun getOwnerIdForLocalTag(name: String, guild: Guild) = localTags.getTagOwner(name, guild)
-    fun getAllLocalTagNames(member: Member) = localTags.getAllTags(member.user.idLong, member.guild)
-    fun overrideLocalTag(name: String, newContent: String, guild: Guild) {
-        if(!isLocalTag(name,guild)) throw IllegalArgumentException("The specified name is not a local tag!")
-        else localTags.overrideTag(newContent, name, getOwnerIdForLocalTag(name,guild),guild)
-    }
-
-    fun isGlobalTag(name: String) = globalTags.isTag(name)
-    fun addGlobalTag(name: String, content: String, owner: User) {
-        globalTags.addTag(name, owner.idLong, content)
-    }
-    fun editGlobalTag(name: String, newContent: String, owner: User) {
-        globalTags.editTag(newContent, name, owner.idLong)
-    }
-    fun deleteGlobalTag(name: String, owner: User) {
-        globalTags.deleteTag(name, owner.idLong)
-    }
-    fun getOriginalNameOfGlobalTag(name: String) = globalTags.getOriginalName(name)
-    fun getContentForGlobalTag(name: String) = globalTags.getTagContent(name)
-    fun isGlobalTagOwner(name: String, owner: User) = getOwnerIdForGlobalTag(name) == owner.idLong
-    fun getOwnerIdForGlobalTag(name: String) = globalTags.getTagOwnerId(name)
-    fun getAllGlobalTagNames(user: User) = globalTags.getAllTagsForUser(user.idLong)
-    fun overrideGlobalTag(name: String, newContent: String, guild: Guild) {
-        if(!isGlobalTag(name)) throw IllegalArgumentException("The specified name is not a local tag!")
-        else localTags.addTag(name, 1L, newContent, guild)
-    }
-
-    fun isCustomCommands(name: String, guild: Guild) = customCommands.getContentFor(name, guild).isNotEmpty()
-    fun getCustomCommandContent(name: String, guild: Guild) = customCommands.getContentFor(name, guild)
-    fun getAllCustomCommands(guild: Guild) = customCommands.getAll(guild)
-    fun addCustomCommand(name: String, content: String, guild: Guild) = customCommands.add(name, content, guild)
-    fun removeCustomCommand(name: String, guild: Guild) = customCommands.remove(name, guild)
 
     fun evaluate(string: String) {
         try {

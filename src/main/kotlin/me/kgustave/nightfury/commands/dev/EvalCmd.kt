@@ -37,7 +37,7 @@ class EvalCmd : Command()
         this.arguments = Argument("<script>")
         this.devOnly = true
         this.category = Category.OWNER
-        this.guildOnly = true
+        this.guildOnly = false
     }
 
     val engine : ScriptEngine = ScriptEngineManager().getEngineByName("nashorn")
@@ -66,7 +66,7 @@ class EvalCmd : Command()
         se.put("author", event.author)
         se.put("channel", event.channel)
         se.put("client", event.client)
-        se.put("manager", event.client.manager)
+        se.put("manager", event.manager)
 
         // GUILD
         if(event.isFromType(ChannelType.TEXT))

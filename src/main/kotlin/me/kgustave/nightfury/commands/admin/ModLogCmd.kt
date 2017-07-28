@@ -58,7 +58,7 @@ private class ModLogSetCmd : Command()
             return@with this[0]
         }
 
-        event.client.manager.setModLog(channel)
+        event.manager.setModLog(channel)
         event.replySuccess("Moderation log was set to ${channel.asMention}!")
     }
 }

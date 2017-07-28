@@ -63,7 +63,7 @@ class NightFury(args: Array<String>)
             System.exit(exit)
         }
 
-        @JvmStatic val version : String = "0.4.2"
+        @JvmStatic val version : String = "0.4.3"
         @JvmStatic val github : String = "https://github.com/TheMonitorLizard/NightFury/"
     }
 

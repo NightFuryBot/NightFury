@@ -44,7 +44,7 @@ class ShutdownCmd : Command()
         synchronized(this) {
             try { Thread.sleep(2500) } catch (ignored: InterruptedException) {}
         }
-        event.jda.shutdown(true)
+        event.jda.shutdown()
         NightFury.shutdown(1)
     }
 }

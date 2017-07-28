@@ -53,13 +53,13 @@ private class AddPrefixCmd : Command() {
             return event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix,"prefix $name"))
         else if(args.equals(event.client.prefix, true))
             return event.replyError("`$args` cannot be added as a prefix because it is the default prefix!")
-        else if(event.client.manager.isPrefixFor(event.guild, args))
+        else if(event.manager.isPrefixFor(event.guild, args))
             return event.replyError("`$args` cannot be added as a prefix because it is already a prefix!")
         else if(args.length>50)
             return event.replyError("`$args` cannot be added as a prefix because it's longer than 50 characters!")
         else
         {
-            event.client.manager.addPrefix(event.guild, args)
+            event.manager.addPrefix(event.guild, args)
             event.replySuccess("`$args` was added as a prefix!")
         }
     }
@@ -83,11 +83,11 @@ private class RemovePrefixCmd : Command() {
             return event.replyError(Command.TOO_FEW_ARGS_HELP.format(event.client.prefix,"prefix $name"))
         else if(args.equals(event.client.prefix, true))
             return event.replyError("`$args` cannot be removed as a prefix because it is the default prefix!")
-        else if(!event.client.manager.isPrefixFor(event.guild, args))
+        else if(!event.manager.isPrefixFor(event.guild, args))
             return event.replyError("`$args` cannot be removed as a prefix because it is not a prefix!")
         else
         {
-            event.client.manager.removePrefix(event.guild, args)
+            event.manager.removePrefix(event.guild, args)
             event.replySuccess("`$args` was removed as a prefix!")
         }
     }

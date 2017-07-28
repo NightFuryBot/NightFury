@@ -62,7 +62,7 @@ private class ModeratorAddCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val modRole = event.client.manager.getModRole(event.guild)
+        val modRole = event.manager.getModRole(event.guild)
                 ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.prefixUsed, fullname)}")
 
         val args = event.args
@@ -114,7 +114,7 @@ private class ModeratorRemoveCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val modRole = event.client.manager.getModRole(event.guild)
+        val modRole = event.manager.getModRole(event.guild)
                 ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.prefixUsed, fullname)}")
 
         val args = event.args
@@ -174,10 +174,10 @@ private class ModeratorSetCmd : Command()
         if(found.size>1)
             return event.replyError(multipleRolesFound(query, found))
         val requested = found[0]
-        val mod = event.client.manager.getModRole(event.guild)
+        val mod = event.manager.getModRole(event.guild)
         if(mod!=null && mod == requested)
             return event.replyError("**${requested.name}** is already the moderator role for this server!")
-        event.client.manager.setModRole(requested)
+        event.manager.setModRole(requested)
         if(event.selfMember.canInteract(requested)) {
             event.replySuccess("**${requested.name}** was set as the moderator role for this server!")
         } else
@@ -198,7 +198,7 @@ abstract class ModeratorListBaseCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val guild = event.guild
-        val modRole = event.client.manager.getModRole(event.guild)
+        val modRole = event.manager.getModRole(event.guild)
 
         val mods = guild.members.stream()
                 .filter { !(it.user.isBot) && (it.isOwner || it.isAdmin || (modRole!=null && it.roles.contains(modRole))) }
@@ -250,7 +250,7 @@ private class ModeratorOnlineCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val guild = event.guild
-        val modRole = event.client.manager.getModRole(event.guild)
+        val modRole = event.manager.getModRole(event.guild)
 
         val mods = guild.members.stream()
                 .filter { !(it.user.isBot) && (it.isOwner || it.isAdmin || (modRole!=null && it.roles.contains(modRole)))

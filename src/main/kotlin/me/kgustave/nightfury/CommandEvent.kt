@@ -15,6 +15,7 @@
  */
 package me.kgustave.nightfury
 
+import me.kgustave.nightfury.db.DatabaseManager
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
@@ -34,6 +35,9 @@ class CommandEvent internal constructor
     val selfMember : Member
         get() = guild.selfMember
     val selfUser: SelfUser = jda.selfUser
+
+    val manager : DatabaseManager
+        get() {return client.manager}
 
     fun reply(string: String) = sendMessage(string, channel)
     fun reply(string: String, success: (Message) -> Unit) = reply(string, Consumer(success))

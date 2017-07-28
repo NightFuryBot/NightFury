@@ -17,6 +17,8 @@ package me.kgustave.nightfury.commands.admin
 
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
+import me.kgustave.nightfury.commands.standard.globalTags
+import me.kgustave.nightfury.commands.standard.localTags
 import me.kgustave.nightfury.extensions.waiting.paginator
 
 /**
@@ -75,11 +77,14 @@ private class CustomCommandAddCmd : Command()
                     SEE_HELP.format(event.prefixUsed, fullname))
         else parts[1]
 
-        if(event.client.manager.isCustomCommands(name, event.guild))
-            return event.replyError("Custom Command named \"$name\" already exists!")
-        else {
-            event.client.manager.addCustomCommand(name, content, event.guild)
-            event.replySuccess("Successfully created Custom Command \"**$name**\"!")
+        with(event.client.manager.customCommands)
+        {
+            if(getContentFor(name, event.guild).isNotEmpty())
+                return event.replyError("Custom Command named \"$name\" already exists!")
+            else {
+                add(name, content, event.guild)
+                event.replySuccess("Successfully created Custom Command \"**$name**\"!")
+            }
         }
     }
 }
@@ -102,11 +107,13 @@ private class CustomCommandRemoveCmd : Command()
         if(event.args.isEmpty())
             return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
         val name = event.args.split(Regex("\\s+"))[0]
-        if(event.client.manager.isCustomCommands(name, event.guild)) {
-            event.client.manager.removeCustomCommand(name, event.guild)
-            event.replySuccess("Successfully removed Custom Command \"**$name**\"!")
-        } else {
-            event.replyError("There is no custom command named \"**$name\" on this server!")
+        with(event.client.manager.customCommands) {
+            if(getContentFor(name, event.guild).isNotEmpty()) {
+                remove(name, event.guild)
+                event.replySuccess("Successfully removed Custom Command \"**$name**\"!")
+            } else {
+                event.replyError("There is no custom command named \"**$name\" on this server!")
+            }
         }
     }
 }
@@ -129,25 +136,25 @@ private class CustomCommandImportCmd : Command()
         val name = event.args
         with(event.client.manager)
         {
-            if(!isLocalTag(name, event.guild)) {
-                if(!isGlobalTag(name)) {
+            if(!event.localTags.isTag(name, event.guild)) {
+                if(!event.globalTags.isTag(name)) {
                     event.replyError("Tag named \"$name\" does not exist!")
                 } else {
-                    val cmdName = getOriginalNameOfGlobalTag(name)
+                    val cmdName = event.globalTags.getOriginalName(name)
                     if(event.client.getCommandByName(cmdName)!=null)
                         return event.replyError("**Illegal Custom Command Name!**\n" +
                                 "Custom Commands may not have names that match standard command names!")
-                    val cmdCont = getContentForGlobalTag(name)
-                    addCustomCommand(cmdName, cmdCont, event.guild)
+                    val cmdCont = event.globalTags.getTagContent(name)
+                    customCommands.add(cmdName, cmdCont, event.guild)
                     event.replySuccess("Successfully imported global tag \"$cmdName\" as a Custom Command!")
                 }
             } else {
-                val cmdName = getOriginalNameOfLocalTag(name, event.guild)
+                val cmdName = event.localTags.getOriginalName(name, event.guild)
                 if(event.client.getCommandByName(cmdName)!=null)
                     return event.replyError("**Illegal Custom Command Name!**\n" +
                             "Custom Commands may not have names that match standard command names!")
-                val cmdCont = getContentForLocalTag(name, event.guild)
-                addCustomCommand(cmdName, cmdCont, event.guild)
+                val cmdCont = event.localTags.getTagContent(name, event.guild)
+                customCommands.add(cmdName, cmdCont, event.guild)
                 event.replySuccess("Successfully imported local tag \"$cmdName\" as a Custom Command!")
             }
         }
@@ -168,7 +175,7 @@ private class CustomCommandListCmd(val waiter: EventWaiter) : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val ccs = event.client.manager.getAllCustomCommands(event.guild)
+        val ccs = event.client.manager.customCommands.getAll(event.guild)
         if(ccs.isEmpty())
             return event.replyError("There are no custom commands on this server!")
         paginator(waiter, event.channel)
