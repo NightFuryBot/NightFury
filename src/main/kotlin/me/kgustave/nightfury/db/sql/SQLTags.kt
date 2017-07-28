@@ -16,7 +16,6 @@
 package me.kgustave.nightfury.db.sql
 
 import net.dv8tion.jda.core.entities.Guild
-import net.dv8tion.jda.core.utils.SimpleLog
 import java.sql.Connection
 import java.sql.SQLException
 
@@ -52,7 +51,7 @@ class SQLGlobalTags(val connection: Connection)
             statement.close()
             return isTag
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
             return false
         }
     }
@@ -69,7 +68,7 @@ class SQLGlobalTags(val connection: Connection)
                 close()
             }
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
         }
     }
 
@@ -85,7 +84,7 @@ class SQLGlobalTags(val connection: Connection)
                 close()
             }
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
         }
     }
 
@@ -100,7 +99,7 @@ class SQLGlobalTags(val connection: Connection)
                 close()
             }
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
         }
     }
 
@@ -116,7 +115,7 @@ class SQLGlobalTags(val connection: Connection)
             statement.close()
             return content?:""
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
             return ""
         }
     }
@@ -133,7 +132,7 @@ class SQLGlobalTags(val connection: Connection)
             statement.close()
             return content?:""
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
             return ""
         }
     }
@@ -150,7 +149,7 @@ class SQLGlobalTags(val connection: Connection)
             statement.close()
             return id?:0L
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
             return 0L
         }
     }
@@ -166,7 +165,7 @@ class SQLGlobalTags(val connection: Connection)
                     names.add(it.getString(name))
             }
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
         }
         return names
     }
@@ -205,7 +204,7 @@ class SQLLocalTags(val connection: Connection)
             statement.close()
             return isTag
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
             return false
         }
     }
@@ -223,7 +222,7 @@ class SQLLocalTags(val connection: Connection)
                 close()
             }
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
         }
     }
 
@@ -240,7 +239,7 @@ class SQLLocalTags(val connection: Connection)
                 close()
             }
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
         }
     }
 
@@ -256,7 +255,7 @@ class SQLLocalTags(val connection: Connection)
                 close()
             }
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
         }
     }
 
@@ -273,7 +272,7 @@ class SQLLocalTags(val connection: Connection)
             statement.close()
             return content?:""
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
             return ""
         }
     }
@@ -291,7 +290,7 @@ class SQLLocalTags(val connection: Connection)
             statement.close()
             return content?:""
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
             return ""
         }
     }
@@ -309,7 +308,7 @@ class SQLLocalTags(val connection: Connection)
             statement.close()
             return id?:0L
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
             return 0L
         }
     }
@@ -326,7 +325,7 @@ class SQLLocalTags(val connection: Connection)
                     names.add(it.getString(name))
             }
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
         }
         return names
     }
@@ -345,9 +344,7 @@ class SQLLocalTags(val connection: Connection)
                 close()
             }
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
         }
     }
 }
-
-private val LOG = SimpleLog.getLog("SQL Tags")

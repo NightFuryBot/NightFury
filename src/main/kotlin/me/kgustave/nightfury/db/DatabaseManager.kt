@@ -58,6 +58,8 @@ class DatabaseManager(url: String, user: String, pass: String) {
     private val localTags : SQLLocalTags = SQLLocalTags(connection)
     private val globalTags : SQLGlobalTags = SQLGlobalTags(connection)
 
+    private val customCommands : SQLCustomCommands = SQLCustomCommands(connection)
+
     fun startup() : Boolean
     {
         try {
@@ -150,6 +152,20 @@ class DatabaseManager(url: String, user: String, pass: String) {
                     "CREATE TABLE local_tags (name varchar(50), guild_id long, owner_id long, content varchar(1900));")
             statement.close()
             println("Created Tags Tables!")
+            return true
+        } catch (e : SQLException) {
+            LOG.warn(e)
+            return false
+        }
+    }
+
+    fun createCommandsTable() : Boolean
+    {
+        try {
+            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
+            statement.execute("CREATE TABLE custom_commands (name varchar(50), content varchar(1900), guild_id long)")
+            statement.close()
+            println("Created Custom Commands Tables!")
             return true
         } catch (e : SQLException) {
             LOG.warn(e)
@@ -272,6 +288,16 @@ class DatabaseManager(url: String, user: String, pass: String) {
     fun isGlobalTagOwner(name: String, owner: User) = getOwnerIdForGlobalTag(name) == owner.idLong
     fun getOwnerIdForGlobalTag(name: String) = globalTags.getTagOwnerId(name)
     fun getAllGlobalTagNames(user: User) = globalTags.getAllTagsForUser(user.idLong)
+    fun overrideGlobalTag(name: String, newContent: String, guild: Guild) {
+        if(!isGlobalTag(name)) throw IllegalArgumentException("The specified name is not a local tag!")
+        else localTags.addTag(name, 1L, newContent, guild)
+    }
+
+    fun isCustomCommands(name: String, guild: Guild) = customCommands.getContentFor(name, guild).isNotEmpty()
+    fun getCustomCommandContent(name: String, guild: Guild) = customCommands.getContentFor(name, guild)
+    fun getAllCustomCommands(guild: Guild) = customCommands.getAll(guild)
+    fun addCustomCommand(name: String, content: String, guild: Guild) = customCommands.add(name, content, guild)
+    fun removeCustomCommand(name: String, guild: Guild) = customCommands.remove(name, guild)
 
     fun evaluate(string: String) {
         try {

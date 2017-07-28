@@ -18,7 +18,6 @@ package me.kgustave.nightfury.db.sql
 import me.kgustave.nightfury.entities.Case
 import me.kgustave.nightfury.entities.LogAction
 import net.dv8tion.jda.core.entities.Guild
-import net.dv8tion.jda.core.utils.SimpleLog
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -64,7 +63,7 @@ class SQLCases(connection: Connection) : SQLCollection<Guild, Case>(connection) 
             statement.setInt(3, case.number)
             statement.execute()
             statement.close()
-        } catch (e : SQLException) { SimpleLog.getLog("SQL").warn(e); statement.close() }
+        } catch (e : SQLException) { SQL.LOG.warn(e); statement.close() }
     }
 }
 

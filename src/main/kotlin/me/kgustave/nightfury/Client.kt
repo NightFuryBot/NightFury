@@ -15,6 +15,7 @@
  */
 package me.kgustave.nightfury
 
+import com.jagrosh.jagtag.Parser
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import com.mashape.unirest.http.Unirest
 import com.mashape.unirest.http.exceptions.UnirestException
@@ -54,7 +55,7 @@ class Client internal constructor
 (val prefix: String, val ownerID: Long, val manager: DatabaseManager,
  val success: String, val warning: String, val error: String,
  val server: String, val dBotsKey : String, val waiter: EventWaiter,
- vararg commands: Command) : ListenerAdapter()
+ val parser: Parser, vararg commands: Command) : ListenerAdapter()
 {
     // TODO Remove all occurrences of @Suppress("unused")
 
@@ -143,6 +144,14 @@ class Client internal constructor
         commands.removeAt(targetIndex)
     }
 
+    fun getCommandByName(name: String) : Command?
+    {
+        val index = synchronized(commandIndex) { commandIndex.getOrDefault(name.toLowerCase(), -1) }
+        if(index!=-1)
+            return synchronized(commands) { commands[index] }
+        else return null
+    }
+
     fun targetListener(name: String)
     {
         if(!listeners.containsKey(name.toLowerCase()))
@@ -219,6 +228,7 @@ class Client internal constructor
         }
     }
 
+    @Suppress("unused")
     fun getUsesFor(command: Command) = synchronized(uses) { uses.getOrDefault(command.name, 0) }
 
     fun incrementUses(command: Command) = synchronized(uses) { uses.put(command.name, uses.getOrDefault(command.name, 0)+1) }
@@ -293,13 +303,24 @@ class Client internal constructor
             val args : String = parts[1]?:""
             if(listener.checkCall(event, this, name, args))
             {
-                val index = synchronized(commandIndex) { commandIndex.getOrDefault(name.toLowerCase(), -1) }
-                if(index != -1)
+                val command = getCommandByName(name)
+                if(command != null)
                 {
-                    val command = synchronized(commands) { commands[index] }
                     val commandEvent = CommandEvent(event.jda,event.responseNumber,event.message,args.trim(),this,prefixUsed)
                     listener.onCommandCall(commandEvent, command)
                     command.run(commandEvent)
+                }
+                else if(event.isFromType(ChannelType.TEXT) && manager.isCustomCommands(name, event.guild))
+                {
+                    val messages = CommandEvent.processMessage(parser.put("user", event.author)
+                            .put("guild", event.guild)
+                            .put("channel", event.textChannel)
+                            .put("args", args)
+                            .parse(manager.getCustomCommandContent(name, event.guild))).toTypedArray()
+                    messages.forEachIndexed { i, msg ->
+                        if(i<2) event.textChannel.sendMessage(msg).queue { linkIds(event.messageIdLong, it) }
+                    }
+                    parser.clear()
                 }
             }
         }

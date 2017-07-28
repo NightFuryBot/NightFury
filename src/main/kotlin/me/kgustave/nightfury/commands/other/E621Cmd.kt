@@ -18,8 +18,8 @@ package me.kgustave.nightfury.commands.other
 import com.jagrosh.jdautilities.menu.slideshow.SlideshowBuilder
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
+import me.kgustave.nightfury.api.E621API
 import me.monitor.je621.E621Array
-import me.monitor.je621.JE621
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import java.awt.Color
@@ -30,8 +30,8 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
-class E621Cmd(val e621 : JE621, val waiter: EventWaiter, val random: Random = Random()) : Command() {
-
+class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = Random()) : Command()
+{
     init {
         this.name = "e621"
         this.arguments = Argument("<number of posts> [tags...]")
@@ -52,19 +52,23 @@ class E621Cmd(val e621 : JE621, val waiter: EventWaiter, val random: Random = Ra
             return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
         if(args[0].matches(Regex("\\d+"))) {
             val limit = args[0].toInt()
-            val tags = args
+            val tags = args.subList(1, args.size)
             if(tags.isEmpty())
                 return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
             if(tags.size>6)
                 return event.replyError("**Too many tags specified!**\nPlease specify no more than 6 tags!")
-            e621.startNewSearch().addTags(*args.toTypedArray()).setMaxRetrieved(limit).search().queue({ generate(it, event) })
+            val arr = e621.search(limit, *args.toTypedArray())
+                    ?:return event.replyError("Found no results matching ${buildString { args.forEach { append("$it ") } }}")
+            generate(arr,event)
         } else {
             val tags = args
             if(tags.isEmpty())
                 return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
             if(tags.size>6)
                 return event.replyError("**Too many tags specified!**\nPlease specify no more than 6 tags!")
-            e621.startNewSearch().addTags(*args.toTypedArray()).setMaxRetrieved(100).search().queue({ generate(it, event) })
+            val arr = e621.search(100, *args.toTypedArray())
+                    ?:return event.replyError("Found no results matching ${buildString { args.forEach { append("$it ") } }}")
+            generate(arr,event)
         }
     }
     private fun generate(array: E621Array, event: CommandEvent)

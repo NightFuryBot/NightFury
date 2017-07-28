@@ -16,7 +16,10 @@
 package me.kgustave.nightfury
 
 import club.minnced.kjda.events.AsyncEventManager
+import com.jagrosh.jagtag.JagTag
+import com.jagrosh.jagtag.Parser
 import com.jagrosh.jdautilities.waiter.EventWaiter
+import me.kgustave.nightfury.api.E621API
 import me.kgustave.nightfury.api.GoogleAPI
 import me.kgustave.nightfury.commands.admin.*
 import me.kgustave.nightfury.commands.moderator.*
@@ -24,7 +27,7 @@ import me.kgustave.nightfury.commands.dev.*
 import me.kgustave.nightfury.commands.other.*
 import me.kgustave.nightfury.commands.standard.*
 import me.kgustave.nightfury.db.DatabaseManager
-import me.monitor.je621.JE621Builder
+import me.kgustave.nightfury.jagtag.getMethods
 import net.dv8tion.jda.core.*
 import net.dv8tion.jda.core.entities.Game
 import net.dv8tion.jda.core.utils.SimpleLog
@@ -60,7 +63,7 @@ class NightFury(args: Array<String>)
             System.exit(exit)
         }
 
-        @JvmStatic val version : String = "0.4.1"
+        @JvmStatic val version : String = "0.4.2"
         @JvmStatic val github : String = "https://github.com/TheMonitorLizard/NightFury/"
     }
 
@@ -79,17 +82,20 @@ class NightFury(args: Array<String>)
                 if(it == "-setupPrefixes") if(!manager.createPrefixesTable()) throw SQLException("Failed to setup prefixes table!")
                 if(it == "-setupRoles")    if(!manager.createRolesTable())    throw SQLException("Failed to setup roles table!")
                 if(it == "-setupTags")     if(!manager.createTagsTables())    throw SQLException("Failed to setup tags table!")
+                if(it == "-setupCCs")      if(!manager.createCommandsTable()) throw SQLException("Failed to setup custom commands table!")
             }
         }
         val waiter = EventWaiter()
 
         val google = GoogleAPI()
-        val e621 = JE621Builder("NightFury").build()
+        val e621 = E621API()
+
+        val parser : Parser = JagTag.newDefaultBuilder().addMethods(getMethods()).build()
 
         val client = Client(
                 config.prefix, config.ownerId, manager,
                 config.success, config.warning, config.error,
-                config.server, config.dbotskey, waiter,
+                config.server, config.dbotskey, waiter, parser,
 
                 AboutCmd(*config.permissions),
                 ColorMeCmd(),
@@ -111,6 +117,7 @@ class NightFury(args: Array<String>)
                 SettingsCmd(),
                 UnmuteCmd(),
 
+                CustomCommandCmd(waiter),
                 ModeratorCmd(),
                 ModLogCmd(),
                 PrefixCmd(),

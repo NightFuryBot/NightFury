@@ -29,7 +29,6 @@ abstract class SQLCollection<in E, out T>(val connection: Connection) {
 
     companion object
     {
-        private val LOG : SimpleLog = SimpleLog.getLog("SQL")
         private fun insertArgs(statement: PreparedStatement, vararg args: Any) : PreparedStatement
         {
             args.forEachIndexed { index: Int, any: Any ->
@@ -53,7 +52,7 @@ abstract class SQLCollection<in E, out T>(val connection: Connection) {
             val returns = statement.executeQuery().use { results -> get(results, env) }
             statement.close()
             returns
-        } catch (e: SQLException) { LOG.warn(e); emptySet<T>() }
+        } catch (e: SQLException) { SQL.LOG.warn(e); emptySet<T>() }
     }
 
     abstract fun get(results: ResultSet, env: E) : Set<T>
@@ -66,7 +65,7 @@ abstract class SQLCollection<in E, out T>(val connection: Connection) {
             ), *args)
             statement.execute()
             statement.close()
-        } catch (e: SQLException) { LOG.warn(e) }
+        } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 
     fun remove(vararg args: Any)
@@ -77,6 +76,6 @@ abstract class SQLCollection<in E, out T>(val connection: Connection) {
             ), *args)
             statement.execute()
             statement.close()
-        } catch (e: SQLException) { LOG.warn(e) }
+        } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 }

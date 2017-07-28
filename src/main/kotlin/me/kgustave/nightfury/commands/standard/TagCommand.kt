@@ -16,12 +16,11 @@
 package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.promise
-import com.jagrosh.jagtag.JagTag
-import com.jagrosh.jagtag.Parser
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.extensions.Find
 import me.kgustave.nightfury.extensions.waiting.paginator
+import me.kgustave.nightfury.jagtag.TagErrorException
 import me.kgustave.nightfury.utils.formatUserName
 import me.kgustave.nightfury.utils.multipleMembersFound
 import me.kgustave.nightfury.utils.multipleUsersFound
@@ -35,8 +34,6 @@ import net.dv8tion.jda.core.entities.User
  */
 class TagCommand(waiter: EventWaiter) : Command()
 {
-    val parser : Parser = JagTag.newDefaultBuilder().build()
-
     init {
         this.name = "tag"
         this.aliases = arrayOf("t")
@@ -65,10 +62,11 @@ class TagCommand(waiter: EventWaiter) : Command()
         if(event.args.isEmpty())
             return event.replyError(TOO_FEW_ARGS_ERROR.format("Try specifying a tag name in the format `${event.prefixUsed}tag [tag name]`."))
         val parts = event.args.split(Regex("\\s+"),2)
-        val name = parts[0]
+        val name = if(event.client.getCommandByName(parts[0])!=null)
+            return event.reply("*You remember Monitor's words: Not everything is a tag!*")
+        else parts[0]
         val args = if(parts.size>1) parts[1] else ""
-        if(event.isFromType(ChannelType.TEXT))
-        {
+        if(event.isFromType(ChannelType.TEXT)) {
             val content : String = if(event.client.manager.isLocalTag(name, event.guild)) {
                 event.client.manager.getContentForLocalTag(name, event.guild)
             } else if(event.client.manager.isGlobalTag(name)) {
@@ -76,19 +74,37 @@ class TagCommand(waiter: EventWaiter) : Command()
             } else ""
             if(content.isEmpty())
                 return event.replyError("**No Tag Found Matching \"$name\"**\n${SEE_HELP.format(event.prefixUsed,this.name)}")
-            else event.reply(parser.put("args", args).parse(content))
-        }
-        else
-        {
+            else try {
+                event.reply(
+                        event.client.parser.put("args", args)
+                                .put("user", event.author)
+                                .put("guild", event.guild)
+                                .put("channel", event.textChannel)
+                                .parse(content)
+                )
+            } catch (e : TagErrorException) {
+                if(e.message!=null) event.replyError(e.message)
+                else                event.replyError("Tag matching \"$name\" could not be processed for an unknown reason!")
+            }
+        } else {
             val content : String = if(event.client.manager.isGlobalTag(name)) {
                 event.client.manager.getContentForGlobalTag(name)
             } else ""
 
             if(content.isEmpty())
                 return event.replyError("**No Global Tag Found Matching \"$name\"**\n${SEE_HELP.format(event.prefixUsed,this.name)}")
-            else event.reply(parser.put("args", args).parse(content))
+            else try {
+                event.reply(
+                        event.client.parser.put("args", args)
+                                .put("user", event.author)
+                                .parse(content)
+                )
+            } catch (e : TagErrorException) {
+                if(e.message!=null) event.replyError(e.message)
+                else                event.replyError("Tag matching \"$name\" could not be processed for an unknown reason!")
+            }
         }
-        parser.clear()
+        event.client.parser.clear()
     }
 }
 
@@ -110,11 +126,13 @@ private class TagCreateCmd : Command()
             return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
         val parts = event.args.split(Regex("\\s+"),2)
 
-        val name = if(parts[0].length<=50)
-            parts[0]
-        else
+        val name = if(parts[0].length>50)
             return event.replyError("**Tag names cannot exceed 50 characters in length!**\n" +
                     SEE_HELP.format(event.prefixUsed, fullname))
+        else if(event.client.getCommandByName(parts[0])!=null)
+            return event.replyError("**Illegal Tag Name!**\n" +
+                    "Tags may not have names that match command names!")
+        else parts[0]
 
         val content = if(parts.size==1)
             return event.replyError("**You must specify content when creating a tag!**\n" +
@@ -154,6 +172,9 @@ private class TagCreateGlobalCmd : Command()
         val name = if(parts[0].length>50)
             return event.replyError("**Tag names cannot exceed 50 characters in length!**\n" +
                     SEE_HELP.format(event.prefixUsed, fullname))
+        else if(event.client.getCommandByName(parts[0])!=null)
+            return event.replyError("**Illegal Tag Name!**\n" +
+                    "Tags may not have names that match command names!")
         else parts[0]
 
         val content = if(parts.size==1)
@@ -336,8 +357,8 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
         val member : Member? = if(temp == null && event.isFromType(ChannelType.TEXT)) event.guild.getMember(user) else temp
 
 
-        val localTags = (if(member!=null) event.client.manager.getAllLocalTagNames(member) else emptySet()).map { "$it (Global)" }
-        val globalTags = event.client.manager.getAllGlobalTagNames(user).map { "$it (Local)" }
+        val localTags = (if(member!=null) event.client.manager.getAllLocalTagNames(member) else emptySet()).map { "$it (Local)" }
+        val globalTags = event.client.manager.getAllGlobalTagNames(user).map { "$it (Global)" }
 
         if(localTags.isEmpty() && globalTags.isEmpty())
             event.replyError("${if(event.author==user) "You do" else "${formatUserName(user, true)} does"} not have any tags!")
@@ -346,11 +367,12 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
         {
             text             { "Tags owned by ${formatUserName(user, true)}" }
             timeout          { 20 }
-            items            { addAll(localTags) }
+            if(localTags.isNotEmpty())
+                items        { addAll(localTags) }
             items            { addAll(globalTags) }
-            columns          { 3 }
-            finalAction      { it.editMessage(it).queue() }
+            finalAction      { it.editMessage(it).queue(); event.linkMessage(it) }
             showPageNumbers  { true }
+            useNumberedItems { true }
             waitOnSinglePage { false }
         }
     }
@@ -393,7 +415,7 @@ private class TagOwnerCmd : Command()
         // Cover overrides
         if(isLocal && ownerId==1L) return event.replyWarning("Local tag named \"$name\" belongs to the server.")
 
-        val str = if(isLocal) "local tag \"${event.client.manager.getContentForLocalTag(name, event.guild)}\""
+        val str = if(isLocal) "local tag \"${event.client.manager.getOriginalNameOfLocalTag(name, event.guild)}\""
         else "global tag \"${event.client.manager.getOriginalNameOfGlobalTag(name)}\""
 
         event.jda.retrieveUserById(ownerId).promise() then {
@@ -460,7 +482,45 @@ private class TagOverrideCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        // TODO Implement Tag Override Command
-        event.replyWarning("Override function coming soon!")
+        if(event.args.isEmpty())
+            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
+        val parts = event.args.split(Regex("\\s+"),2)
+
+        val name = if(parts[0].length<=50)
+            parts[0]
+        else
+            return event.replyError("**Tag names cannot exceed 50 characters in length!**\n" +
+                    SEE_HELP.format(event.prefixUsed, fullname))
+
+        val newContent = if(parts.size==1)
+            return event.replyError("**You must specify content when overriding a tag!**\n" +
+                    SEE_HELP.format(event.prefixUsed, fullname))
+        else if(parts[1].length>1900)
+            return event.replyError("**Tag content cannot exceed 1900 characters in length!**\n" +
+                    SEE_HELP.format(event.prefixUsed, fullname))
+        else parts[1]
+
+        with(event.client.manager)
+        {
+            if(!isLocalTag(name, event.guild)) {
+                if(!isGlobalTag(name)) {
+                    event.replyError("Tag named \"$name\" does not exist!")
+                } else {
+                    val member = event.guild.getMemberById(getOwnerIdForGlobalTag(name))
+                    if(member!=null && (member.isOwner || event.member.canInteract(member)))
+                        return event.replyError("I cannot override the global tag \"**$name**\" because " +
+                                "you are not able to interact with them due to role hierarchy placement!")
+                    overrideGlobalTag(getOriginalNameOfGlobalTag(name), newContent, event.guild)
+                    event.replySuccess("Successfully overrode global tag \"**$name**\"!")
+                }
+            } else {
+                val member = event.guild.getMemberById(getOwnerIdForLocalTag(name,event.guild))
+                if(member!=null && (member.isOwner || event.member.canInteract(member)))
+                    return event.replyError("I cannot override the local tag \"**$name**\" because" +
+                            "you are not able to interact with them due to role hierarchy placement!")
+                overrideLocalTag(name, newContent, event.guild)
+                event.replySuccess("Successfully overrode local tag \"**$name**\"!")
+            }
+        }
     }
 }

@@ -171,8 +171,9 @@ private class RoleMeListCmd(val waiter: EventWaiter) : Command()
             text             { "RoleMe Roles On ${event.guild.name}" }
             timeout          { 20 }
             items            { addAll(rolemes) }
-            finalAction      { it.editMessage(it).queue() }
+            finalAction      { it.editMessage(it).queue(); event.linkMessage(it) }
             showPageNumbers  { true }
+            useNumberedItems { true }
             waitOnSinglePage { false }
         }
     }

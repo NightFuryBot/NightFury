@@ -40,11 +40,11 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 group = 'me.kgustave'
-version = new Version(major: 0, minor: 4, build: 1)
+version = new Version(major: 0, minor: 4, build: 2)
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
 def dirChar = File.separatorChar
-def jdaVersion = '3.2.0_234'
+def jdaVersion = '3.2.0_239'
 def jdaUtilsVersion = '1.3'
 def localLibDir = "${System.getProperty('user.home')}${dirChar}Desktop${dirChar}"
 
@@ -65,7 +65,6 @@ repositories {
     maven { url 'https://jitpack.io/'}
     maven { url 'https://mvnrepository.com/artifact/com.mashape.unirest/unirest-java' }
     flatDir { dir("${localLibDir}JagTag0.5") }
-    flatDir { dir("${localLibDir}JDA-Utilities${dirChar}build${dirChar}libs")}
 }
 
 dependencies {
@@ -87,9 +86,6 @@ dependencies {
 
     compileOnly([group: 'com.jagrosh', name: 'JagTag', version: '0.5', classifier: 'javadoc'],
             [group: 'com.jagrosh', name: 'JagTag', version: '0.5', classifier: 'sources'])
-
-    compileOnly([group: 'com.jagrosh', name: 'JDA-Utilities', version: jdaUtilsVersion, classifier: 'javadoc'],
-            [group: 'com.jagrosh', name: 'JDA-Utilities', version: jdaUtilsVersion, classifier: 'sources'])
 }
 
 shadowJar {

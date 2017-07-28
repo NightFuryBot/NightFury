@@ -27,7 +27,6 @@ class HelpCmd : Command() {
 
     init {
         this.name = "help"
-        this.aliases = arrayOf("commands")
         this.help = "gets a list of commands"
         this.guildOnly = false
     }

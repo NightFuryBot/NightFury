@@ -112,9 +112,10 @@ private class ListPrefixCmd: Command() {
             return event.replyError("There are no custom prefixes available for this server!")
         else {
             event.reply(embed {
-                title = "Custom prefixes for **${event.guild.name}"
+                title = "Custom prefixes for **${event.guild.name}**"
                 prefixes.forEach { prefix -> append("`$prefix`\n") }
                 colorAwt = event.selfMember.color
+                footer { value = "Total ${prefixes.size}"}
             })
         }
     }
