@@ -78,7 +78,7 @@ class TagCommand(waiter: EventWaiter) : Command()
                 return event.replyError("**No Tag Found Matching \"$name\"**\n${SEE_HELP.format(event.prefixUsed,this.name)}")
             else try {
                 event.reply(
-                        event.client.parser.put("args", args)
+                        event.client.parser.put("args", args.trim())
                                 .put("user", event.author)
                                 .put("guild", event.guild)
                                 .put("channel", event.textChannel)
@@ -280,8 +280,8 @@ private class TagEditCmd : Command()
                 if(!event.globalTags.isTag(name)) {
                     event.replyError("Tag named \"$name\" does not exist!")
                 } else if(event.globalTags.getTagOwnerId(name)==event.author.idLong) {
-                    event.globalTags.editTag(name, newContent, event.author.idLong)
-                    event.replySuccess("Successfully edit local tag \"**$name**\"!")
+                    event.globalTags.editTag(newContent, name, event.author.idLong)
+                    event.replySuccess("Successfully edit global tag \"**$name**\"!")
                 } else {
                     event.replyError("**You cannot edit the global tag \"$name\" because you are not it's owner!**\n" +
                             SEE_HELP.format(event.prefixUsed, fullname))
@@ -297,7 +297,7 @@ private class TagEditCmd : Command()
             if(!event.globalTags.isTag(name)) {
                 event.replyError("Tag named \"$name\" does not exist!")
             } else if(event.globalTags.getTagOwnerId(name)==event.author.idLong) {
-                event.globalTags.editTag(name, newContent, event.author.idLong)
+                event.globalTags.editTag(newContent, name, event.author.idLong)
                 event.replySuccess("Successfully edit local tag \"**$name**\"!")
             } else {
                 event.replyError("**You cannot edit the global tag \"$name\" because you are not it's owner!**\n" +
