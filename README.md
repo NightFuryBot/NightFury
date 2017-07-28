@@ -27,4 +27,4 @@ you can use with NightFury!
 If you require additional support, take a look at the [wiki](https://github.com/TheMonitorLizard/NightFury/wiki)
 or join NightFury's [Official Support Server](https://discord.gg/XCmwxy8)!
 
-[![Join Monitor's Lounge](https://discordapp.com/api/guilds/147698382092238848/widget.png?style=banner2)](https://discord.gg/0p9LSGoRLu6Pet0k)
+[![Join Monitor's Lounge](https://discordapp.com/api/guilds/301012120613552138/widget.png?style=banner2)](https://discord.gg/XCmwxy8)
