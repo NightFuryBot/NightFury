@@ -40,7 +40,7 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 group = 'me.kgustave'
-version = new Version(major: 0, minor: 4, build: 3)
+version = new Version(major: 0, minor: 4, build: 4)
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
 def dirChar = File.separatorChar
@@ -63,7 +63,6 @@ repositories {
     jcenter()
     mavenCentral()
     maven { url 'https://jitpack.io/'}
-    maven { url 'https://mvnrepository.com/artifact/com.mashape.unirest/unirest-java' }
     flatDir { dir("${localLibDir}JagTag0.5") }
 }
 
@@ -74,14 +73,13 @@ dependencies {
 
     compile "net.dv8tion:JDA:$jdaVersion"
     compile 'com.github.JDA-Applications:Kotlin-JDA:56a6c22'
+    compile "com.jagrosh:JDA-Utilities:$jdaUtilsVersion"
 
     compile 'com.h2database:h2:1.3.148'
 
     compile 'org.jsoup:jsoup:1.10.2'
-    compile 'com.mashape.unirest:unirest-java:1.4.9'
     compile 'com.github.TheMonitorLizard:je621:0.2'
 
-    compile group: 'com.jagrosh', name: 'JDA-Utilities', version: jdaUtilsVersion
     compile group: 'com.jagrosh', name: 'JagTag', version: '0.5'
 
     compileOnly([group: 'com.jagrosh', name: 'JagTag', version: '0.5', classifier: 'javadoc'],

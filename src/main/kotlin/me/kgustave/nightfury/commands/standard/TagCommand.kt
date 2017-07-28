@@ -493,11 +493,12 @@ private class TagOverrideCmd : Command()
             if(!event.globalTags.isTag(name)) {
                 event.replyError("Tag named \"$name\" does not exist!")
             } else {
-                val member = event.guild.getMemberById(event.globalTags.getTagOwnerId(name))
+                val ownerId = event.globalTags.getTagOwnerId(name)
+                val member = event.guild.getMemberById(ownerId)
                 if(member!=null && (member.isOwner || event.member.canInteract(member)))
                     return event.replyError("I cannot override the global tag \"**$name**\" because " +
                             "you are not able to interact with them due to role hierarchy placement!")
-                event.localTags.addTag(event.globalTags.getOriginalName(name), 1L, newContent, event.guild)
+                event.localTags.overrideTag(newContent, event.globalTags.getOriginalName(name), ownerId, event.guild)
                 event.replySuccess("Successfully overrode global tag \"**$name**\"!")
             }
         } else {

@@ -20,15 +20,22 @@ import me.kgustave.nightfury.extensions.muteRole
 import net.dv8tion.jda.core.events.channel.text.TextChannelCreateEvent
 import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent
 import net.dv8tion.jda.core.events.channel.voice.VoiceChannelCreateEvent
+import net.dv8tion.jda.core.events.guild.GuildJoinEvent
+import net.dv8tion.jda.core.events.guild.GuildLeaveEvent
 import net.dv8tion.jda.core.events.role.RoleDeleteEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 
 
 /**
  * @author Kaidan Gustave
  */
-class DatabaseListener(val manager: DatabaseManager) : ListenerAdapter()
+class DatabaseListener(val manager: DatabaseManager, val executor: ScheduledExecutorService) : ListenerAdapter()
 {
+    private val leaving = HashMap<Long, ScheduledFuture<*>>()
+
     override fun onRoleDelete(event: RoleDeleteEvent)
     {
         if(manager.isRoleMe(event.role))                  manager.removeRoleMe(event.role)
@@ -58,6 +65,25 @@ class DatabaseListener(val manager: DatabaseManager) : ListenerAdapter()
         val muted = manager.getMutedRole(event.guild)
         if(muted!=null)
             event.channel.muteRole(muted)
+    }
+
+    override fun onGuildJoin(event: GuildJoinEvent)
+    {
+        synchronized(leaving)
+        {
+            if(leaving.contains(event.guild.idLong))
+                leaving.remove(event.guild.idLong)?.cancel(false)
+        }
+    }
+
+    override fun onGuildLeave(event: GuildLeaveEvent)
+    {
+        // Soft 5 Minute
+        synchronized(leaving) {
+            leaving.put(event.guild.idLong, executor.schedule({
+                manager.leaveGuild(event.guild)
+            }, 5, TimeUnit.MINUTES))
+        }
     }
 
 }

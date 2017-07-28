@@ -54,20 +54,20 @@ fun main(args: Array<String>?)
 class NightFury(args: Array<String>)
 {
     companion object {
-        private val executor : ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
         val LOG: SimpleLog = SimpleLog.getLog("NightFury")
         fun shutdown(exit: Int)
         {
-            executor.shutdown()
             LOG.info("Shutdown Complete! "+if(exit == 0)"Restarting..." else "Exiting...")
             System.exit(exit)
         }
 
-        @JvmStatic val version : String = "0.4.3"
+        @JvmStatic val version : String = "0.4.4"
         @JvmStatic val github : String = "https://github.com/TheMonitorLizard/NightFury/"
     }
 
     init {
+        val executor : ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+
         val jda : JDABuilder = JDABuilder(AccountType.BOT).setEventManager(AsyncEventManager())
 
         val config = Config(Paths.get(System.getProperty("user.dir"), "config.txt").toFile())
@@ -95,7 +95,8 @@ class NightFury(args: Array<String>)
         val client = Client(
                 config.prefix, config.ownerId, manager,
                 config.success, config.warning, config.error,
-                config.server, config.dbotskey, waiter, parser,
+                config.server, config.dbotskey, waiter, executor,
+                parser,
 
                 AboutCmd(*config.permissions),
                 ColorMeCmd(),

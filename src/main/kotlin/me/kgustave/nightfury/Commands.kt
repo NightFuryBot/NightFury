@@ -18,7 +18,6 @@ package me.kgustave.nightfury
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import java.util.*
-import java.util.regex.Pattern
 
 /**
  * @author Kaidan Gustave
@@ -30,7 +29,7 @@ abstract class Command
 
     var aliases: Array<String> = emptyArray()
         protected set(value) {field = value}
-
+    // TODO move to simple string arguments
     var arguments: Argument = Argument("")
         protected set(value) {field = value}
 
@@ -67,6 +66,7 @@ abstract class Command
     var fullname: String = name
         protected set(value) {field = value}
 
+    @Suppress("unused")
     companion object
     {
         private val BOT_PERM = "%s I need the %s permission in this %s!"
@@ -206,17 +206,6 @@ abstract class Command
             }
         }
 
-        if(!arguments.test(event))
-        {
-            val error = arguments.error
-            if(error!=null)
-            {
-                if(error==Command.INVALID_ARGS_HELP)
-                    return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, fullname))
-                return event.replyError(error)
-            }
-        }
-
         if(cooldown > 0)
         {
             val key = getCooldownKey(event)
@@ -297,12 +286,8 @@ abstract class Command
     }
 }
 
-class Argument(val args: String, val error: String?, val pattern: Pattern?)
+class Argument(val args: String)
 {
-    constructor(args: String) : this(args, null, null)
-
-    fun test(event: CommandEvent) = pattern?.matcher(event.args)?.matches()?:true
-
     override fun toString(): String = args
 }
 

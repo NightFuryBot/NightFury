@@ -29,6 +29,7 @@ abstract class SQLRoles(connection: Connection, type: String) : SQLCollection<Gu
         getStatement = "SELECT $ROLE_ID FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
         addStatement = "INSERT INTO $ROLES ($GUILD_ID, $ROLE_ID, $TYPE) VALUES (?, ?, '$type')"
         removeStatement = "DELETE FROM $ROLES WHERE $GUILD_ID = ? AND $ROLE_ID = ? AND $TYPE = '$type'"
+        removeAllStatement = "DELETE FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
     }
 
     override fun get(results: ResultSet, env: Guild) : Set<Role>

@@ -15,7 +15,6 @@
  */
 package me.kgustave.nightfury.db.sql
 
-import net.dv8tion.jda.core.utils.SimpleLog
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet

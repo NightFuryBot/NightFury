@@ -255,5 +255,19 @@ class DatabaseManager(url: String, user: String, pass: String) {
         } catch (e: SQLException) { throw e }
     }
 
+    fun leaveGuild(guild: Guild)
+    {
+        roleMe.removeAll(guild.idLong)
+        colorMe.removeAll(guild.idLong)
+        modRole.reset(guild.idLong)
+        mutedRole.reset(guild.idLong)
+        modLog.reset(guild.idLong)
+        ignoredChannels.removeAll(guild.idLong)
+        cases.removeAll(guild.idLong)
+        prefixes.removeAll(guild.idLong)
+        localTags.deleteAllTags(guild)
+        customCommands.removeAll(guild)
+    }
+
     fun shutdown() = try { connection.close() } catch (e: SQLException) { LOG.warn(e) }
 }

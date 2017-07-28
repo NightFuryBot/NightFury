@@ -29,6 +29,7 @@ class SQLPrefixes(connection: Connection) : SQLCollection<Guild, String>(connect
         getStatement = "SELECT $PREFIX FROM $PREFIXES WHERE $GUILD_ID = ?"
         addStatement = "INSERT INTO $PREFIXES ($GUILD_ID, $PREFIX) VALUES (?, ?)"
         removeStatement = "DELETE FROM $PREFIXES WHERE $GUILD_ID = ? AND $PREFIX = ?"
+        removeAllStatement = "DELETE FROM $PREFIXES WHERE $GUILD_ID = ?"
     }
 
     override fun get(results: ResultSet, env: Guild): Set<String>

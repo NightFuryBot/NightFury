@@ -29,6 +29,7 @@ abstract class SQLChannels(connection: Connection, type: String) : SQLCollection
         getStatement = "SELECT $CHANNEL_ID FROM $CHANNELS WHERE $GUILD_ID = ? AND $TYPE = '$type'"
         addStatement = "INSERT INTO $CHANNELS ($GUILD_ID, $CHANNEL_ID, $TYPE) VALUES (?, ?, '$type')"
         removeStatement = "DELETE FROM $CHANNELS WHERE $GUILD_ID = ? AND $CHANNEL_ID = ? AND $TYPE = '$type'"
+        removeAllStatement = "DELETE FROM $CHANNELS WHERE $GUILD_ID = ? AND $TYPE = '$type'"
     }
 
     override fun get(results: ResultSet, env: Guild): Set<TextChannel>

@@ -31,6 +31,7 @@ class SQLCases(connection: Connection) : SQLCollection<Guild, Case>(connection) 
         getStatement = "SELECT * FROM $CASES WHERE $GUILD_ID = ?"
         addStatement = "INSERT INTO $CASES ($NUMBER, $GUILD_ID, $MESSAGE_ID, $MOD_ID, $TARGET_ID, $IS_ON_USER, $ACTION, $REASON) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        removeAllStatement = "DELETE FROM $CASES WHERE $GUILD_ID = ?"
     }
 
     override fun get(results: ResultSet, env: Guild): Set<Case>

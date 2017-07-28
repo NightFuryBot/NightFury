@@ -30,6 +30,7 @@ class SQLCustomCommands(val connection: Connection)
     private val getContent = "SELECT content FROM custom_commands WHERE LOWER(name) = LOWER(?) AND guild_id = ?"
     private val add        = "INSERT INTO custom_commands (name, content, guild_id) VALUES (?, ?, ?)"
     private val remove     = "DELETE FROM custom_commands WHERE LOWER(name) = LOWER(?) AND guild_id = ?"
+    private val removeAll  = "DELETE FROM custom_commands WHERE guild_id = ?"
 
     fun getAll(guild: Guild) : Set<String>
     {
@@ -79,6 +80,18 @@ class SQLCustomCommands(val connection: Connection)
             val statement = connection.prepareStatement(remove)
             statement.setString(1, name)
             statement.setLong(2, guild.idLong)
+            statement.execute()
+            statement.close()
+        } catch (e : SQLException) {
+            SQL.LOG.warn(e)
+        }
+    }
+
+    fun removeAll(guild: Guild)
+    {
+        try {
+            val statement = connection.prepareStatement(removeAll)
+            statement.setLong(1, guild.idLong)
             statement.execute()
             statement.close()
         } catch (e : SQLException) {

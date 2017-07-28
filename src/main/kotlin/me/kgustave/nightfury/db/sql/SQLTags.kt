@@ -186,6 +186,7 @@ class SQLLocalTags(val connection: Connection)
     private val addTag             = "INSERT INTO $local_tags ($name, $guild_id, $owner_id, $content) VALUES (?, ?, ?, ?)"
     private val editTag            = "UPDATE $local_tags SET $content = ? WHERE LOWER($name) = LOWER(?) AND $owner_id = ? AND $guild_id = ?"
     private val deleteTag          = "DELETE FROM $local_tags WHERE LOWER($name) = LOWER(?) AND $owner_id = ? AND $guild_id = ?"
+    private val deleteAllTags      = "DELETE FROM $local_tags WHERE $guild_id = ?"
     private val getTagName         = "SELECT $name FROM $local_tags WHERE LOWER($name) = LOWER(?) AND $guild_id = ?"
     private val getTagContent      = "SELECT $content FROM $local_tags WHERE LOWER($name) = LOWER(?) AND $guild_id = ?"
     private val getTagOwnerId      = "SELECT $owner_id FROM $local_tags WHERE LOWER($name) = LOWER(?) AND $guild_id = ?"
@@ -251,6 +252,20 @@ class SQLLocalTags(val connection: Connection)
                 setString(1, name)
                 setLong(2, ownerId)
                 setLong(3, guild.idLong)
+                execute()
+                close()
+            }
+        } catch (e : SQLException) {
+            SQL.LOG.warn(e)
+        }
+    }
+
+    fun deleteAllTags(guild: Guild)
+    {
+        try {
+            with(connection.prepareStatement(deleteAllTags))
+            {
+                setLong(1, guild.idLong)
                 execute()
                 close()
             }

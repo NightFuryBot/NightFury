@@ -15,7 +15,6 @@
  */
 package me.kgustave.nightfury.db.sql
 
-import net.dv8tion.jda.core.utils.SimpleLog
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -44,6 +43,7 @@ abstract class SQLCollection<in E, out T>(val connection: Connection) {
     var getStatement : String = ""
     var addStatement : String = ""
     var removeStatement : String = ""
+    var removeAllStatement : String = ""
 
     fun get(env: E, vararg args: Any) : Set<T>
     {
@@ -73,6 +73,17 @@ abstract class SQLCollection<in E, out T>(val connection: Connection) {
         try {
             val statement = insertArgs(connection.prepareStatement(
                     removeStatement, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE
+            ), *args)
+            statement.execute()
+            statement.close()
+        } catch (e: SQLException) { SQL.LOG.warn(e) }
+    }
+
+    fun removeAll(vararg args: Any)
+    {
+        try {
+            val statement = insertArgs(connection.prepareStatement(
+                    removeAllStatement, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE
             ), *args)
             statement.execute()
             statement.close()

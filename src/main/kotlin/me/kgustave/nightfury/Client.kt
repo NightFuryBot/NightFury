@@ -42,11 +42,13 @@ import org.json.JSONObject
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.stream.Collectors
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
+import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
@@ -55,7 +57,8 @@ class Client internal constructor
 (val prefix: String, val ownerID: Long, val manager: DatabaseManager,
  val success: String, val warning: String, val error: String,
  val server: String, val dBotsKey : String, val waiter: EventWaiter,
- val parser: Parser, vararg commands: Command) : ListenerAdapter()
+ val executor: ScheduledExecutorService, val parser: Parser,
+ vararg commands: Command) : ListenerAdapter()
 {
     // TODO Remove all occurrences of @Suppress("unused")
 
@@ -248,31 +251,38 @@ class Client internal constructor
         }
     }
 
-    @Override
     override fun onReady(event: ReadyEvent)
     {
         event.jda.addEventListener(
                 waiter,
-                DatabaseListener(manager),
+                DatabaseListener(manager, executor),
                 AutoLoggingListener(manager, logger)
         )
         event.jda.presence.status = OnlineStatus.ONLINE
         event.jda.presence.game = Game.of("Type ${prefix}help")
         LOG.info("NightFury is Online!")
+        val toLeave = event.jda.guilds.stream().filter { !testGuild(it) }.toList()
+        if(toLeave.isNotEmpty()) {
+            toLeave.forEach { it.leave().queue() }
+            LOG.info("Left ${toLeave.size} bad guilds!")
+        }
         updateStats(event.jda)
     }
 
-    @Override
     override fun onGuildJoin(event: GuildJoinEvent)
     {
         if(event.guild.selfMember.joinDate.plusMinutes(5).isAfter(OffsetDateTime.now()))
-            updateStats(event.jda)
+        {
+            if(testGuild(event.guild)) updateStats(event.jda)
+            else                       event.guild.leave().queue()
+        }
     }
 
-    @Override
-    override fun onGuildLeave(event: GuildLeaveEvent) = updateStats(event.jda)
+    override fun onGuildLeave(event: GuildLeaveEvent)
+    {
+        updateStats(event.jda)
+    }
 
-    @Override
     override fun onMessageReceived(event: MessageReceivedEvent)
     {
         if(event.author.isBot)
@@ -327,7 +337,6 @@ class Client internal constructor
         }
     }
 
-    @Override
     override fun onMessageDelete(event: MessageDeleteEvent)
     {
         if(!event.isFromType(ChannelType.TEXT))
@@ -345,8 +354,17 @@ class Client internal constructor
         }
     }
 
-    @Override
-    override fun onShutdown(event: ShutdownEvent) = manager.shutdown()
+    override fun onShutdown(event: ShutdownEvent)
+    {
+        executor.shutdown()
+        manager.shutdown()
+    }
+
+    private fun testGuild(guild: Guild) : Boolean
+    {
+        val bots = guild.members.stream().filter { it.user.isBot }.count()
+        return bots<=30 || guild.getMemberById(ownerID)!=null
+    }
 
     private fun updateStats(jda: JDA)
     {
