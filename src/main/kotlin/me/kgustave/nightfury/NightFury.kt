@@ -146,7 +146,7 @@ internal class Config(key: File)
     internal val dbURL: String = tokens[3]
     internal val dbUser: String = tokens[4]
     internal val dbPass: String = tokens[5]
-    internal val prefix: String = "||"
+    internal val prefix: String = "|"
     internal val success: String = "\uD83D\uDC32"
     internal val warning: String = "\uD83D\uDC22"
     internal val error: String = "\uD83D\uDD25"
