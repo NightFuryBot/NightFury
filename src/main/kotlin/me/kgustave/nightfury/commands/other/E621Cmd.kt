@@ -18,6 +18,7 @@ package me.kgustave.nightfury.commands.other
 import com.jagrosh.jdautilities.menu.slideshow.SlideshowBuilder
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
+import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.api.E621API
 import me.monitor.je621.E621Array
 import net.dv8tion.jda.core.Permission
@@ -30,6 +31,7 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
+@APICache
 class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = Random()) : Command()
 {
     init {
@@ -80,19 +82,27 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
             setColor { _,_ -> Color(random.nextInt(256),random.nextInt(256),random.nextInt(256)) }
             setDescription { x, _ -> "[Link](https://e621.net/post/show/${array[x].id}/)"}
             setFinalAction { m ->
-                waiter.waitForEvent(MessageReceivedEvent::class.java, { e : MessageReceivedEvent ->
-                    e.author == event.author && e.channel == event.channel
-                            && (e.message.rawContent == "${event.prefixUsed}save" || e.message.rawContent == "${event.client.prefix}save")
-                }, {
-                    event.replySuccess("Saved Picture!")
-                }, 20, TimeUnit.SECONDS, {
-                    m.delete().queue()
-                })
+                event.reply("To save this, type `|save`")
+                { message ->
+                    waiter.waitForEvent(MessageReceivedEvent::class.java, { e : MessageReceivedEvent ->
+                        e.author == event.author && e.channel == event.channel
+                                && (e.message.rawContent == "${event.prefixUsed}save" || e.message.rawContent == "${event.client.prefix}save")
+                    }, {
+                        message.delete().queue()
+                        event.replySuccess("Saved Picture!")
+                    }, 20, TimeUnit.SECONDS, {
+                        message.delete().queue()
+                        m.delete().queue()
+                    })
+                }
             }
-                    .
             setTimeout<SlideshowBuilder>(30, TimeUnit.SECONDS)
             setUsers<SlideshowBuilder>(event.author)
             setEventWaiter<SlideshowBuilder>(waiter)
         }.build().display(event.channel)
     }
+
+    @APICache
+    @Suppress("unused")
+    fun clearCache() = e621.clearCache()
 }

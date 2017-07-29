@@ -50,7 +50,7 @@ class E621API
         synchronized(cache) {
             val now = OffsetDateTime.now()
             cache.keys.stream()
-                    .filter { key -> now.isAfter(cache[key]!!.second.plusHours(6)) }
+                    .filter { key -> now.isAfter(cache[key]!!.second.plusHours(1)) }
                     .toList().forEach { toRemove -> cache.remove(toRemove) }
         }
     }

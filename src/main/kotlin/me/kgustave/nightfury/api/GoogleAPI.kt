@@ -83,7 +83,7 @@ class GoogleAPI
         {
             val now = OffsetDateTime.now()
             cache.keys.stream()
-                    .filter { key -> now.isAfter(cache[key]!!.second.plusHours(6)) }
+                    .filter { key -> now.isAfter(cache[key]!!.second.plusHours(5)) }
                     .toList().forEach { toRemove -> cache.remove(toRemove) }
         }
     }

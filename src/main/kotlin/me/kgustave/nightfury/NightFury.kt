@@ -35,9 +35,6 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
 import java.sql.SQLException
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -66,8 +63,6 @@ class NightFury(args: Array<String>)
     }
 
     init {
-        val executor : ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
-
         val jda : JDABuilder = JDABuilder(AccountType.BOT).setEventManager(AsyncEventManager())
 
         val config = Config(Paths.get(System.getProperty("user.dir"), "config.txt").toFile())
@@ -85,6 +80,7 @@ class NightFury(args: Array<String>)
                 if(it == "-setupCCs")      if(!manager.createCommandsTable()) throw SQLException("Failed to setup custom commands table!")
             }
         }
+
         val waiter = EventWaiter()
 
         val google = GoogleAPI()
@@ -95,8 +91,7 @@ class NightFury(args: Array<String>)
         val client = Client(
                 config.prefix, config.ownerId, manager,
                 config.success, config.warning, config.error,
-                config.server, config.dbotskey, waiter, executor,
-                parser,
+                config.server, config.dbotskey, waiter, parser,
 
                 AboutCmd(*config.permissions),
                 ColorMeCmd(),
@@ -134,12 +129,6 @@ class NightFury(args: Array<String>)
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
                 .setGame(Game.of("Starting Up..."))
                 .buildAsync()
-
-        executor.scheduleAtFixedRate({
-            client.cleanCooldowns()
-            client.cleanSchedule()
-            google.clearCache()
-        }, 10, 10, TimeUnit.MINUTES)
     }
 }
 
@@ -157,7 +146,7 @@ internal class Config(key: File)
     internal val dbURL: String = tokens[3]
     internal val dbUser: String = tokens[4]
     internal val dbPass: String = tokens[5]
-    internal val prefix: String = "|"
+    internal val prefix: String = "||"
     internal val success: String = "\uD83D\uDC32"
     internal val warning: String = "\uD83D\uDC22"
     internal val error: String = "\uD83D\uDD25"

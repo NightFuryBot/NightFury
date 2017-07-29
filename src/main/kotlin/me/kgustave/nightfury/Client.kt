@@ -19,6 +19,7 @@ import com.jagrosh.jagtag.Parser
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import com.mashape.unirest.http.Unirest
 import com.mashape.unirest.http.exceptions.UnirestException
+import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
 import me.kgustave.nightfury.listeners.AutoLoggingListener
@@ -42,12 +43,15 @@ import org.json.JSONObject
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
+import kotlin.reflect.full.functions
 import kotlin.streams.toList
 
 /**
@@ -57,11 +61,11 @@ class Client internal constructor
 (val prefix: String, val ownerID: Long, val manager: DatabaseManager,
  val success: String, val warning: String, val error: String,
  val server: String, val dBotsKey : String, val waiter: EventWaiter,
- val executor: ScheduledExecutorService, val parser: Parser,
+val parser: Parser,
  vararg commands: Command) : ListenerAdapter()
 {
     // TODO Remove all occurrences of @Suppress("unused")
-
+    private val executor : ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val commandIndex : HashMap<String, Int> = HashMap()
     private val cooldowns : HashMap<String, OffsetDateTime> = HashMap()
     private val scheduled : HashMap<String, ScheduledFuture<*>> = HashMap()
@@ -236,6 +240,17 @@ class Client internal constructor
 
     fun incrementUses(command: Command) = synchronized(uses) { uses.put(command.name, uses.getOrDefault(command.name, 0)+1) }
 
+    fun clearAPICaches()
+    {
+        commands.stream().filter {
+            it::class.annotations.filterIsInstance<APICache>().isNotEmpty()
+        }.forEach { cmd ->
+            cmd::class.functions.filter {
+                it.annotations.filterIsInstance<APICache>().isNotEmpty()
+            }.forEach { it.call(cmd) }
+        }
+    }
+
     internal fun linkIds(id: Long, message: Message)
     {
         synchronized(linkedCache)
@@ -266,6 +281,12 @@ class Client internal constructor
             toLeave.forEach { it.leave().queue() }
             LOG.info("Left ${toLeave.size} bad guilds!")
         }
+        // Clear API Caches every hour
+        executor.scheduleAtFixedRate({
+            clearAPICaches()
+            cleanCooldowns()
+            cleanSchedule()
+        }, 0, 1, TimeUnit.HOURS)
         updateStats(event.jda)
     }
 

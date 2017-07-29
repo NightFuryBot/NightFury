@@ -19,11 +19,13 @@ import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
+import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.api.GoogleAPI
 
 /**
  * @author Kaidan Gustave
  */
+@APICache
 class GoogleCmd(private val api: GoogleAPI) : Command() {
 
     init {
@@ -47,4 +49,8 @@ class GoogleCmd(private val api: GoogleAPI) : Command() {
             else event.replySuccess("${event.author.asMention} ${results[0]}")
         }
     }
+
+    @APICache
+    @Suppress("unused")
+    fun clearCache() = api.clearCache()
 }
