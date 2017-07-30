@@ -19,6 +19,7 @@ import com.jagrosh.jdautilities.menu.slideshow.SlideshowBuilder
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.APICache
+import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.api.E621API
 import me.monitor.je621.E621Array
 import net.dv8tion.jda.core.Permission
@@ -31,6 +32,7 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
+@AutoInvokeCooldown
 @APICache
 class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = Random()) : Command()
 {
@@ -38,11 +40,11 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
         this.name = "e621"
         this.arguments = Argument("<number of posts> [tags...]")
         this.aliases = arrayOf("pron","porn")
+        this.cooldown = 15
+        this.cooldownScope = CooldownScope.USER_GUILD
         this.guildOnly = true
         this.category = Category.NSFW
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
-        this.cooldown = 15
-        this.cooldownScope = CooldownScope.USER_GUILD
     }
 
     override fun execute(event: CommandEvent)

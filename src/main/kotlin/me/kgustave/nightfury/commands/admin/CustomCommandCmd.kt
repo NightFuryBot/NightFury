@@ -17,6 +17,7 @@ package me.kgustave.nightfury.commands.admin
 
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
+import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.commands.standard.globalTags
 import me.kgustave.nightfury.commands.standard.localTags
 import me.kgustave.nightfury.extensions.waiting.paginator
@@ -49,10 +50,10 @@ private class CustomCommandAddCmd : Command()
         this.fullname = "ccommand add"
         this.arguments = Argument("[command name] [command content]")
         this.help = "adds a custom command"
+        this.cooldown = 30
+        this.cooldownScope = CooldownScope.GUILD
         this.category = Category.ADMIN
         this.guildOnly = true
-        this.cooldown = 30
-        this.cooldownScope = CooldownScope.USER_GUILD
     }
 
     override fun execute(event: CommandEvent)
@@ -84,6 +85,7 @@ private class CustomCommandAddCmd : Command()
             else {
                 add(name, content, event.guild)
                 event.replySuccess("Successfully created Custom Command \"**$name**\"!")
+                invokeCooldown(event)
             }
         }
     }
@@ -98,8 +100,6 @@ private class CustomCommandRemoveCmd : Command()
         this.help = "removes a custom command"
         this.category = Category.ADMIN
         this.guildOnly = true
-        this.cooldown = 10
-        this.cooldownScope = CooldownScope.USER_GUILD
     }
 
     override fun execute(event: CommandEvent)
@@ -125,10 +125,10 @@ private class CustomCommandImportCmd : Command()
         this.fullname = "ccommand import"
         this.arguments = Argument("[tag name]")
         this.help = "imports a tag as a custom command"
+        this.cooldown = 30
+        this.cooldownScope = CooldownScope.GUILD
         this.category = Category.ADMIN
         this.guildOnly = true
-        this.cooldown = 30
-        this.cooldownScope = CooldownScope.USER_GUILD
     }
 
     override fun execute(event: CommandEvent)
@@ -147,6 +147,7 @@ private class CustomCommandImportCmd : Command()
                     val cmdCont = event.globalTags.getTagContent(name)
                     customCommands.add(cmdName, cmdCont, event.guild)
                     event.replySuccess("Successfully imported global tag \"$cmdName\" as a Custom Command!")
+                    invokeCooldown(event)
                 }
             } else {
                 val cmdName = event.localTags.getOriginalName(name, event.guild)
@@ -156,11 +157,13 @@ private class CustomCommandImportCmd : Command()
                 val cmdCont = event.localTags.getTagContent(name, event.guild)
                 customCommands.add(cmdName, cmdCont, event.guild)
                 event.replySuccess("Successfully imported local tag \"$cmdName\" as a Custom Command!")
+                invokeCooldown(event)
             }
         }
     }
 }
 
+@AutoInvokeCooldown
 private class CustomCommandListCmd(val waiter: EventWaiter) : Command()
 {
     init {

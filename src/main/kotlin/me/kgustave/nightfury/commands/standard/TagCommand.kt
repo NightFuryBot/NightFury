@@ -18,6 +18,7 @@ package me.kgustave.nightfury.commands.standard
 import club.minnced.kjda.promise
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
+import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.db.sql.SQLGlobalTags
 import me.kgustave.nightfury.db.sql.SQLLocalTags
 import me.kgustave.nightfury.extensions.Find
@@ -149,6 +150,7 @@ private class TagCreateCmd : Command()
         else {
             event.localTags.addTag(name, event.author.idLong, content, event.guild)
             event.replySuccess("Successfully created local tag \"**$name**\" on ${event.guild.name}!")
+            invokeCooldown(event)
         }
     }
 }
@@ -192,6 +194,7 @@ private class TagCreateGlobalCmd : Command()
         else {
             event.globalTags.addTag(name,event.author.idLong,content)
             event.replySuccess("Successfully created global tag \"**$name**\"!")
+            invokeCooldown(event)
         }
     }
 }
@@ -282,6 +285,7 @@ private class TagEditCmd : Command()
                 } else if(event.globalTags.getTagOwnerId(name)==event.author.idLong) {
                     event.globalTags.editTag(newContent, name, event.author.idLong)
                     event.replySuccess("Successfully edit global tag \"**$name**\"!")
+                    invokeCooldown(event)
                 } else {
                     event.replyError("**You cannot edit the global tag \"$name\" because you are not it's owner!**\n" +
                             SEE_HELP.format(event.prefixUsed, fullname))
@@ -289,6 +293,7 @@ private class TagEditCmd : Command()
             } else if(event.localTags.getTagOwnerId(name, event.guild)==event.author.idLong) {
                 event.localTags.editTag(newContent, name, event.author.idLong, event.guild)
                 event.replySuccess("Successfully edit local tag \"**$name**\"!")
+                invokeCooldown(event)
             } else {
                 event.replyError("**You cannot edit the local tag \"$name\" because you are not it's owner!**\n" +
                         SEE_HELP.format(event.prefixUsed, fullname))
@@ -299,6 +304,7 @@ private class TagEditCmd : Command()
             } else if(event.globalTags.getTagOwnerId(name)==event.author.idLong) {
                 event.globalTags.editTag(newContent, name, event.author.idLong)
                 event.replySuccess("Successfully edit local tag \"**$name**\"!")
+                invokeCooldown(event)
             } else {
                 event.replyError("**You cannot edit the global tag \"$name\" because you are not it's owner!**\n" +
                         SEE_HELP.format(event.prefixUsed, fullname))
@@ -307,6 +313,7 @@ private class TagEditCmd : Command()
     }
 }
 
+@AutoInvokeCooldown
 private class TagListCmd(val waiter: EventWaiter) : Command()
 {
     init {
@@ -402,7 +409,10 @@ private class TagOwnerCmd : Command()
         // If this happens... Uh... Let's just put this here incase :/
         if(ownerId==0L) return event.replyError("Tag named \"$name\" does not exist!")
         // Cover overrides
-        if(isLocal && ownerId==1L) return event.replyWarning("Local tag named \"$name\" belongs to the server.")
+        if(isLocal && ownerId==1L) {
+            invokeCooldown(event)
+            return event.replyWarning("Local tag named \"$name\" belongs to the server.")
+        }
 
         val str = if(isLocal) "local tag \"${event.localTags.getOriginalName(name, event.guild)}\""
         else "global tag \"${event.globalTags.getOriginalName(name)}\""
@@ -412,6 +422,7 @@ private class TagOwnerCmd : Command()
             else           event.replySuccess("The $str is owned by ${formatUserName(it, true)}${
             if(!event.jda.users.contains(it)) " (ID: ${it.id})." else "."
             }")
+            invokeCooldown(event)
         } catch {
             event.replyError("The owner of $str could not be retrieved for an unexpected reason!")
         }

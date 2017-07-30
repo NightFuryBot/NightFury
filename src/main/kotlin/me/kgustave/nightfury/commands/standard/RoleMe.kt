@@ -19,6 +19,7 @@ import club.minnced.kjda.promise
 import com.jagrosh.jdautilities.utils.FinderUtil
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
+import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.extensions.giveRole
 import me.kgustave.nightfury.extensions.removeRole
 import me.kgustave.nightfury.extensions.waiting.paginator
@@ -71,14 +72,16 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
         else if(!event.member.roles.contains(requested)) {
             event.member.giveRole(requested).promise() then {
                 event.replySuccess("Successfully gave the role **${requested.name}**!")
+                invokeCooldown(event)
             } catch {
                 event.replyError("An error occurred while giving the role **${requested.name}**!")
             }
         } else {
             event.member.removeRole(requested).promise() then {
-                event.replySuccess("Successfully gave the role **${requested.name}**!")
+                event.replySuccess("Successfully removed the role **${requested.name}**!")
+                invokeCooldown(event)
             } catch {
-                event.replyError("An error occurred while giving the role **${requested.name}**!")
+                event.replyError("An error occurred while removing the role **${requested.name}**!")
             }
         }
     }
@@ -91,6 +94,8 @@ private class RoleMeAddCmd : Command()
         this.fullname = "roleme add"
         this.arguments = Argument("<Role>")
         this.help = "adds a RoleMe role for the server"
+        this.cooldown = 30
+        this.cooldownScope = CooldownScope.GUILD
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
         this.category = Category.ADMIN
@@ -116,6 +121,7 @@ private class RoleMeAddCmd : Command()
             event.replyWarning("The role **${requested.name}** was added as RoleMe!\n" +
                     "Please be aware that due to role hierarchy positioning, I will not be able to give this role to members!\n" +
                     "To fix this, make sure my I have a role higher than `${requested.name}` on the roles list.")
+        invokeCooldown(event)
     }
 
 }
@@ -148,6 +154,7 @@ private class RoleMeRemoveCmd : Command()
     }
 }
 
+@AutoInvokeCooldown
 private class RoleMeListCmd(val waiter: EventWaiter) : Command()
 {
     init {

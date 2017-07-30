@@ -6,7 +6,7 @@ It is written in 100% [Kotlin](https://github.com/JetBrains/kotlin) using the
 
 [![Powered By JDA](http://i.imgur.com/4Fhq6yQ.png)](https://github.com/DV8FromTheWorld/JDA)
 
-Currently, NightFury is at Version 0.4.5, and has 26 commands!
+Currently, NightFury is at Version 0.4.7, and has 27 commands!
 
 ## Features
 - Moderation

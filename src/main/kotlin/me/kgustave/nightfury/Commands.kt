@@ -15,6 +15,7 @@
  */
 package me.kgustave.nightfury
 
+import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import java.util.*
@@ -222,7 +223,8 @@ abstract class Command
                             }!"
                     )
                 }
-                event.client.applyCooldown(key, cooldown)
+                if(this::class.annotations.filterIsInstance<AutoInvokeCooldown>().isNotEmpty())
+                    event.client.applyCooldown(key, cooldown)
             }
         }
 
@@ -251,6 +253,14 @@ abstract class Command
             aliases.forEach { alias -> if(string.equals(alias, true)) return true }
         return false
     }
+
+    fun invokeCooldown(event: CommandEvent)
+    {
+        val key = getCooldownKey(event)
+        if(key != null) invokeCooldown(event, key)
+    }
+
+    private fun invokeCooldown(event: CommandEvent, key: String) = event.client.applyCooldown(key, cooldown)
 
     fun getCooldownKey(event: CommandEvent): String?
     {

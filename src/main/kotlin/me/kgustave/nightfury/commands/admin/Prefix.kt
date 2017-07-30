@@ -18,6 +18,7 @@ package me.kgustave.nightfury.commands.admin
 import club.minnced.kjda.builders.colorAwt
 import club.minnced.kjda.builders.embed
 import me.kgustave.nightfury.*
+import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import net.dv8tion.jda.core.Permission
 
 /**
@@ -42,6 +43,8 @@ private class AddPrefixCmd : Command() {
         this.fullname = "prefix add"
         this.arguments = Argument("<prefix>")
         this.help = "adds a custom prefix for the bot"
+        this.cooldown = 30
+        this.cooldownScope = CooldownScope.GUILD
         this.guildOnly = true
         this.category = Category.ADMIN
     }
@@ -61,6 +64,7 @@ private class AddPrefixCmd : Command() {
         {
             event.manager.addPrefix(event.guild, args)
             event.replySuccess("`$args` was added as a prefix!")
+            invokeCooldown(event)
         }
     }
 }
@@ -93,6 +97,7 @@ private class RemovePrefixCmd : Command() {
     }
 }
 
+@AutoInvokeCooldown
 private class ListPrefixCmd: Command() {
 
     init {

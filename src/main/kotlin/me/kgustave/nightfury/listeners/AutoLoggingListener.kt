@@ -20,7 +20,9 @@ import club.minnced.kjda.promise
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
 import me.kgustave.nightfury.extensions.limit
+import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.audit.ActionType
+import net.dv8tion.jda.core.events.guild.GenericGuildEvent
 import net.dv8tion.jda.core.events.guild.GuildBanEvent
 import net.dv8tion.jda.core.events.guild.GuildUnbanEvent
 import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent
@@ -36,8 +38,7 @@ class AutoLoggingListener(val manager: DatabaseManager, val logger: ModLogger) :
     // Handle Bans
     override fun onGuildBan(event: GuildBanEvent)
     {
-        // If there is no mod log, we just return
-        if(manager.getModLog(event.guild)==null) return
+        if(!event.shouldLog()) return
 
         event.guild.auditLogs.limit { 10 }.promise() then {
             if(it==null) return@then
@@ -55,8 +56,7 @@ class AutoLoggingListener(val manager: DatabaseManager, val logger: ModLogger) :
     // Handle Unbans
     override fun onGuildUnban(event: GuildUnbanEvent)
     {
-        // If there is no mod log, we just return
-        if(manager.getModLog(event.guild)==null) return
+        if(!event.shouldLog()) return
 
         event.guild.auditLogs.limit { 10 }.promise() then {
             if(it==null) return@then
@@ -74,8 +74,7 @@ class AutoLoggingListener(val manager: DatabaseManager, val logger: ModLogger) :
     // Handle Kicks
     override fun onGuildMemberLeave(event: GuildMemberLeaveEvent)
     {
-        // If there is no mod log, we just return
-        if(manager.getModLog(event.guild)==null) return
+        if(!event.shouldLog()) return
 
         event.guild.auditLogs.limit { 10 }.promise() then {
             if(it==null) return@then
@@ -93,11 +92,9 @@ class AutoLoggingListener(val manager: DatabaseManager, val logger: ModLogger) :
     // Handle Mutes
     override fun onGuildMemberRoleAdd(event: GuildMemberRoleAddEvent)
     {
-        // If there is no mod log or muted role, we just return
-        if(manager.getModLog(event.guild)==null) return
+        if(!event.shouldLog()) return
         val mutedRole = manager.getMutedRole(event.guild) ?: return
 
-        // If muted role was not applied, we just return
         if(!event.roles.contains(mutedRole)) return
 
         event.guild.auditLogs.limit { 10 }.promise() then {
@@ -116,11 +113,9 @@ class AutoLoggingListener(val manager: DatabaseManager, val logger: ModLogger) :
     // Handle Unmutes
     override fun onGuildMemberRoleRemove(event: GuildMemberRoleRemoveEvent)
     {
-        // If there is no mod log or muted role, we just return
-        if(manager.getModLog(event.guild)==null) return
+        if(!event.shouldLog()) return
         val mutedRole = manager.getMutedRole(event.guild) ?: return
 
-        // If muted role was not removed, we just return
         if(!event.roles.contains(mutedRole)) return
 
         event.guild.auditLogs.limit { 10 }.promise() then {
@@ -134,5 +129,9 @@ class AutoLoggingListener(val manager: DatabaseManager, val logger: ModLogger) :
                 logger.newUnmute(event.guild, it.user, event.user, it.reason)
             }
         }
+    }
+
+    private fun GenericGuildEvent.shouldLog() : Boolean {
+        return manager.getModLog(guild)!=null && guild.selfMember.hasPermission(Permission.VIEW_AUDIT_LOGS)
     }
 }

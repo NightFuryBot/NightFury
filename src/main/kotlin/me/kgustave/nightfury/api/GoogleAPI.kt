@@ -27,7 +27,7 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
-class GoogleAPI
+class GoogleAPI : AbstractAPICache<List<String>>()
 {
     private companion object
     {
@@ -37,17 +37,11 @@ class GoogleAPI
         private val USER_AGENT : String = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
     }
 
-    private val cache : HashMap<String, Pair<List<String>, OffsetDateTime>> = HashMap()
-
     fun search(query: String) : List<String>?
     {
-        synchronized(cache)
-        {
-            val cached = cache[query.toLowerCase()]?.first
-            if(cached!=null)
-                return cached
-        }
-
+        val cached = getFromCache(query)
+        if(cached!=null)
+            return cached
         val request: String = try {
             String.format(URL_FORMAT, URLEncoder.encode(query, ENCODING))
         } catch (e: UnsupportedOperationException) {
@@ -70,14 +64,11 @@ class GoogleAPI
             LOG.fatal(e)
             return@search null
         }
-        synchronized(cache)
-        {
-            cache.put(query, Pair(result, OffsetDateTime.now()))
-        }
+        addToCache(query, result)
         return result
     }
 
-    fun clearCache()
+    override fun clearCache()
     {
         synchronized(cache)
         {

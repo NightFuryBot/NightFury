@@ -21,6 +21,8 @@ import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
+import me.kgustave.nightfury.CooldownScope
+import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.commands.admin.ModeratorListBaseCmd
 import me.kgustave.nightfury.commands.moderator.SettingsCmd
 import me.kgustave.nightfury.extensions.waiting.orderedMenu
@@ -34,6 +36,7 @@ import java.util.Comparator
 /**
  * @author Kaidan Gustave
  */
+@AutoInvokeCooldown
 class ServerCmd(val waiter: EventWaiter) : Command()
 {
     init {
@@ -41,9 +44,13 @@ class ServerCmd(val waiter: EventWaiter) : Command()
         this.aliases = arrayOf("guild")
         this.help = "gets info on the server"
         this.guildOnly = true
+        this.cooldown = 10
+        this.cooldownScope = CooldownScope.USER_GUILD
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
         this.children = arrayOf(
-                ModeratorListBaseCmd.ServerModeratorsCmd(), ServerOwnerCmd(), SettingsCmd()
+                ModeratorListBaseCmd.ServerModeratorsCmd(),
+                ServerOwnerCmd(),
+                SettingsCmd()
         )
     }
 

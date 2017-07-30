@@ -21,6 +21,7 @@ import com.jagrosh.jagtag.Parser
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.api.E621API
 import me.kgustave.nightfury.api.GoogleAPI
+import me.kgustave.nightfury.api.YouTubeAPI
 import me.kgustave.nightfury.commands.admin.*
 import me.kgustave.nightfury.commands.moderator.*
 import me.kgustave.nightfury.commands.dev.*
@@ -58,7 +59,7 @@ class NightFury(args: Array<String>)
             System.exit(exit)
         }
 
-        @JvmStatic val version : String = "0.4.6"
+        @JvmStatic val version : String = "0.4.7"
         @JvmStatic val github : String = "https://github.com/TheMonitorLizard/NightFury/"
     }
 
@@ -85,6 +86,7 @@ class NightFury(args: Array<String>)
 
         val google = GoogleAPI()
         val e621 = E621API()
+        val yt = YouTubeAPI(config.ytApiKey)
 
         val parser : Parser = JagTag.newDefaultBuilder().addMethods(getMethods()).build()
 
@@ -103,6 +105,7 @@ class NightFury(args: Array<String>)
                 RoleMeCmd(waiter),
                 ServerCmd(waiter),
                 TagCommand(waiter),
+                YouTubeCmd(yt),
 
                 E621Cmd(e621, waiter),
 
@@ -146,6 +149,7 @@ internal class Config(key: File)
     internal val dbURL: String = tokens[3]
     internal val dbUser: String = tokens[4]
     internal val dbPass: String = tokens[5]
+    internal val ytApiKey: String = tokens[6]
     internal val prefix: String = "|"
     internal val success: String = "\uD83D\uDC32"
     internal val warning: String = "\uD83D\uDC22"

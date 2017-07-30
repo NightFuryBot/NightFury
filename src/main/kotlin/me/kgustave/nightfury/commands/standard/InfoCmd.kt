@@ -21,6 +21,7 @@ import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
+import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.extensions.Find
 import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.Permission
@@ -34,6 +35,7 @@ import java.util.Comparator
 /**
  * @author Kaidan Gustave
  */
+@AutoInvokeCooldown
 class InfoCmd : Command() {
 
     companion object
@@ -68,7 +70,6 @@ class InfoCmd : Command() {
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    // FIXME Command is slow, most likely due to opening search. Figure out how to speed it up + implement.
     override fun execute(event: CommandEvent)
     {
         val query = event.args

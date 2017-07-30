@@ -20,19 +20,19 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.APICache
-import me.kgustave.nightfury.api.GoogleAPI
+import me.kgustave.nightfury.api.YouTubeAPI
 
 /**
  * @author Kaidan Gustave
  */
 @APICache
-class GoogleCmd(private val api: GoogleAPI) : Command()
+class YouTubeCmd(val ytAPI: YouTubeAPI) : Command()
 {
     init {
-        this.name = "google"
-        this.aliases = arrayOf("g")
+        this.name = "youtube"
+        this.aliases = arrayOf("yt")
         this.arguments = Argument("<query>")
-        this.help = "searches google"
+        this.help = "searches youtube"
         this.cooldown = 30
         this.cooldownScope = CooldownScope.USER
         this.guildOnly = false
@@ -43,15 +43,15 @@ class GoogleCmd(private val api: GoogleAPI) : Command()
         val query = event.args
         if(query.isEmpty()) event.replyError(TOO_FEW_ARGS_ERROR.format("Please specify what you want to search for!"))
         else event.channel.sendTyping().queue {
-            val results = api.search(query)
+            val results = ytAPI.search(query)
             if(results == null) event.replyError("An unexpected error occured while searching!")
             else if(results.isEmpty()) event.replyError("No results were found for \"$query\"!")
-            else event.replySuccess("**${event.author.asMention} ${results[0]}**")
+            else event.replySuccess("**${event.author.asMention} https://youtube.com/watch?v=${results[0]}**")
             invokeCooldown(event)
         }
     }
 
     @APICache
     @Suppress("unused")
-    fun clearCache() = api.clearCache()
+    fun clearCache() = ytAPI.clearCache()
 }

@@ -97,6 +97,7 @@ class ColorMeCmd : Command() {
         } catch {
             event.replyError("An unexpected error occurred while changing your color!")
         }
+        invokeCooldown(event)
     }
 }
 private class ColorMeAddCmd : Command()
@@ -106,6 +107,8 @@ private class ColorMeAddCmd : Command()
         this.fullname = "colorme add"
         this.arguments = Argument("<Role>")
         this.help = "adds a ColorMe role for the server"
+        this.cooldown = 30
+        this.cooldownScope = CooldownScope.GUILD
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
         this.category = Category.ADMIN
@@ -131,6 +134,7 @@ private class ColorMeAddCmd : Command()
             event.replyWarning("The role **${requested.name}** was added as ColorMe!\n" +
                     "Please be aware that due to role hierarchy positioning, I will not be able to give this role to members!\n" +
                     "To fix this, make sure my I have a role higher than `${requested.name}` on the roles list.")
+        invokeCooldown(event)
     }
 
 }

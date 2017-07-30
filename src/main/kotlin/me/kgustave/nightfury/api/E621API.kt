@@ -23,9 +23,8 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
-class E621API
+class E621API : AbstractAPICache<E621Array>()
 {
-    private val cache : HashMap<String, Pair<E621Array, OffsetDateTime>> = HashMap()
 
     private val jE621 = JE621Builder("NightFury").build()
 
@@ -34,18 +33,15 @@ class E621API
         if(tags.size>6) throw IllegalArgumentException("Only 6 tags may be specified!")
         if(limit>320) throw IllegalArgumentException("Only a maximum of 320 to retrieve may be specified!")
         val key = buildString { tags.forEach { append("$it ") } }.toLowerCase()
-        if(synchronized(cache) { cache.containsKey(key) })
-        {
-            val cached = cache[key]?.first
-            if(cached != null && cached.size()==limit)
-                return cached
-        }
+        val cached = getFromCache(key)
+        if(cached!=null)
+            return cached
         val arr = jE621.startNewSearch().setMaxRetrieved(limit).addTags(*tags).search().get()
-        synchronized(cache) { cache.put(key, Pair(arr, OffsetDateTime.now())) }
+        addToCache(key, arr)
         return arr
     }
 
-    fun clearCache()
+    override fun clearCache()
     {
         synchronized(cache) {
             val now = OffsetDateTime.now()
