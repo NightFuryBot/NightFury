@@ -37,6 +37,7 @@ class InviteCmd(vararg requestedPerms : Permission) : Command()
 
     init {
         this.name = "invite"
+        this.help = "gets an invite link for NightFury"
         this.guildOnly = false
 
         var p: Long = 0

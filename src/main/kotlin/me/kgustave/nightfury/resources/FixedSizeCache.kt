@@ -26,7 +26,7 @@ class FixedSizeCache<in K : Any, V>(size: Int)
             else arrayOfNulls<Any>(size) as Array<K?>
 
     val size : Int
-        get() = currIndex
+        get() = map.size
 
     private var currIndex = 0
 

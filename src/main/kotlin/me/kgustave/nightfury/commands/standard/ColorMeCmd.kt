@@ -35,7 +35,7 @@ class ColorMeCmd : Command() {
 
     init {
         this.name = "colorme"
-        this.arguments = Argument("<hexcode>")
+        this.arguments = "<hexcode>"
         this.help = "set the color of your highest ColorMe role"
         this.cooldown = 10
         this.guildOnly = true
@@ -97,7 +97,7 @@ class ColorMeCmd : Command() {
         } catch {
             event.replyError("An unexpected error occurred while changing your color!")
         }
-        invokeCooldown(event)
+        event.invokeCooldown()
     }
 }
 private class ColorMeAddCmd : Command()
@@ -105,7 +105,7 @@ private class ColorMeAddCmd : Command()
     init {
         this.name = "add"
         this.fullname = "colorme add"
-        this.arguments = Argument("<Role>")
+        this.arguments = "<Role>"
         this.help = "adds a ColorMe role for the server"
         this.cooldown = 30
         this.cooldownScope = CooldownScope.GUILD
@@ -134,7 +134,7 @@ private class ColorMeAddCmd : Command()
             event.replyWarning("The role **${requested.name}** was added as ColorMe!\n" +
                     "Please be aware that due to role hierarchy positioning, I will not be able to give this role to members!\n" +
                     "To fix this, make sure my I have a role higher than `${requested.name}` on the roles list.")
-        invokeCooldown(event)
+        event.invokeCooldown()
     }
 
 }
@@ -144,7 +144,7 @@ private class ColorMeRemoveCmd : Command()
     init {
         this.name = "remove"
         this.fullname = "colorme remove"
-        this.arguments = Argument("<Role>")
+        this.arguments = "<Role>"
         this.help = "removes a ColorMe role for the server"
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)

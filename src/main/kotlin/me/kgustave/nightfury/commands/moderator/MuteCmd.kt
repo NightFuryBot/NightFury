@@ -16,7 +16,6 @@
 package me.kgustave.nightfury.commands.moderator
 
 import club.minnced.kjda.promise
-import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
@@ -35,7 +34,7 @@ class MuteCmd : Command() {
 
     init {
         this.name = "mute"
-        this.arguments = Argument("[@user or ID] <reason>")
+        this.arguments = "[@user or ID] <reason>"
         this.help = "mutes a user"
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES, Permission.MANAGE_PERMISSIONS)
@@ -98,7 +97,7 @@ private class SetupMuteCmd : Command()
     init {
         this.name = "setup"
         this.fullname = "mute setup"
-        this.arguments = Argument("<name of muted role>")
+        this.arguments = "<name of muted role>"
         this.help = "creates a muted role for this server"
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES, Permission.MANAGE_PERMISSIONS)
@@ -128,7 +127,7 @@ private class SetMutedRoleCmd : Command()
     {
         this.name = "set"
         this.fullname = "mute set"
-        this.arguments = Argument("<role>")
+        this.arguments = "<role>"
         this.help = "sets the muted role for this server"
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES, Permission.MANAGE_PERMISSIONS)

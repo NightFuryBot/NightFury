@@ -16,7 +16,6 @@
 package me.kgustave.nightfury.commands.moderator
 
 import club.minnced.kjda.promise
-import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
@@ -33,7 +32,7 @@ class BanCmd : Command()
 {
     init {
         this.name = "ban"
-        this.arguments = Argument("[@user or ID] <reason>")
+        this.arguments = "[@user or ID] <reason>"
         this.help = "bans a user from the server"
         this.botPermissions = arrayOf(Permission.BAN_MEMBERS)
         this.category = Category.MODERATOR

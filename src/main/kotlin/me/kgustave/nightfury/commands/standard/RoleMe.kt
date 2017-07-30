@@ -35,7 +35,7 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
 {
     init {
         this.name = "roleme"
-        this.arguments = Argument("<role>")
+        this.arguments = "[role]"
         this.help = "give yourself or remove a RoleMe role"
         this.cooldown = 10
         this.guildOnly = true
@@ -72,14 +72,14 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
         else if(!event.member.roles.contains(requested)) {
             event.member.giveRole(requested).promise() then {
                 event.replySuccess("Successfully gave the role **${requested.name}**!")
-                invokeCooldown(event)
+                event.invokeCooldown()
             } catch {
                 event.replyError("An error occurred while giving the role **${requested.name}**!")
             }
         } else {
             event.member.removeRole(requested).promise() then {
                 event.replySuccess("Successfully removed the role **${requested.name}**!")
-                invokeCooldown(event)
+                event.invokeCooldown()
             } catch {
                 event.replyError("An error occurred while removing the role **${requested.name}**!")
             }
@@ -92,7 +92,7 @@ private class RoleMeAddCmd : Command()
     init {
         this.name = "add"
         this.fullname = "roleme add"
-        this.arguments = Argument("<Role>")
+        this.arguments = "[role]"
         this.help = "adds a RoleMe role for the server"
         this.cooldown = 30
         this.cooldownScope = CooldownScope.GUILD
@@ -121,7 +121,7 @@ private class RoleMeAddCmd : Command()
             event.replyWarning("The role **${requested.name}** was added as RoleMe!\n" +
                     "Please be aware that due to role hierarchy positioning, I will not be able to give this role to members!\n" +
                     "To fix this, make sure my I have a role higher than `${requested.name}` on the roles list.")
-        invokeCooldown(event)
+        event.invokeCooldown()
     }
 
 }
@@ -131,7 +131,7 @@ private class RoleMeRemoveCmd : Command()
     init {
         this.name = "remove"
         this.fullname = "roleme remove"
-        this.arguments = Argument("<Role>")
+        this.arguments = "[role]"
         this.help = "removes a RoleMe role for the server"
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
@@ -177,7 +177,7 @@ private class RoleMeListCmd(val waiter: EventWaiter) : Command()
             text             { "RoleMe Roles On ${event.guild.name}" }
             timeout          { 20 }
             items            { addAll(rolemes) }
-            finalAction      { it.editMessage(it).queue(); event.linkMessage(it) }
+            finalAction      { event.linkMessage(it) }
             showPageNumbers  { true }
             useNumberedItems { true }
             waitOnSinglePage { false }

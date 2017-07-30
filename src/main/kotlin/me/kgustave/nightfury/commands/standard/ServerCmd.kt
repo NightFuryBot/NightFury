@@ -26,6 +26,7 @@ import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.commands.admin.ModeratorListBaseCmd
 import me.kgustave.nightfury.commands.moderator.SettingsCmd
 import me.kgustave.nightfury.extensions.waiting.orderedMenu
+import me.kgustave.nightfury.extensions.waiting.paginator
 import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Member
@@ -36,18 +37,25 @@ import java.util.Comparator
 /**
  * @author Kaidan Gustave
  */
-@AutoInvokeCooldown
 class ServerCmd(val waiter: EventWaiter) : Command()
 {
     init {
         this.name = "server"
         this.aliases = arrayOf("guild")
+        this.arguments = "<info category>"
         this.help = "gets info on the server"
+        this.helpBiConsumer = Command.standardSubHelp(
+                "Gets information on the server from based on one of the sub-commands listed " +
+                        "below. If no sub-command is specified, this will generate a menu where you can select which " +
+                        "category to get info from.",
+                true
+        )
         this.guildOnly = true
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER_GUILD
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
         this.children = arrayOf(
+                ServerJoinsCmd(waiter),
                 ModeratorListBaseCmd.ServerModeratorsCmd(),
                 ServerOwnerCmd(),
                 SettingsCmd()
@@ -56,22 +64,28 @@ class ServerCmd(val waiter: EventWaiter) : Command()
 
     override fun execute(event: CommandEvent)
     {
+        if(event.args.isNotEmpty())
+            return event.replyError("**Invalid Information Category**\n" +
+                    SEE_HELP.format(event.client.prefix, name))
         val children = children
         orderedMenu(waiter, event.channel)
         {
             description                         { "Choose a field to get info on:" }
             timeout                             { 20 }
-            choice                              { name { "Moderator" } action { children[0].run(event) } }
-            choice                              { name { "Owner" } action { children[1].run(event) } }
+            choice                              { name { "Joins" } action { children[0].run(event) } }
+            choice                              { name { "Moderator" } action { children[1].run(event) } }
+            choice                              { name { "Owner" } action { children[2].run(event) } }
             if(Category.MODERATOR.test(event))
-                choice                          { name { "Settings" } action { children[2].run(event) } }
+                choice                          { name { "Settings" } action { children[3].run(event) } }
             users                               { arrayOf(event.author) }
             colorAwt                            { event.selfMember.color }
             useCancelButton                     { true }
         }
+        event.invokeCooldown()
     }
 }
 
+@AutoInvokeCooldown
 private class ServerOwnerCmd : Command()
 {
     companion object
@@ -100,7 +114,7 @@ private class ServerOwnerCmd : Command()
         this.name = "owner"
         this.fullname = "server owner"
         this.help = "gets info on the owner of this server"
-        this.cooldown = 5
+        this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
@@ -168,5 +182,36 @@ private class ServerOwnerCmd : Command()
                 append(" > $name")
             }
         })
+    }
+}
+
+@AutoInvokeCooldown
+private class ServerJoinsCmd(val waiter: EventWaiter) : Command()
+{
+    init {
+        this.name = "joins"
+        this.fullname = "server joins"
+        this.help = "gets an ordered list of this server's join history"
+        this.guildOnly = true
+        this.cooldown = 10
+        this.cooldownScope = CooldownScope.USER_GUILD
+        this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
+    }
+
+    override fun execute(event: CommandEvent)
+    {
+        val joins = ArrayList(event.guild.members)
+        joins.sortWith(Comparator.comparing(Member::getJoinDate))
+        val names = joins.map { formatUserName(it.user, true) }
+        paginator(waiter, event.channel)
+        {
+            text             { "Joins for ${event.guild.name}" }
+            items            { addAll(names) }
+            finalAction      { it.delete().queue() }
+            users            { arrayOf(event.author) }
+            showPageNumbers  { true }
+            useNumberedItems { true }
+            waitOnSinglePage { true }
+        }
     }
 }

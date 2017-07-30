@@ -24,7 +24,7 @@ class ModeCmd : Command() {
 
     init {
         this.name = "mode"
-        this.arguments = Argument("<mode>")
+        this.arguments = "<mode>"
         this.help = "sets the bots mode"
         this.guildOnly = false
         this.devOnly = true

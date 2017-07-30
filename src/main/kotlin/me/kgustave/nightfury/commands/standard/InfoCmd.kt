@@ -17,7 +17,6 @@ package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.builders.colorAwt
 import club.minnced.kjda.builders.embed
-import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
@@ -63,7 +62,7 @@ class InfoCmd : Command() {
     {
         this.name = "info"
         this.aliases = arrayOf("i", "information")
-        this.arguments = Argument("<user>")
+        this.arguments = "<user>"
         this.help = "gets info on a user"
         this.cooldown = 5
         this.cooldownScope = CooldownScope.USER_GUILD

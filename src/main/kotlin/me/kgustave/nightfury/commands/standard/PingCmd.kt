@@ -33,8 +33,8 @@ class PingCmd : Command() {
 
     override fun execute(event: CommandEvent)
     {
-        event.reply("Ping...",{
+        event.reply("Ping...") {
             it.editMessage("Ping: ${event.message.creationTime.until(it.creationTime, ChronoUnit.MILLIS)}ms").queue()
-        })
+        }
     }
 }

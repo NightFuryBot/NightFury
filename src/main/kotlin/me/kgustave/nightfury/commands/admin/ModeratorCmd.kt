@@ -38,7 +38,7 @@ class ModeratorCmd : NoBaseExecutionCommand()
     init {
         this.name = "moderator"
         this.aliases = arrayOf("mod")
-        this.arguments = Argument("[add|remove|set] <arguments>")
+        this.arguments = "[add|remove|set] <arguments>"
         this.help = "add, remove, and manage moderators"
         this.guildOnly = true
         this.category = Category.ADMIN
@@ -53,7 +53,7 @@ private class ModeratorAddCmd : Command()
     init {
         this.name = "add"
         this.fullname = "moderator add"
-        this.arguments = Argument("[@user or ID] <reason>")
+        this.arguments = "[@user or ID] <reason>"
         this.help = "gives a member the moderator role"
         this.guildOnly = true
         this.category = Category.ADMIN
@@ -105,7 +105,7 @@ private class ModeratorRemoveCmd : Command()
     init {
         this.name = "remove"
         this.fullname = "moderator remove"
-        this.arguments = Argument("[@user or ID] <reason>")
+        this.arguments = "[@user or ID] <reason>"
         this.help = "removes a moderator's mod role"
         this.guildOnly = true
         this.category = Category.ADMIN
@@ -157,7 +157,7 @@ private class ModeratorSetCmd : Command()
     init {
         this.name = "set"
         this.fullname = "moderator set"
-        this.arguments = Argument("<role>")
+        this.arguments = "<role>"
         this.help = "sets the server's moderator role"
         this.guildOnly = true
         this.category = Category.ADMIN

@@ -30,8 +30,8 @@ abstract class Command
 
     var aliases: Array<String> = emptyArray()
         protected set(value) {field = value}
-    // TODO move to simple string arguments
-    var arguments: Argument = Argument("")
+
+    var arguments: String = ""
         protected set(value) {field = value}
 
     var help: String = "no help available"
@@ -95,7 +95,7 @@ abstract class Command
                 b.append("\n**Usage:** `")
                         .append(event.client.prefix)
                         .append(command.name)
-                        .append(if(arguments.args.isNotEmpty()) " ${arguments.args}`" else "`")
+                        .append(if(arguments.isNotEmpty()) " $arguments`" else "`")
                         .append("\n")
 
                 if(aliases.isNotEmpty())
@@ -125,7 +125,7 @@ abstract class Command
                                 b.append("\n__${cat.title}__\n\n")
                         }
                         b.append("`").append(event.client.prefix).append(child.fullname)
-                                .append(if(child.arguments.toString().isNotEmpty()) " ${child.arguments}" else "")
+                                .append(if(child.arguments.isNotEmpty()) " ${child.arguments}" else "")
                                 .append("` ").append(child.help).append("\n")
                     }
                 }
@@ -254,10 +254,10 @@ abstract class Command
         return false
     }
 
-    fun invokeCooldown(event: CommandEvent)
+    fun CommandEvent.invokeCooldown()
     {
-        val key = getCooldownKey(event)
-        if(key != null) invokeCooldown(event, key)
+        val key = getCooldownKey(this)
+        if(key != null) invokeCooldown(this, key)
     }
 
     private fun invokeCooldown(event: CommandEvent, key: String) = event.client.applyCooldown(key, cooldown)
@@ -294,11 +294,6 @@ abstract class Command
         else
             return cooldownScope.errorFlair
     }
-}
-
-class Argument(val args: String)
-{
-    override fun toString(): String = args
 }
 
 enum class Category(val title: String, private val predicate: (CommandEvent) -> Boolean)

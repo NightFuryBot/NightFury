@@ -49,7 +49,7 @@ class HelpCmd : Command() {
                     b.append("\n__${cat.title}__\n\n")
             }
             b.append("`").append(event.client.prefix).append(c.name)
-                    .append(if(c.arguments.toString().isNotEmpty()) " ${c.arguments}" else "")
+                    .append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
                     .append("` ").append(c.help).append("\n")
         }
         event.jda.retrieveUserById(event.client.ownerID).queue({

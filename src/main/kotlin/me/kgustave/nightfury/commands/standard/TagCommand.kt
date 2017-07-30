@@ -40,7 +40,7 @@ class TagCommand(waiter: EventWaiter) : Command()
     init {
         this.name = "tag"
         this.aliases = arrayOf("t")
-        this.arguments = Argument("[tag name] <tag args>")
+        this.arguments = "[tag name] <tag args>"
         this.help = "calls a tag"
         this.helpBiConsumer = Command.standardSubHelp(
                 null,
@@ -116,7 +116,7 @@ private class TagCreateCmd : Command()
     init {
         this.name = "create"
         this.fullname = "tag create"
-        this.arguments = Argument("<tag name> <tag content>")
+        this.arguments = "[tag name] [tag content]"
         this.help = "creates a new local tag"
         this.cooldown = 150
         this.cooldownScope = CooldownScope.USER_GUILD
@@ -150,7 +150,7 @@ private class TagCreateCmd : Command()
         else {
             event.localTags.addTag(name, event.author.idLong, content, event.guild)
             event.replySuccess("Successfully created local tag \"**$name**\" on ${event.guild.name}!")
-            invokeCooldown(event)
+            event.invokeCooldown()
         }
     }
 }
@@ -160,7 +160,7 @@ private class TagCreateGlobalCmd : Command()
     init {
         this.name = "createglobal"
         this.fullname = "tag createglobal"
-        this.arguments = Argument("<tag name> <tag content>")
+        this.arguments = "[tag name] [tag content]"
         this.help = "creates a new global tag"
         this.cooldown = 240
         this.cooldownScope = CooldownScope.USER
@@ -194,7 +194,7 @@ private class TagCreateGlobalCmd : Command()
         else {
             event.globalTags.addTag(name,event.author.idLong,content)
             event.replySuccess("Successfully created global tag \"**$name**\"!")
-            invokeCooldown(event)
+            event.invokeCooldown()
         }
     }
 }
@@ -204,7 +204,7 @@ private class TagDeleteCmd : Command()
     init {
         this.name = "delete"
         this.fullname = "tag delete"
-        this.arguments = Argument("[tag name]")
+        this.arguments = "[tag name]"
         this.help = "deletes a tag you own"
         this.guildOnly = true
     }
@@ -251,7 +251,7 @@ private class TagEditCmd : Command()
     init {
         this.name = "edit"
         this.fullname = "tag edit"
-        this.arguments = Argument("<tag name> <tag content>")
+        this.arguments = "[tag name] [tag content]"
         this.help = "edits a tag you own"
         this.cooldown = 180
         this.cooldownScope = CooldownScope.USER
@@ -285,7 +285,7 @@ private class TagEditCmd : Command()
                 } else if(event.globalTags.getTagOwnerId(name)==event.author.idLong) {
                     event.globalTags.editTag(newContent, name, event.author.idLong)
                     event.replySuccess("Successfully edit global tag \"**$name**\"!")
-                    invokeCooldown(event)
+                    event.invokeCooldown()
                 } else {
                     event.replyError("**You cannot edit the global tag \"$name\" because you are not it's owner!**\n" +
                             SEE_HELP.format(event.prefixUsed, fullname))
@@ -293,7 +293,7 @@ private class TagEditCmd : Command()
             } else if(event.localTags.getTagOwnerId(name, event.guild)==event.author.idLong) {
                 event.localTags.editTag(newContent, name, event.author.idLong, event.guild)
                 event.replySuccess("Successfully edit local tag \"**$name**\"!")
-                invokeCooldown(event)
+                event.invokeCooldown()
             } else {
                 event.replyError("**You cannot edit the local tag \"$name\" because you are not it's owner!**\n" +
                         SEE_HELP.format(event.prefixUsed, fullname))
@@ -304,7 +304,7 @@ private class TagEditCmd : Command()
             } else if(event.globalTags.getTagOwnerId(name)==event.author.idLong) {
                 event.globalTags.editTag(newContent, name, event.author.idLong)
                 event.replySuccess("Successfully edit local tag \"**$name**\"!")
-                invokeCooldown(event)
+                event.invokeCooldown()
             } else {
                 event.replyError("**You cannot edit the global tag \"$name\" because you are not it's owner!**\n" +
                         SEE_HELP.format(event.prefixUsed, fullname))
@@ -319,7 +319,7 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
     init {
         this.name = "list"
         this.fullname = "tag list"
-        this.arguments = Argument("<user>")
+        this.arguments = "<user>"
         this.help = "gets all the tags owned by a user"
         this.guildOnly = false
         this.cooldown = 10
@@ -366,7 +366,7 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
             if(localTags.isNotEmpty())
                 items        { addAll(localTags) }
             items            { addAll(globalTags) }
-            finalAction      { it.editMessage(it).queue(); event.linkMessage(it) }
+            finalAction      { event.linkMessage(it) }
             showPageNumbers  { true }
             useNumberedItems { true }
             waitOnSinglePage { false }
@@ -380,7 +380,7 @@ private class TagOwnerCmd : Command()
         this.name = "owner"
         this.aliases = arrayOf("creator")
         this.fullname = "tag owner"
-        this.arguments = Argument("[tag name]")
+        this.arguments = "[tag name]"
         this.help = "gets the owner of a tag"
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER
@@ -410,7 +410,7 @@ private class TagOwnerCmd : Command()
         if(ownerId==0L) return event.replyError("Tag named \"$name\" does not exist!")
         // Cover overrides
         if(isLocal && ownerId==1L) {
-            invokeCooldown(event)
+            event.invokeCooldown()
             return event.replyWarning("Local tag named \"$name\" belongs to the server.")
         }
 
@@ -422,7 +422,7 @@ private class TagOwnerCmd : Command()
             else           event.replySuccess("The $str is owned by ${formatUserName(it, true)}${
             if(!event.jda.users.contains(it)) " (ID: ${it.id})." else "."
             }")
-            invokeCooldown(event)
+            event.invokeCooldown()
         } catch {
             event.replyError("The owner of $str could not be retrieved for an unexpected reason!")
         }
@@ -434,7 +434,7 @@ private class TagRawCmd : Command()
     init {
         this.name = "raw"
         this.fullname = "tag raw"
-        this.arguments = Argument("[tag name]")
+        this.arguments = "[tag name]"
         this.help = "gets the raw, non-parsed form of a tag"
         this.guildOnly = false
     }
@@ -474,7 +474,7 @@ private class TagOverrideCmd : Command()
     init {
         this.name = "override"
         this.fullname = "tag override"
-        this.arguments = Argument("<tag name> <tag content>")
+        this.arguments = "[tag name] [tag content]"
         this.help = "overrides a local tag"
         this.category = Category.MODERATOR
         this.guildOnly = true

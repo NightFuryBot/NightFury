@@ -16,7 +16,6 @@
 package me.kgustave.nightfury.commands.dev
 
 import club.minnced.kjda.entities.connectedChannel
-import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
@@ -34,7 +33,7 @@ class EvalCmd : Command()
     init {
         this.name = "eval"
         this.help = "evaluates using Nashorn"
-        this.arguments = Argument("<script>")
+        this.arguments = "<script>"
         this.devOnly = true
         this.category = Category.OWNER
         this.guildOnly = false

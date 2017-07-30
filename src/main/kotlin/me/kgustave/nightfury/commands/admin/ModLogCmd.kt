@@ -40,7 +40,7 @@ private class ModLogSetCmd : Command()
     init {
         this.name = "set"
         this.fullname = "modlog set"
-        this.arguments = Argument("[channel]")
+        this.arguments = "[channel]"
         this.help = "sets a channel as the server's moderation log"
         this.guildOnly = true
     }

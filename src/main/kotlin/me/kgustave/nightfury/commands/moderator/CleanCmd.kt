@@ -15,7 +15,6 @@
  */
 package me.kgustave.nightfury.commands.moderator
 
-import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
@@ -30,7 +29,7 @@ class CleanCmd : Command() {
     init {
         this.name = "clean"
         this.aliases = arrayOf("clear", "prune")
-        this.arguments = Argument("<number of messages>")
+        this.arguments = "<number of messages>"
         this.help = "deletes a specified number of messages from the channel this is called in"
         this.category = Category.MODERATOR
         this.guildOnly = true

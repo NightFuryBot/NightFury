@@ -59,7 +59,7 @@ class NightFury(args: Array<String>)
             System.exit(exit)
         }
 
-        @JvmStatic val version : String = "0.4.7"
+        @JvmStatic val version : String = "0.4.8"
         @JvmStatic val github : String = "https://github.com/TheMonitorLizard/NightFury/"
     }
 
@@ -72,13 +72,13 @@ class NightFury(args: Array<String>)
         if(args.isNotEmpty())
         {
             args.forEach {
-                if(it == "-setupDB")       if(!manager.startup())             throw SQLException("Failed to setup database!")
-                if(it == "-setupCases")    if(!manager.createCasesTable())    throw SQLException("Failed to setup cases table!")
-                if(it == "-setupChannels") if(!manager.createChannelsTable()) throw SQLException("Failed to setup channels table!")
-                if(it == "-setupPrefixes") if(!manager.createPrefixesTable()) throw SQLException("Failed to setup prefixes table!")
-                if(it == "-setupRoles")    if(!manager.createRolesTable())    throw SQLException("Failed to setup roles table!")
-                if(it == "-setupTags")     if(!manager.createTagsTables())    throw SQLException("Failed to setup tags table!")
-                if(it == "-setupCCs")      if(!manager.createCommandsTable()) throw SQLException("Failed to setup custom commands table!")
+                if(it == "-setupDB"       && !manager.startup())             throw SQLException("Failed to setup database!")
+                if(it == "-setupCases"    && !manager.createCasesTable())    throw SQLException("Failed to setup cases table!")
+                if(it == "-setupChannels" && !manager.createChannelsTable()) throw SQLException("Failed to setup channels table!")
+                if(it == "-setupPrefixes" && !manager.createPrefixesTable()) throw SQLException("Failed to setup prefixes table!")
+                if(it == "-setupRoles"    && !manager.createRolesTable())    throw SQLException("Failed to setup roles table!")
+                if(it == "-setupTags"     && !manager.createTagsTables())    throw SQLException("Failed to setup tags table!")
+                if(it == "-setupCCs"      && !manager.createCommandsTable()) throw SQLException("Failed to setup custom commands table!")
             }
         }
 

@@ -17,7 +17,6 @@ package me.kgustave.nightfury.commands.moderator
 
 import club.minnced.kjda.entities.isSelf
 import club.minnced.kjda.promise
-import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
@@ -30,7 +29,7 @@ class ReasonCmd : Command() {
 
     init {
         this.name = "reason"
-        this.arguments = Argument("<case number> [reason]")
+        this.arguments = "<case number> [reason]"
         this.help = "updates a reason for a moderation case"
         this.category = Category.MODERATOR
         this.guildOnly = true

@@ -27,21 +27,21 @@ import net.dv8tion.jda.core.Permission
 class PrefixCmd : NoBaseExecutionCommand() {
     init {
         this.name = "prefix"
-        this.arguments = Argument("[add|remove|list]")
+        this.arguments = "[add|remove|list]"
         this.help = "manages the server's custom prefixes"
         this.guildOnly = true
         this.category = Category.ADMIN
-        this.children = arrayOf(AddPrefixCmd(), ListPrefixCmd(), RemovePrefixCmd()
+        this.children = arrayOf(PrefixAddCmd(), ListPrefixCmd(), PrefixRemoveCmd()
         )
     }
 }
 
-private class AddPrefixCmd : Command() {
+private class PrefixAddCmd : Command() {
 
     init {
         this.name = "add"
         this.fullname = "prefix add"
-        this.arguments = Argument("<prefix>")
+        this.arguments = "<prefix>"
         this.help = "adds a custom prefix for the bot"
         this.cooldown = 30
         this.cooldownScope = CooldownScope.GUILD
@@ -64,17 +64,17 @@ private class AddPrefixCmd : Command() {
         {
             event.manager.addPrefix(event.guild, args)
             event.replySuccess("`$args` was added as a prefix!")
-            invokeCooldown(event)
+            event.invokeCooldown()
         }
     }
 }
 
-private class RemovePrefixCmd : Command() {
+private class PrefixRemoveCmd : Command() {
 
     init {
         this.name = "remove"
         this.name = "prefix remove"
-        this.arguments = Argument("<prefix>")
+        this.arguments = "<prefix>"
         this.help = "removes a custom prefix for the bot"
         this.guildOnly = true
         this.category = Category.ADMIN

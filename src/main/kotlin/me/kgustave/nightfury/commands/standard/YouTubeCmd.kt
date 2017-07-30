@@ -15,7 +15,6 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
@@ -31,7 +30,7 @@ class YouTubeCmd(val ytAPI: YouTubeAPI) : Command()
     init {
         this.name = "youtube"
         this.aliases = arrayOf("yt")
-        this.arguments = Argument("<query>")
+        this.arguments = "[query]"
         this.help = "searches youtube"
         this.cooldown = 30
         this.cooldownScope = CooldownScope.USER
@@ -47,7 +46,7 @@ class YouTubeCmd(val ytAPI: YouTubeAPI) : Command()
             if(results == null) event.replyError("An unexpected error occured while searching!")
             else if(results.isEmpty()) event.replyError("No results were found for \"$query\"!")
             else event.replySuccess("**${event.author.asMention} https://youtube.com/watch?v=${results[0]}**")
-            invokeCooldown(event)
+            event.invokeCooldown()
         }
     }
 

@@ -30,7 +30,7 @@ class CustomCommandCmd(waiter: EventWaiter) : NoBaseExecutionCommand()
     init {
         this.name = "ccommand"
         this.aliases = arrayOf("cc", "customcommand")
-        this.arguments = Argument("[add|remove|list|import]")
+        this.arguments = "[add|remove|list|import]"
         this.help = "manage the server's available commands"
         this.guildOnly = true
         this.category = Category.ADMIN
@@ -48,7 +48,7 @@ private class CustomCommandAddCmd : Command()
     init {
         this.name = "add"
         this.fullname = "ccommand add"
-        this.arguments = Argument("[command name] [command content]")
+        this.arguments = "[command name] [command content]"
         this.help = "adds a custom command"
         this.cooldown = 30
         this.cooldownScope = CooldownScope.GUILD
@@ -85,7 +85,7 @@ private class CustomCommandAddCmd : Command()
             else {
                 add(name, content, event.guild)
                 event.replySuccess("Successfully created Custom Command \"**$name**\"!")
-                invokeCooldown(event)
+                event.invokeCooldown()
             }
         }
     }
@@ -96,7 +96,7 @@ private class CustomCommandRemoveCmd : Command()
     init {
         this.name = "remove"
         this.fullname = "ccommand remove"
-        this.arguments = Argument("[command name]")
+        this.arguments = "[command name]"
         this.help = "removes a custom command"
         this.category = Category.ADMIN
         this.guildOnly = true
@@ -123,7 +123,7 @@ private class CustomCommandImportCmd : Command()
     init {
         this.name = "import"
         this.fullname = "ccommand import"
-        this.arguments = Argument("[tag name]")
+        this.arguments = "[tag name]"
         this.help = "imports a tag as a custom command"
         this.cooldown = 30
         this.cooldownScope = CooldownScope.GUILD
@@ -147,7 +147,7 @@ private class CustomCommandImportCmd : Command()
                     val cmdCont = event.globalTags.getTagContent(name)
                     customCommands.add(cmdName, cmdCont, event.guild)
                     event.replySuccess("Successfully imported global tag \"$cmdName\" as a Custom Command!")
-                    invokeCooldown(event)
+                    event.invokeCooldown()
                 }
             } else {
                 val cmdName = event.localTags.getOriginalName(name, event.guild)
@@ -157,7 +157,7 @@ private class CustomCommandImportCmd : Command()
                 val cmdCont = event.localTags.getTagContent(name, event.guild)
                 customCommands.add(cmdName, cmdCont, event.guild)
                 event.replySuccess("Successfully imported local tag \"$cmdName\" as a Custom Command!")
-                invokeCooldown(event)
+                event.invokeCooldown()
             }
         }
     }
@@ -183,10 +183,10 @@ private class CustomCommandListCmd(val waiter: EventWaiter) : Command()
             return event.replyError("There are no custom commands on this server!")
         paginator(waiter, event.channel)
         {
-            text { "Custom Commands on ${event.guild.name}" }
-            timeout { 20 }
-            items { addAll(ccs) }
-            finalAction { it.editMessage(it).queue(); event.linkMessage(it) }
+            text             { "Custom Commands on ${event.guild.name}" }
+            timeout          { 20 }
+            items            { addAll(ccs) }
+            finalAction      { event.linkMessage(it) }
             showPageNumbers  { true }
             useNumberedItems { true }
             waitOnSinglePage { false }

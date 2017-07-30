@@ -15,7 +15,6 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import me.kgustave.nightfury.Argument
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
@@ -31,7 +30,7 @@ class GoogleCmd(private val api: GoogleAPI) : Command()
     init {
         this.name = "google"
         this.aliases = arrayOf("g")
-        this.arguments = Argument("<query>")
+        this.arguments = "[query]"
         this.help = "searches google"
         this.cooldown = 30
         this.cooldownScope = CooldownScope.USER
@@ -47,7 +46,7 @@ class GoogleCmd(private val api: GoogleAPI) : Command()
             if(results == null) event.replyError("An unexpected error occured while searching!")
             else if(results.isEmpty()) event.replyError("No results were found for \"$query\"!")
             else event.replySuccess("**${event.author.asMention} ${results[0]}**")
-            invokeCooldown(event)
+            event.invokeCooldown()
         }
     }
 

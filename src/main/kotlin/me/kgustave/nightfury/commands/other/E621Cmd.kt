@@ -38,7 +38,7 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
 {
     init {
         this.name = "e621"
-        this.arguments = Argument("<number of posts> [tags...]")
+        this.arguments = "<number of posts> [tags...]"
         this.aliases = arrayOf("pron","porn")
         this.cooldown = 15
         this.cooldownScope = CooldownScope.USER_GUILD
@@ -91,7 +91,6 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
                                 && (e.message.rawContent == "${event.prefixUsed}save" || e.message.rawContent == "${event.client.prefix}save")
                     }, {
                         message.delete().queue()
-                        event.replySuccess("Saved Picture!")
                     }, 20, TimeUnit.SECONDS, {
                         message.delete().queue()
                         m.delete().queue()
