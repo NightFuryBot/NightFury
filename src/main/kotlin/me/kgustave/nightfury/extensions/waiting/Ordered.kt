@@ -67,12 +67,12 @@ class KOrderedMenuBuilder internal constructor(val orderedMenuBuilder: OrderedMe
         if(cancel != null)       setCancel{cancel.invoke()}
         if(text != null)         setText(text)
         if(choices.isNotEmpty()) addChoices(*choices.map{it.name}.toTypedArray()).setAction{choices[it-1].get().invoke()}
-        if(timeout != null)      setTimeout<OrderedMenuBuilder>(timeout.delay, timeout.unit)
+        if(timeout != null)      setTimeout(timeout.delay, timeout.unit)
                                  useCancelButton(useCancelButton)
         if(useLetters)           useLetters()
         if(useNumbers)           useNumbers()
-        if(users.isNotEmpty())   setUsers<OrderedMenuBuilder>(*users)
-        if(roles.isNotEmpty())   setRoles<OrderedMenuBuilder>(*roles)
+        if(users.isNotEmpty())   setUsers(*users)
+        if(roles.isNotEmpty())   setRoles(*roles)
                                  allowTextInput(allowTextInput)
         return@with this
     }

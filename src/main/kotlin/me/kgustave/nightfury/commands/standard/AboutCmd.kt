@@ -17,8 +17,6 @@ package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.builders.colorAwt
 import club.minnced.kjda.builders.embed
-import com.mashape.unirest.http.Unirest
-import com.mashape.unirest.http.exceptions.UnirestException
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.NightFury
@@ -27,8 +25,6 @@ import net.dv8tion.jda.core.JDAInfo
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import net.dv8tion.jda.core.utils.SimpleLog
-import org.json.JSONException
-
 
 /**
  * @author Kaidan Gustave
@@ -57,16 +53,10 @@ class AboutCmd(vararg val permissions : Permission) : Command()
         if(oauthLink == null && isPublic)
         {
             try {
-                val app = Unirest.get("https://discordapp.com/api/oauth2/applications/@me")
-                        .header("Authorization", event.jda.token)
-                        .asJson().body.`object`
-                if(app.has("bot_public"))
-                    isPublic = app.getBoolean("bot_public")
-                if(isPublic)
-                    oauthLink = "https://discordapp.com/oauth2/authorize?client_id=${app.getString("id")}&permissions=$perms&scope=bot"
-            } catch (e: UnirestException) {
-                SimpleLog.getLog("OAuth2").fatal("Could not generate invite link: $e")
-            } catch (e: JSONException) {
+                val info = event.jda.asBot().applicationInfo.complete()
+                isPublic = info.isBotPublic
+                if(isPublic) oauthLink = info.getInviteUrl(perms)
+            } catch (e: Exception) {
                 SimpleLog.getLog("OAuth2").fatal("Could not generate invite link: $e")
             }
         }

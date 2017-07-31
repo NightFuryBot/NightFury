@@ -21,13 +21,13 @@ import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.api.E621API
-import me.monitor.je621.E621Array
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
+import org.json.JSONArray
+import org.json.JSONObject
 import java.awt.Color
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
@@ -63,6 +63,8 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
                 return event.replyError("**Too many tags specified!**\nPlease specify no more than 6 tags!")
             val arr = e621.search(limit, *args.toTypedArray())
                     ?:return event.replyError("Found no results matching ${buildString { args.forEach { append("$it ") } }}")
+            if(arr.length()==0)
+                return event.replyError("No results found matching $args!")
             generate(arr,event)
         } else {
             val tags = args
@@ -72,17 +74,21 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
                 return event.replyError("**Too many tags specified!**\nPlease specify no more than 6 tags!")
             val arr = e621.search(100, *args.toTypedArray())
                     ?:return event.replyError("Found no results matching ${buildString { args.forEach { append("$it ") } }}")
+            if(arr.length()==0)
+                return event.replyError("No results found matching $args!")
             generate(arr,event)
         }
     }
-    private fun generate(array: E621Array, event: CommandEvent)
+
+    private fun generate(array: JSONArray, event: CommandEvent)
     {
+        val list = array.toTypedList<JSONObject>()
         with(SlideshowBuilder())
         {
-            setUrls(*array.arrayList.stream().map { it.fileUrl }.toList().toTypedArray())
+            setUrls(*list.map { it.getString("file_url") }.toTypedArray())
             setText("Showing results for ${event.args}")
             setColor { _,_ -> Color(random.nextInt(256),random.nextInt(256),random.nextInt(256)) }
-            setDescription { x, _ -> "[Link](https://e621.net/post/show/${array[x].id}/)"}
+            setDescription { x, _ -> "[Link](https://e621.net/post/show/${list[x]["id"]}/)"}
             setFinalAction { m ->
                 event.reply("To save this, type `|save`")
                 { message ->
@@ -97,11 +103,14 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
                     })
                 }
             }
-            setTimeout<SlideshowBuilder>(30, TimeUnit.SECONDS)
-            setUsers<SlideshowBuilder>(event.author)
-            setEventWaiter<SlideshowBuilder>(waiter)
+            setTimeout(30, TimeUnit.SECONDS)
+            setUsers(event.author)
+            setEventWaiter(waiter)
         }.build().display(event.channel)
     }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T> JSONArray.toTypedList() : List<T> = this.map { it as T }
 
     @APICache
     @Suppress("unused")

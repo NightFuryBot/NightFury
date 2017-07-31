@@ -17,8 +17,6 @@ package me.kgustave.nightfury
 
 import com.jagrosh.jagtag.Parser
 import com.jagrosh.jdautilities.waiter.EventWaiter
-import com.mashape.unirest.http.Unirest
-import com.mashape.unirest.http.exceptions.UnirestException
 import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
@@ -30,6 +28,7 @@ import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.*
+import net.dv8tion.jda.core.entities.impl.JDAImpl
 import net.dv8tion.jda.core.events.ReadyEvent
 import net.dv8tion.jda.core.events.ShutdownEvent
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent
@@ -37,9 +36,12 @@ import net.dv8tion.jda.core.events.guild.GuildLeaveEvent
 import net.dv8tion.jda.core.events.message.MessageDeleteEvent
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
+import net.dv8tion.jda.core.requests.Requester
 import net.dv8tion.jda.core.utils.SimpleLog
-import org.json.JSONException
+import okhttp3.*
 import org.json.JSONObject
+import org.json.JSONTokener
+import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -389,39 +391,39 @@ class Client internal constructor
 
     private fun updateStats(jda: JDA)
     {
-        if(jda.shardInfo == null)
-        {
-            Unirest.post("https://bots.discord.pw/api/bots/${jda.selfUser.id}/stats")
-                    .header("Authorization", dBotsKey)
-                    .header("Content-Type","application/json")
-                    .body(JSONObject().put("server_count", jda.guilds.size).toString())
-                    .asJsonAsync()
-        }
-        else
-        {
-            Unirest.post("https://bots.discord.pw/api/bots/${jda.selfUser.id}/stats")
-                    .header("Authorization", dBotsKey)
-                    .header("Content-Type","application/json")
-                    .body(JSONObject()
-                            .put("shard_id", jda.shardInfo.shardId)
-                            .put("shard_count", jda.shardInfo.shardTotal)
-                            .put("server_count", jda.guilds.size)
-                            .toString())
-                    .asJsonAsync()
-            try {
-                val array = Unirest.get("https://bots.discord.pw/api/bots/${jda.selfUser.id}/stats")
-                        .header("Authorization", dBotsKey)
-                        .header("Content-Type", "application/json")
-                        .asJson().body.`object`.getJSONArray("stats")
-                var total = 0
-                array.forEach { obj : Any -> total += (obj as JSONObject).getInt("server_count") }
-                totalGuilds = total
-            } catch (ex: UnirestException) {
-                LOG.warn("Failed to retrieve bot shard information from bots.discord.pw")
-            } catch (ex: JSONException) {
-                LOG.warn("Failed to retrieve bot shard information from bots.discord.pw")
-            }
+        val log = SimpleLog.getLog("BotList")
+        val client = (jda as JDAImpl).httpClientBuilder.build()
+        val body = JSONObject().put("server_count", jda.getGuilds().size)
 
+        if (jda.getShardInfo() != null) body.put("shard_id", jda.getShardInfo().shardId).put("shard_count", jda.getShardInfo().shardTotal)
+
+        val builder = Request.Builder().post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
+                .url("https://bots.discord.pw/api/bots/" + jda.getSelfUser().id + "/stats")
+                .header("Authorization", dBotsKey)
+                .header("Content-Type", "application/json")
+
+        client.newCall(builder.build()).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) = response.close()
+
+            override fun onFailure(call: Call, e: IOException) {
+                log.fatal("Failed to send information to bots.discord.pw")
+                log.log(e)
+            }
+        })
+
+        try {
+            client.newCall(Request.Builder().get()
+                    .url("https://bots.discord.pw/api/bots/" + jda.getSelfUser().id + "/stats")
+                    .header("Authorization", dBotsKey).header("Content-Type", "application/json").build())
+                    .execute().body()!!.charStream().use {
+                val array = JSONObject(JSONTokener(it)).getJSONArray("stats")
+                var total = 0
+                array.forEach { total += (it as JSONObject).getInt("server_count") }
+                this.totalGuilds = total
+            }
+        } catch (e: Exception) {
+            log.fatal("Failed to retrieve bot shard information from bots.discord.pw")
+            log.log(e)
         }
     }
 }

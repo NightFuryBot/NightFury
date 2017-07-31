@@ -83,10 +83,10 @@ class KPaginatorBuilder internal constructor(val paginatorBuilder: PaginatorBuil
         showPageNumbers(showPageNumber)
         useNumberedItems(useNumberedItems)
 
-        if(timeout!=null) setTimeout<PaginatorBuilder>(timeout.delay, timeout.unit)
+        if(timeout!=null) setTimeout(timeout.delay, timeout.unit)
 
-        setUsers<PaginatorBuilder>(*users)
-        setRoles<PaginatorBuilder>(*roles)
+        setUsers(*users)
+        setRoles(*roles)
 
         return@with this
     }

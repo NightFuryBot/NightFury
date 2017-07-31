@@ -15,30 +15,55 @@
  */
 package me.kgustave.nightfury.api
 
-import me.monitor.je621.E621Array
-import me.monitor.je621.JE621Builder
+import net.dv8tion.jda.core.utils.SimpleLog
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONArray
+import org.json.JSONTokener
 import java.time.OffsetDateTime
 import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
  */
-class E621API : AbstractAPICache<E621Array>()
+class E621API : AbstractAPICache<JSONArray>()
 {
+    companion object
+    {
+        private val BASE_URL = "https://e621.net/post/index.json?"
+        private val LOG = SimpleLog.getLog("E621")
+    }
 
-    private val jE621 = JE621Builder("NightFury").build()
+    private val client = OkHttpClient()
 
-    fun search(limit: Int, vararg tags: String) : E621Array?
+    fun search(limit: Int, vararg tags: String) : JSONArray?
     {
         if(tags.size>6) throw IllegalArgumentException("Only 6 tags may be specified!")
         if(limit>320) throw IllegalArgumentException("Only a maximum of 320 to retrieve may be specified!")
-        val key = buildString { tags.forEach { append("$it ") } }.toLowerCase()
+        val key = buildString {tags.forEach{append(if (it.startsWith("+") || it.startsWith("-")) it else "+$it")}}
         val cached = getFromCache(key)
         if(cached!=null)
             return cached
-        val arr = jE621.startNewSearch().setMaxRetrieved(limit).addTags(*tags).search().get()
-        addToCache(key, arr)
-        return arr
+        try {
+            client.newCall(Request.Builder().get()
+                    .header("User-Agent", "NightFury")
+                    .url(BASE_URL + "tags=$key&limit=$limit").build())
+                    .execute().body()?.charStream()
+                    .use {
+                        if(it == null) {
+                            LOG.warn("Reader retrieved from e621.net was null!")
+                            return null
+                        } else {
+                            val arr = JSONArray(JSONTokener(it))
+                            addToCache(key, arr)
+                            return arr
+                        }
+                    }
+        } catch (e : Exception) {
+            LOG.warn("Failed to retrieve from e621.net!")
+            LOG.log(e)
+            return null
+        }
     }
 
     override fun clearCache()
