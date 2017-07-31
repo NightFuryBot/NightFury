@@ -58,10 +58,10 @@ import kotlin.streams.toList
  * @author Kaidan Gustave
  */
 class Client internal constructor
-(val prefix: String, val ownerID: Long, val manager: DatabaseManager,
+(val prefix: String, val devId: Long, val manager: DatabaseManager,
  val success: String, val warning: String, val error: String,
  val server: String, val dBotsKey : String, val waiter: EventWaiter,
-val parser: Parser,
+ val parser: Parser,
  vararg commands: Command) : ListenerAdapter()
 {
     // TODO Remove all occurrences of @Suppress("unused")
@@ -384,7 +384,7 @@ val parser: Parser,
     private fun testGuild(guild: Guild) : Boolean
     {
         val bots = guild.members.stream().filter { it.user.isBot }.count()
-        return bots<=30 || guild.getMemberById(ownerID)!=null
+        return bots<=30 || guild.getMemberById(devId)!=null
     }
 
     private fun updateStats(jda: JDA)

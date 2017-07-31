@@ -59,7 +59,7 @@ class NightFury(args: Array<String>)
             System.exit(exit)
         }
 
-        @JvmStatic val version : String = "0.4.8"
+        @JvmStatic val version : String = "0.4.9"
         @JvmStatic val github : String = "https://github.com/TheMonitorLizard/NightFury/"
     }
 
@@ -67,7 +67,6 @@ class NightFury(args: Array<String>)
         val jda : JDABuilder = JDABuilder(AccountType.BOT).setEventManager(AsyncEventManager())
 
         val config = Config(Paths.get(System.getProperty("user.dir"), "config.txt").toFile())
-
         val manager = DatabaseManager(config.dbURL, config.dbUser, config.dbPass)
         if(args.isNotEmpty())
         {
@@ -91,7 +90,7 @@ class NightFury(args: Array<String>)
         val parser : Parser = JagTag.newDefaultBuilder().addMethods(getMethods()).build()
 
         val client = Client(
-                config.prefix, config.ownerId, manager,
+                config.prefix, config.devId, manager,
                 config.success, config.warning, config.error,
                 config.server, config.dbotskey, waiter, parser,
 
@@ -122,6 +121,7 @@ class NightFury(args: Array<String>)
                 PrefixCmd(),
 
                 EvalCmd(),
+                MemoryCmd(),
                 ModeCmd(),
                 RestartCmd(),
                 ShutdownCmd()
@@ -144,8 +144,8 @@ internal class Config(key: File)
     }
 
     internal val token : String = tokens[0]
-    internal val ownerId : Long = tokens[1].toLong()
-    internal val dbotskey : String = tokens[2]
+    internal val devId: Long = tokens[1].toLong()
+    internal val dbotskey: String = tokens[2]
     internal val dbURL: String = tokens[3]
     internal val dbUser: String = tokens[4]
     internal val dbPass: String = tokens[5]

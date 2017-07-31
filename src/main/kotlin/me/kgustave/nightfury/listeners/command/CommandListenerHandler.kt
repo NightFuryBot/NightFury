@@ -78,7 +78,7 @@ class IdleListener : CommandListener.Companion.BlankListener()
     @Suppress("UNUSED_PARAMETER")
     override fun checkCall(event: MessageReceivedEvent, client: Client, name: String, args: String): Boolean
     {
-        return event.author.idLong == client.ownerID
+        return event.author.idLong == client.devId
     }
 
     override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?)

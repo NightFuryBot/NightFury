@@ -35,7 +35,7 @@ class EvalCmd : Command()
         this.help = "evaluates using Nashorn"
         this.arguments = "<script>"
         this.devOnly = true
-        this.category = Category.OWNER
+        this.category = Category.MONITOR
         this.guildOnly = false
     }
 

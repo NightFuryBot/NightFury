@@ -52,7 +52,7 @@ class HelpCmd : Command() {
                     .append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
                     .append("` ").append(c.help).append("\n")
         }
-        event.jda.retrieveUserById(event.client.ownerID).queue({
+        event.jda.retrieveUserById(event.client.devId).queue({
             b.append("\nFor additional help contact**")
                     .append(it.name).append("**#").append(it.discriminator)
                     .append(" or join ").append(event.client.server)

@@ -31,7 +31,7 @@ class ShutdownCmd : Command()
         this.name = "shutdown"
         this.help = "shuts down NightFury"
         this.devOnly = true
-        this.category = Category.OWNER
+        this.category = Category.MONITOR
         this.guildOnly = false
     }
 

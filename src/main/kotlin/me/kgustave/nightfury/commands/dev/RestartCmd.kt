@@ -31,7 +31,7 @@ class RestartCmd : Command()
         this.name = "restart"
         this.help = "restarts NightFury"
         this.devOnly = true
-        this.category = Category.OWNER
+        this.category = Category.MONITOR
         this.guildOnly = true
     }
 

@@ -17,6 +17,11 @@ package me.kgustave.nightfury.annotations
 
 
 /**
+ * Signifies that a command invokes cooldown just prior to execution, automatically.
+ *
+ * When this is not annotated in the class overhead of the command, a command will
+ * not invoke cooldown unless CommandEvent#invokeCooldown() is called in the execution.
+ *
  * @author Kaidan Gustave
  */
 @Target(AnnotationTarget.CLASS)

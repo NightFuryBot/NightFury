@@ -31,12 +31,12 @@ class CommandEvent internal constructor
 {
     var args: String = args
         internal set(value) {field = value}
-    val isOwner : Boolean = author.idLong == client.ownerID
-    val selfMember : Member
+    val isDev: Boolean = author.idLong == client.devId
+    val selfMember: Member
         get() = guild.selfMember
     val selfUser: SelfUser = jda.selfUser
 
-    val manager : DatabaseManager
+    val manager: DatabaseManager
         get() {return client.manager}
 
     fun reply(string: String) = sendMessage(string, channel)

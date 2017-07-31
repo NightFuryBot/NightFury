@@ -87,7 +87,7 @@ abstract class Command
                 val aliases = command.aliases
                 val arguments = command.arguments
                 val children = command.children
-                val ownerId = event.client.ownerID
+                val ownerId = event.client.devId
                 val serverInvite = event.client.server
                 b.append("Available help for **${command.name} command** in " +
                         "${if(event.isFromType(ChannelType.PRIVATE)) "DM" else "<#" + event.channel.id + ">"}\n")
@@ -166,7 +166,7 @@ abstract class Command
             }
         }
 
-        if(devOnly && !event.isOwner)
+        if(devOnly && !event.isDev)
             return
 
         if(category!=null && !category!!.test(event)) return
@@ -299,8 +299,8 @@ abstract class Command
 enum class Category(val title: String, private val predicate: (CommandEvent) -> Boolean)
 {
     // Primary Hierarchy
-    OWNER("Owner", { it.isOwner }),
-    SERVER_OWNER("Server Owner", { OWNER.test(it) || it.member.isOwner }),
+    MONITOR("Developer", { it.isDev }),
+    SERVER_OWNER("Server Owner", { MONITOR.test(it) || it.member.isOwner }),
     ADMIN("Administrator", {
         SERVER_OWNER.test(it) || (it.isFromType(ChannelType.TEXT) && it.member.hasPermission(Permission.ADMINISTRATOR))
     }),
@@ -311,7 +311,7 @@ enum class Category(val title: String, private val predicate: (CommandEvent) -> 
     }),
 
     // Other Categories
-    NSFW("NSFW", { Category.OWNER.test(it) || (it.isFromType(ChannelType.TEXT) && it.textChannel.isNSFW) });
+    NSFW("NSFW", { Category.MONITOR.test(it) || (it.isFromType(ChannelType.TEXT) && it.textChannel.isNSFW) });
 
     fun test(event: CommandEvent) = predicate.invoke(event)
 }

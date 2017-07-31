@@ -28,7 +28,7 @@ class ModeCmd : Command() {
         this.help = "sets the bots mode"
         this.guildOnly = false
         this.devOnly = true
-        this.category = Category.OWNER
+        this.category = Category.MONITOR
     }
 
     override fun execute(event: CommandEvent)
