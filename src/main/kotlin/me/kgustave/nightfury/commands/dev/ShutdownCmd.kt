@@ -28,8 +28,8 @@ import net.dv8tion.jda.core.entities.Game
 class ShutdownCmd : Command()
 {
     init {
-        this.name = "shutdown"
-        this.help = "shuts down NightFury"
+        this.name = "Shutdown"
+        this.help = "Shuts down NightFury."
         this.devOnly = true
         this.category = Category.MONITOR
         this.guildOnly = false

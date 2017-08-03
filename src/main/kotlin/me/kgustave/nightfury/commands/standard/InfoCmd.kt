@@ -21,7 +21,8 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
-import me.kgustave.nightfury.extensions.Find
+import me.kgustave.nightfury.extensions.findMembers
+import me.kgustave.nightfury.extensions.findUsers
 import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
@@ -29,7 +30,6 @@ import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.User
 import java.time.format.DateTimeFormatter
 import java.util.Comparator
-
 
 /**
  * @author Kaidan Gustave
@@ -60,10 +60,14 @@ class InfoCmd : Command() {
 
     init
     {
-        this.name = "info"
+        this.name = "Info"
         this.aliases = arrayOf("i", "information")
-        this.arguments = "<user>"
-        this.help = "gets info on a user"
+        this.arguments = "<User>"
+        this.help = "Gets info on a user."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "Not specifying a user will get info on the person using the command.",
+                true
+        )
         this.cooldown = 5
         this.cooldownScope = CooldownScope.USER_GUILD
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
@@ -76,7 +80,7 @@ class InfoCmd : Command() {
             if(query.isEmpty()) {
                 event.member
             } else {
-                val found = Find.members(query, event.guild)
+                val found = event.guild.findMembers(query)
                 if(found.isEmpty()) null
                 else if(found.size>1) return event.replyError(multipleMembersFound(query, found))
                 else found[0]
@@ -88,7 +92,7 @@ class InfoCmd : Command() {
         } else if(query.isEmpty()) {
             event.author
         } else {
-            val found = Find.users(query, event.jda)
+            val found =  event.jda.findUsers(query)
             if(found.isEmpty()) return event.replyError(noMatch("users", query))
             else if(found.size>1) return event.replyError(multipleUsersFound(query, found))
             else found[0]

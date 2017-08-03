@@ -19,6 +19,7 @@ import club.minnced.kjda.promise
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
+import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.kick
 import me.kgustave.nightfury.utils.TARGET_ID_REASON
 import me.kgustave.nightfury.utils.TARGET_MENTION_REASON
@@ -28,12 +29,13 @@ import net.dv8tion.jda.core.Permission
 /**
  * @author Kaidan Gustave
  */
+@MustHaveArguments
 class KickCmd : Command() {
 
     init {
-        this.name = "kick"
-        this.arguments = "[@user or ID] <reason>"
-        this.help = "kicks a user from the server"
+        this.name = "Kick"
+        this.arguments = "[@User or ID] <Reason>"
+        this.help = "Kicks a user from the server."
         this.botPermissions = arrayOf(Permission.KICK_MEMBERS)
         this.category = Category.MODERATOR
         this.guildOnly = true
@@ -69,10 +71,10 @@ class KickCmd : Command() {
                     -> "You cannot kick ${formatUserName(target.user,true)} because they are the owner of the server!"
 
             !event.selfMember.canInteract(target)
-                    -> "I cannot kick ${formatUserName(target.user,true)} because they have a higher role than me!"
+                    -> "I cannot kick ${formatUserName(target.user,true)}!"
 
             !event.member.canInteract(target)
-                    -> "You cannot kick ${formatUserName(target.user,true)} because they have a higher role than you!"
+                    -> "You cannot kick ${formatUserName(target.user,true)}!"
 
             else    -> null
         }

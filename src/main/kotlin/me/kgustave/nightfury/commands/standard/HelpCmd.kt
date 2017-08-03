@@ -26,8 +26,8 @@ import net.dv8tion.jda.core.entities.ChannelType
 class HelpCmd : Command() {
 
     init {
-        this.name = "help"
-        this.help = "gets a list of commands"
+        this.name = "Help"
+        this.help = "Gets a list of available commands."
         this.guildOnly = false
     }
 
@@ -48,9 +48,9 @@ class HelpCmd : Command() {
                 if(cat!=null)
                     b.append("\n__${cat.title}__\n\n")
             }
-            b.append("`").append(event.client.prefix).append(c.name)
+            b.append("`").append(event.client.prefix).append(c.name.toLowerCase())
                     .append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
-                    .append("` ").append(c.help).append("\n")
+                    .append("` - ").append(c.help).append("\n")
         }
         event.jda.retrieveUserById(event.client.devId).queue({
             b.append("\nFor additional help contact**")

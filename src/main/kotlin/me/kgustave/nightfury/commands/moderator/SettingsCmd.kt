@@ -29,8 +29,8 @@ import net.dv8tion.jda.core.Permission
 class SettingsCmd : Command()
 {
     init {
-        this.name = "settings"
-        this.help = "manage and get info on the server's settings"
+        this.name = "Settings"
+        this.help = "Get info on the server's settings."
         this.aliases = arrayOf("config", "configurations")
         this.guildOnly = true
         this.category = Category.MODERATOR

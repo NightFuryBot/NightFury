@@ -16,10 +16,11 @@
 package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.promise
-import com.jagrosh.jdautilities.utils.FinderUtil
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
+import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.extensions.findRoles
 import me.kgustave.nightfury.extensions.giveRole
 import me.kgustave.nightfury.extensions.removeRole
 import me.kgustave.nightfury.extensions.waiting.paginator
@@ -31,12 +32,23 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
+@MustHaveArguments
 class RoleMeCmd(waiter: EventWaiter) : Command()
 {
     init {
-        this.name = "roleme"
-        this.arguments = "[role]"
-        this.help = "give yourself or remove a RoleMe role"
+        this.name = "RoleMe"
+        this.arguments = "[Role]"
+        this.help = "Give yourself or remove a RoleMe role."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "RoleMe roles are self-give/remove roles for normal members of a server.\n" +
+                        "Simply using `RoleMe [Role]` will give the user the `[Role]` requested or remove " +
+                        "it if they already possess the `[Role]`, so long as it is a registered RoleMe role.\n\n" +
+
+                        "RoleMe roles must be registered by an Administrator using the `Add` sub-command.\n" +
+                        "Conversely, registered RoleMe roles can be unregistered by an Administrator using " +
+                        "the `Remove` sub-command.",
+                true
+        )
         this.cooldown = 10
         this.guildOnly = true
         this.cooldownScope = CooldownScope.USER_GUILD
@@ -51,24 +63,23 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        if(query.isEmpty())
-            return event.replyError(Command.TOO_FEW_ARGS_HELP.format(event.prefixUsed, name))
-        val allRolemes = event.manager.getRoleMes(event.guild)
-        if(allRolemes.isEmpty())
-            return event.replyError("**No RoleMe roles on this server!**\n${SEE_HELP.format(event.prefixUsed, name)}")
-        val roles = FinderUtil.findRoles(query, event.guild)
+        val allRoleMes = event.manager.getRoleMes(event.guild)
+        if(allRoleMes.isEmpty())
+            return event.replyError("**No RoleMe roles on this server!**\n" +
+                    SEE_HELP.format(event.client.prefix, name))
+        val roles = event.guild.findRoles(query)
         if(roles.isEmpty())
             return event.replyError(noMatch("roles", query))
-        val rolemes = roles.stream().filter { event.manager.isRoleMe(it) }.toList()
-        if(rolemes.isEmpty() && roles.isNotEmpty())
+        val roleMes = roles.stream().filter { event.manager.isRoleMe(it) }.toList()
+        if(roleMes.isEmpty() && roles.isNotEmpty())
             return event.replyError("**${roles[0].name} is not a RoleMe role!**\n" +
-                    SEE_HELP.format(event.prefixUsed, name))
-        if(rolemes.size>1)
-            return event.replyError(multipleRolesFound(query, rolemes))
-        val requested = rolemes[0]
+                    SEE_HELP.format(event.client.prefix, name))
+        if(roleMes.size>1)
+            return event.replyError(multipleRolesFound(query, roleMes))
+        val requested = roleMes[0]
         if(!event.selfMember.canInteract(requested))
             event.replyError("**Cannot interact with requested role!**\n" +
-                    SEE_HELP.format(event.prefixUsed, name))
+                    SEE_HELP.format(event.client.prefix, name))
         else if(!event.member.roles.contains(requested)) {
             event.member.giveRole(requested).promise() then {
                 event.replySuccess("Successfully gave the role **${requested.name}**!")
@@ -87,13 +98,23 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
     }
 }
 
+@MustHaveArguments
 private class RoleMeAddCmd : Command()
 {
     init {
-        this.name = "add"
-        this.fullname = "roleme add"
-        this.arguments = "[role]"
-        this.help = "adds a RoleMe role for the server"
+        this.name = "Add"
+        this.fullname = "RoleMe Add"
+        this.arguments = "[Role]"
+        this.help = "Adds a RoleMe role for the server."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "Roles added will be available to all members on the server via the `RoleMe` " +
+                        "command, except in cases that NightFury cannot give roles to or remove roles from " +
+                        "the member using the command!\n\n" +
+
+                        "**NightFury is not responsible for any dangerous permissions given with these," +
+                        "nor the consequences of the aforementioned!**",
+                true
+        )
         this.cooldown = 30
         this.cooldownScope = CooldownScope.GUILD
         this.guildOnly = true
@@ -104,9 +125,7 @@ private class RoleMeAddCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        if(query.isEmpty())
-            return event.replyError(Command.TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
-        val found = FinderUtil.findRoles(query, event.guild)
+        val found = event.guild.findRoles(query)
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
@@ -126,13 +145,18 @@ private class RoleMeAddCmd : Command()
 
 }
 
+@MustHaveArguments
 private class RoleMeRemoveCmd : Command()
 {
     init {
-        this.name = "remove"
-        this.fullname = "roleme remove"
-        this.arguments = "[role]"
-        this.help = "removes a RoleMe role for the server"
+        this.name = "Remove"
+        this.fullname = "RoleMe Remove"
+        this.arguments = "[Role]"
+        this.help = "Removes a RoleMe role for the server."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "**Using this will not remove the RoleMe role from members who previously had it!**",
+                true
+        )
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
         this.category = Category.ADMIN
@@ -141,9 +165,7 @@ private class RoleMeRemoveCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        if(query.isEmpty())
-            return event.replyError(Command.TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
-        val found = FinderUtil.findRoles(query, event.guild).stream()
+        val found = event.guild.findRoles(query).stream()
                 .filter { event.manager.isRoleMe(it) }.toList()
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
@@ -158,9 +180,9 @@ private class RoleMeRemoveCmd : Command()
 private class RoleMeListCmd(val waiter: EventWaiter) : Command()
 {
     init {
-        this.name = "list"
-        this.fullname = "roleme list"
-        this.help = "gets a full list of all the roleme roles on this server"
+        this.name = "List"
+        this.fullname = "RoleMe List"
+        this.help = "Gets a full list of RoleMe roles on this server."
         this.guildOnly = true
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER_GUILD
@@ -171,7 +193,8 @@ private class RoleMeListCmd(val waiter: EventWaiter) : Command()
     {
         val rolemes = event.manager.getRoleMes(event.guild).map { it.name }
         if(rolemes.isEmpty())
-            return event.replyError("**No RoleMe roles on this server!**\n${SEE_HELP.format(event.prefixUsed, name)}")
+            return event.replyError("**No RoleMe roles on this server!**\n" +
+                    SEE_HELP.format(event.client.prefix, "RoleMe"))
         paginator(waiter, event.channel)
         {
             text             { "RoleMe Roles On ${event.guild.name}" }

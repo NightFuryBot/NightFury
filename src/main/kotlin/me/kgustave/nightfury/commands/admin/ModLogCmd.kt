@@ -16,7 +16,8 @@
 package me.kgustave.nightfury.commands.admin
 
 import me.kgustave.nightfury.*
-import me.kgustave.nightfury.extensions.Find
+import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.extensions.findTextChannels
 import me.kgustave.nightfury.utils.multipleTextChannelsFound
 import me.kgustave.nightfury.utils.noMatch
 
@@ -27,29 +28,28 @@ import me.kgustave.nightfury.utils.noMatch
 class ModLogCmd : NoBaseExecutionCommand()
 {
     init {
-        this.name = "modlog"
-        this.help = "manages the servers moderation log"
+        this.name = "ModLog"
+        this.help = "Manages the server's moderation log."
         this.category = Category.ADMIN
         this.guildOnly = true
         this.children = arrayOf(ModLogSetCmd())
     }
 }
 
+@MustHaveArguments
 private class ModLogSetCmd : Command()
 {
     init {
-        this.name = "set"
-        this.fullname = "modlog set"
-        this.arguments = "[channel]"
-        this.help = "sets a channel as the server's moderation log"
+        this.name = "Set"
+        this.fullname = "ModLog Set"
+        this.arguments = "[Channel]"
+        this.help = "Sets a channel as the server's moderation log."
         this.guildOnly = true
     }
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed,fullname))
-        val channel = with(Find.textChannels(event.args,event.guild))
+        val channel = with(event.guild.findTextChannels(event.args))
         {
             if(this.isEmpty())
                 return event.replyError(noMatch("channels", event.args))

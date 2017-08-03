@@ -16,16 +16,18 @@
 package me.kgustave.nightfury.commands.dev
 
 import me.kgustave.nightfury.*
+import me.kgustave.nightfury.annotations.MustHaveArguments
 
 /**
  * @author Kaidan Gustave
  */
+@MustHaveArguments("Please specify a mode to set to.")
 class ModeCmd : Command() {
 
     init {
-        this.name = "mode"
-        this.arguments = "<mode>"
-        this.help = "sets the bots mode"
+        this.name = "Mode"
+        this.arguments = "[Standard, Idle, Debug]"
+        this.help = "Sets the bots mode."
         this.guildOnly = false
         this.devOnly = true
         this.category = Category.MONITOR

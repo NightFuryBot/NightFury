@@ -16,8 +16,9 @@
 package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.promise
-import com.jagrosh.jdautilities.utils.FinderUtil
 import me.kgustave.nightfury.*
+import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.extensions.findRoles
 import me.kgustave.nightfury.utils.multipleRolesFound
 import me.kgustave.nightfury.utils.noMatch
 import net.dv8tion.jda.core.Permission
@@ -27,40 +28,50 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
-class ColorMeCmd : Command() {
+@MustHaveArguments("Try specifying a color or hex code!")
+class ColorMeCmd : Command()
+{
 
     companion object {
         private val pattern = Regex("#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]").toPattern()
     }
 
     init {
-        this.name = "colorme"
-        this.arguments = "<hexcode>"
-        this.help = "set the color of your highest ColorMe role"
-        this.cooldown = 10
+        this.name = "ColorMe"
+        this.arguments = "[Color or Hex Code]"
+        this.help = "Set the color of your highest ColorMe role."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "Anyone with a ColorMe role can modify it's color using this command.\n" +
+                        "This is recommended for personal roles given to staff members in order to " +
+                        "avoid giving them the manage roles permission, not for a public, default, or " +
+                        "other role possessed by many members.",
+                true)
+        this.cooldown = 20
         this.guildOnly = true
         this.cooldownScope = CooldownScope.USER_GUILD
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
-        this.children = arrayOf(ColorMeAddCmd(), ColorMeRemoveCmd()
+        this.children = arrayOf(
+                ColorMeAddCmd(),
+                ColorMeRemoveCmd()
         )
     }
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, name))
         val allColormes = event.manager.getColorMes(event.guild)
         if(allColormes.isEmpty())
-            return event.replyError("**No ColorMe roles on this server!**\n${SEE_HELP.format(event.prefixUsed, name)}")
+            return event.replyError("**No ColorMe roles on this server!**\n" +
+                    SEE_HELP.format(event.client.prefix, name))
         val colormes = event.member.roles.stream().filter { allColormes.contains(it) }.toList()
         if(colormes.isEmpty())
-            return event.replyError("**You do not have any ColorMe roles!**\n${SEE_HELP.format(event.prefixUsed, name)}")
+            return event.replyError("**You do not have any ColorMe roles!**\n" +
+                    SEE_HELP.format(event.client.prefix, name))
 
         val color : Color = if(pattern.matcher(event.args).matches()) {
             try {
                 Color.decode(event.args)
             } catch(e: NumberFormatException) {
-                return event.replyError("${event.args} is not a valid hexcode!")
+                return event.replyError("${event.args} is not a valid hex!")
             }
         } else when(event.args.toLowerCase()) {
 
@@ -90,23 +101,25 @@ class ColorMeCmd : Command() {
         val requested = colormes[0]
 
         if(!event.selfMember.canInteract(requested))
-            event.replyError("**Cannot interact with your highest ColorMe role!**\n" +
+            return event.replyError("**Cannot interact with your highest ColorMe role!**\n" +
                     "Try moving my highest role above your highest ColorMe role!")
         requested.manager.setColor(color).promise() then {
             event.replySuccess("Successfully changed your color to ${event.args}")
+            event.invokeCooldown()
         } catch {
             event.replyError("An unexpected error occurred while changing your color!")
         }
-        event.invokeCooldown()
     }
 }
+
+@MustHaveArguments("You must specify the name of a role to add!")
 private class ColorMeAddCmd : Command()
 {
     init {
-        this.name = "add"
-        this.fullname = "colorme add"
-        this.arguments = "<Role>"
-        this.help = "adds a ColorMe role for the server"
+        this.name = "Add"
+        this.fullname = "ColorMe Add"
+        this.arguments = "[Role]"
+        this.help = "Adds a ColorMe role for the server."
         this.cooldown = 30
         this.cooldownScope = CooldownScope.GUILD
         this.guildOnly = true
@@ -117,9 +130,7 @@ private class ColorMeAddCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        if(query.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
-        val found = FinderUtil.findRoles(query, event.guild)
+        val found = event.guild.findRoles(query)
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
@@ -139,13 +150,14 @@ private class ColorMeAddCmd : Command()
 
 }
 
+@MustHaveArguments("You must specify the name of a role to remove!")
 private class ColorMeRemoveCmd : Command()
 {
     init {
-        this.name = "remove"
-        this.fullname = "colorme remove"
-        this.arguments = "<Role>"
-        this.help = "removes a ColorMe role for the server"
+        this.name = "Remove"
+        this.fullname = "ColorMe Remove"
+        this.arguments = "[Role]"
+        this.help = "Removes a ColorMe role for the server."
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
         this.category = Category.ADMIN
@@ -154,10 +166,7 @@ private class ColorMeRemoveCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        if(query.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
-        val found = FinderUtil.findRoles(query, event.guild).stream()
-                .filter { event.manager.isColorMe(it) }.toList()
+        val found = event.guild.findRoles(query).stream().filter { event.manager.isColorMe(it) }.toList()
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)

@@ -15,11 +15,10 @@
  */
 package me.kgustave.nightfury.annotations
 
-
 /**
  * Signifies that a command invokes cooldown just prior to execution, automatically.
  *
- * When this is not annotated in the class overhead of the command, a command will
+ * When this is not annotated in the class overhead of the command, the command will
  * not invoke cooldown unless CommandEvent#invokeCooldown() is called in the execution.
  *
  * @author Kaidan Gustave
@@ -27,3 +26,14 @@ package me.kgustave.nightfury.annotations
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class AutoInvokeCooldown
+
+/**
+ * Signifies that a command must have arguments to proceed.
+ *
+ * When this is annotated in the class overhead of the command, the command
+ * will only execute if the arguments of the call [are not empty]
+ * [kotlin.text.isNotEmpty]
+ */
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class MustHaveArguments(vararg val error : String)

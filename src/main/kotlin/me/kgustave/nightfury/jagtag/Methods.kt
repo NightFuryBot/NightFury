@@ -16,7 +16,9 @@
 package me.kgustave.nightfury.jagtag
 
 import com.jagrosh.jagtag.*
-import me.kgustave.nightfury.extensions.Find
+import me.kgustave.nightfury.extensions.findMembers
+import me.kgustave.nightfury.extensions.findTextChannels
+import me.kgustave.nightfury.extensions.findUsers
 import me.kgustave.nightfury.utils.multipleMembersFound
 import me.kgustave.nightfury.utils.multipleTextChannelsFound
 import me.kgustave.nightfury.utils.multipleUsersFound
@@ -66,7 +68,7 @@ fun getMethods() : Collection<Method>
                     env.get<User>("user").asMention
             }, ParseBiFunction { env, input ->
                 if(input[0].isEmpty())
-                    throw ParseException("Invalid 'atuser' statement")
+                    throw ParseException("Invalid '@user' statement")
                 if(env.contains("guild"))
                     env.get<Guild>("guild").getMember(userSearch(env, input)).asMention
                 else
@@ -154,7 +156,7 @@ fun getMethods() : Collection<Method>
 internal fun userSearch(env: Environment, input: Array<out String>) : User
 {
     if(env.contains("guild")) { // is from guild
-        with(Find.members(input[0], env.get<Guild>("guild"))) {
+        with(env.get<Guild>("guild").findMembers(input[0])) {
             if(this.isEmpty())
                 throw TagErrorException(noMatch("members", input[0]))
             if(this.size>1)
@@ -162,7 +164,7 @@ internal fun userSearch(env: Environment, input: Array<out String>) : User
             return this[0].user
         }
     } else {
-        with(Find.users(input[0], env.get<User>("user").jda)) {
+        with(env.get<User>("user").jda.findUsers(input[0])) {
             if(this.isEmpty())
                 throw TagErrorException(noMatch("users", input[0]))
             if(this.size>1)
@@ -178,7 +180,7 @@ internal fun channelSearch(env: Environment, input: Array<out String>) : TextCha
         return null
     if(input[0].isEmpty())
         throw ParseException("Invalid 'channel' statement")
-    with(Find.textChannels(input[0], env.get<Guild>("guild")))
+    with(env.get<Guild>("guild").findTextChannels(input[0]))
     {
         if(this.isEmpty())
             throw TagErrorException(noMatch("channels", input[0]))

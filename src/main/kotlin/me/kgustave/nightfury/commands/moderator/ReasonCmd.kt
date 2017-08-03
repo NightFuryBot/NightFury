@@ -20,17 +20,19 @@ import club.minnced.kjda.promise
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
+import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.entities.Case
 
 /**
  * @author Kaidan Gustave
  */
+@MustHaveArguments
 class ReasonCmd : Command() {
 
     init {
-        this.name = "reason"
-        this.arguments = "<case number> [reason]"
-        this.help = "updates a reason for a moderation case"
+        this.name = "Reason"
+        this.arguments = "<Case Number> [Reason]"
+        this.help = "Updates a reason for a moderation case."
         this.category = Category.MODERATOR
         this.guildOnly = true
     }

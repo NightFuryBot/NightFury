@@ -19,10 +19,8 @@ import club.minnced.kjda.promise
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
-import me.kgustave.nightfury.extensions.Find
-import me.kgustave.nightfury.extensions.promise
-import me.kgustave.nightfury.extensions.giveRole
-import me.kgustave.nightfury.extensions.refreshMutedRole
+import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.extensions.*
 import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.Permission
 import java.awt.Color
@@ -30,12 +28,13 @@ import java.awt.Color
 /**
  * @author Kaidan Gustave
  */
+@MustHaveArguments
 class MuteCmd : Command() {
 
     init {
-        this.name = "mute"
-        this.arguments = "[@user or ID] <reason>"
-        this.help = "mutes a user"
+        this.name = "Mute"
+        this.arguments = "[@User or ID] <Reason>"
+        this.help = "Mutes a user."
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES, Permission.MANAGE_PERMISSIONS)
         this.category = Category.MODERATOR
@@ -96,9 +95,9 @@ private class SetupMuteCmd : Command()
 {
     init {
         this.name = "setup"
-        this.fullname = "mute setup"
-        this.arguments = "<name of muted role>"
-        this.help = "creates a muted role for this server"
+        this.fullname = "Mute Setup"
+        this.arguments = "<Name of Muted Role>"
+        this.help = "Creates a muted role for this server."
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES, Permission.MANAGE_PERMISSIONS)
         this.category = Category.ADMIN
@@ -121,14 +120,14 @@ private class SetupMuteCmd : Command()
     }
 }
 
+@MustHaveArguments
 private class SetMutedRoleCmd : Command()
 {
-    init
-    {
-        this.name = "set"
-        this.fullname = "mute set"
-        this.arguments = "<role>"
-        this.help = "sets the muted role for this server"
+    init {
+        this.name = "Set"
+        this.fullname = "Mute Set"
+        this.arguments = "[Role]"
+        this.help = "Sets the muted role for this server."
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES, Permission.MANAGE_PERMISSIONS)
         this.category = Category.ADMIN
@@ -137,9 +136,7 @@ private class SetMutedRoleCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        if(query.isEmpty())
-            return event.replyError(Command.TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
-        val found = Find.roles(query, event.guild)
+        val found = event.guild.findRoles(query)
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)

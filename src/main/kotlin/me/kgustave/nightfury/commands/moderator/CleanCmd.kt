@@ -27,9 +27,9 @@ import net.dv8tion.jda.core.Permission
 class CleanCmd : Command() {
 
     init {
-        this.name = "clean"
+        this.name = "Clean"
         this.aliases = arrayOf("clear", "prune")
-        this.arguments = "<number of messages>"
+        this.arguments = "[Number of Messages]"
         this.help = "deletes a specified number of messages from the channel this is called in"
         this.category = Category.MODERATOR
         this.guildOnly = true

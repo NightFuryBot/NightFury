@@ -19,7 +19,7 @@ import club.minnced.kjda.entities.connectedChannel
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
-import me.kgustave.nightfury.extensions.Find
+import me.kgustave.nightfury.annotations.MustHaveArguments
 import net.dv8tion.jda.core.entities.ChannelType
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
@@ -28,12 +28,13 @@ import javax.script.ScriptException
 /**
  * @author Kaidan Gustave
  */
+@MustHaveArguments
 class EvalCmd : Command()
 {
     init {
-        this.name = "eval"
-        this.help = "evaluates using Nashorn"
-        this.arguments = "<script>"
+        this.name = "Eval"
+        this.help = "Evaluates using Nashorn."
+        this.arguments = "[Script]"
         this.devOnly = true
         this.category = Category.MONITOR
         this.guildOnly = false
@@ -87,9 +88,6 @@ class EvalCmd : Command()
         {
             se.put("privateChannel", event.privateChannel)
         }
-
-        // UTILITY
-        se.put("Find", Find)
 
         return se
     }

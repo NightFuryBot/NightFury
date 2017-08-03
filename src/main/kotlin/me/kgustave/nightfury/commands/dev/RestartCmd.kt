@@ -28,8 +28,8 @@ import net.dv8tion.jda.core.entities.Game
 class RestartCmd : Command()
 {
     init {
-        this.name = "restart"
-        this.help = "restarts NightFury"
+        this.name = "Restart"
+        this.help = "Restarts NightFury."
         this.devOnly = true
         this.category = Category.MONITOR
         this.guildOnly = true

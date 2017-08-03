@@ -21,7 +21,6 @@ import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.utils.SimpleLog
 import java.sql.Connection
 import java.sql.DriverManager
-import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.Comparator
 
@@ -49,122 +48,60 @@ class DatabaseManager(url: String, user: String, pass: String) {
 
     private val modLog : SQLModeratorLog = SQLModeratorLog(connection)
     private val ignoredChannels : SQLIgnoredChannels = SQLIgnoredChannels(connection)
+    private val welcomeChannels : SQLWelcomeChannel = SQLWelcomeChannel(connection)
 
     private val cases : SQLCases = SQLCases(connection)
 
     private val prefixes : SQLPrefixes = SQLPrefixes(connection)
+    private val welcomesMessages : SQLWelcomeMessage = SQLWelcomeMessage(connection)
 
     val localTags : SQLLocalTags = SQLLocalTags(connection)
     val globalTags : SQLGlobalTags = SQLGlobalTags(connection)
 
     val customCommands : SQLCustomCommands = SQLCustomCommands(connection)
 
-    fun startup() : Boolean
+    fun setupDatabase() : Boolean
     {
-        try {
-            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
-            statement.execute(
-                    "CREATE TABLE cases (" +
-                            "number int, guild_id long, message_id long, mod_id long, target_id long," +
-                            " is_on_user boolean, action varchar(20), reason varchar(200)" +
-                            "); " +
-                            "CREATE TABLE channels (guild_id long, channel_id long, type varchar(20)); " +
-                            "CREATE TABLE prefixes (guild_id long, prefix varchar(50)); " +
-                            "CREATE TABLE roles (guild_id long, role_id long, type varchar(20)); " +
-                            "CREATE TABLE global_tags (name varchar(50), owner_id long, content varchar(1900)); " +
-                            "CREATE TABLE local_tags (name varchar(50), guild_id long, owner_id long, content varchar(1900)); "
-            )
-            statement.close()
-            return true
-        } catch (e : SQLException) {
-            LOG.warn(e)
-            return false
-        }
+        return setupCasesTable() && setupChannelsTable()
+        && setupPrefixesTable() && setupRolesTable()
+        && setupGlobalTagsTable() && setupLocalTagsTable()
+        && setupCommandsTable() && setupWelcomesTable()
     }
 
-    fun createCasesTable() : Boolean
+    fun setupCasesTable() : Boolean = createTable("Cases")
     {
-        try {
-            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
-            statement.execute(
-                    "CREATE TABLE cases (" +
-                            "number int, guild_id long, message_id long, mod_id long, target_id long," +
-                            " is_on_user boolean, action varchar(20), reason varchar(200)" +
-                            ");"
-            )
-            statement.close()
-            println("Created Cases Table!")
-            return true
-        } catch (e : SQLException) {
-            LOG.warn(e)
-            return false
-        }
+        "CREATE TABLE cases (" +
+                "number int, guild_id long, message_id long, mod_id long, target_id long," +
+                " is_on_user boolean, action varchar(20), reason varchar(200)" +
+            ")"
     }
 
-    fun createChannelsTable() : Boolean
-    {
-        try {
-            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
-            statement.execute("CREATE TABLE channels (guild_id long, channel_id long, type varchar(20));")
-            statement.close()
-            println("Created Channels Table!")
-            return true
-        } catch (e : SQLException) {
-            LOG.warn(e)
-            return false
-        }
-    }
+    fun setupChannelsTable() : Boolean = createTable("Channels")
+    { "CREATE TABLE channels (guild_id long, channel_id long, type varchar(20))" }
 
-    fun createPrefixesTable() : Boolean
-    {
-        try {
-            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
-            statement.execute("CREATE TABLE prefixes (guild_id long, prefix varchar(50));")
-            statement.close()
-            println("Created Prefixes Table!")
-            return true
-        } catch (e : SQLException) {
-            LOG.warn(e)
-            return false
-        }
-    }
+    fun setupPrefixesTable() : Boolean = createTable("Prefixes")
+    { "CREATE TABLE prefixes (guild_id long, prefix varchar(50))" }
 
-    fun createRolesTable() : Boolean
-    {
-        try {
-            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
-            statement.execute("CREATE TABLE roles (guild_id long, role_id long, type varchar(20));")
-            statement.close()
-            println("Created Prefixes Table!")
-            return true
-        } catch (e : SQLException) {
-            LOG.warn(e)
-            return false
-        }
-    }
+    fun setupRolesTable() : Boolean = createTable("Roles")
+    { "CREATE TABLE roles (guild_id long, role_id long, type varchar(20))" }
 
-    fun createTagsTables() : Boolean
-    {
-        try {
-            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
-            statement.execute("CREATE TABLE global_tags (name varchar(50), owner_id long, content varchar(1900)); " +
-                    "CREATE TABLE local_tags (name varchar(50), guild_id long, owner_id long, content varchar(1900));")
-            statement.close()
-            println("Created Tags Tables!")
-            return true
-        } catch (e : SQLException) {
-            LOG.warn(e)
-            return false
-        }
-    }
+    fun setupGlobalTagsTable() : Boolean = createTable("Global Tags")
+    { "CREATE TABLE global_tags (name varchar(50), owner_id long, content varchar(1900))" }
 
-    fun createCommandsTable() : Boolean
+    fun setupLocalTagsTable() : Boolean = createTable("Local Tags")
+    { "CREATE TABLE local_tags (name varchar(50), guild_id long, owner_id long, content varchar(1900))" }
+
+    fun setupCommandsTable() : Boolean = createTable("Custom Commands")
+    { "CREATE TABLE custom_commands (name varchar(50), content varchar(1900), guild_id long)" }
+
+    fun setupWelcomesTable() : Boolean = createTable("Welcomes")
+    { "CREATE TABLE welcomes (guild_id long, welcome varchar(1900))" }
+
+    private fun createTable(tableName : String, sql : () -> String) : Boolean
     {
         try {
-            val statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
-            statement.execute("CREATE TABLE custom_commands (name varchar(50), content varchar(1900), guild_id long)")
-            statement.close()
-            println("Created Custom Commands Tables!")
+            evaluate(sql())
+            LOG.info("Created $tableName Table!")
             return true
         } catch (e : SQLException) {
             LOG.warn(e)
@@ -190,6 +127,7 @@ class DatabaseManager(url: String, user: String, pass: String) {
     fun addColorMe(role: Role) = colorMe.add(role.guild.idLong, role.idLong)
     fun removeColorMe(role: Role) = colorMe.remove(role.guild.idLong, role.idLong)
 
+    fun hasModRole(guild: Guild) = modRole.has(guild.idLong)
     fun getModRole(guild: Guild) = modRole.get(guild, guild.idLong)
     fun setModRole(role: Role) {
         if(getModRole(role.guild)!=null)
@@ -199,6 +137,7 @@ class DatabaseManager(url: String, user: String, pass: String) {
     }
     fun resetModRole(guild: Guild) = modRole.reset(guild.idLong)
 
+    fun hasMutedRole(guild: Guild) = mutedRole.has(guild.idLong)
     fun getMutedRole(guild: Guild) = mutedRole.get(guild, guild.idLong)
     fun setMutedRole(role: Role) {
         if(getMutedRole(role.guild)!=null)
@@ -208,6 +147,7 @@ class DatabaseManager(url: String, user: String, pass: String) {
     }
     fun resetMutedRole(guild: Guild) = mutedRole.reset(guild.idLong)
 
+    fun hasModLog(guild: Guild) = modLog.has(guild.idLong)
     fun getModLog(guild: Guild) = modLog.get(guild, guild.idLong)
     fun setModLog(channel: TextChannel) {
         if(getModLog(channel.guild)!=null)
@@ -247,11 +187,31 @@ class DatabaseManager(url: String, user: String, pass: String) {
     fun addPrefix(guild: Guild, prefix: String) = prefixes.add(guild.idLong, prefix)
     fun removePrefix(guild: Guild, prefix: String) = prefixes.remove(guild.idLong, prefix)
 
+    fun hasWelcome(guild: Guild) = welcomeChannels.has(guild.idLong) && welcomesMessages.has(guild.idLong)
+    fun resetWelcome(guild: Guild) {
+        welcomeChannels.reset(guild.idLong)
+        welcomesMessages.reset(guild.idLong)
+    }
+    fun getWelcomeChannel(guild: Guild) = welcomeChannels.get(guild, guild.idLong)
+    fun setWelcomeChannel(channel: TextChannel) {
+        if(getWelcomeChannel(channel.guild)!=null)
+            welcomeChannels.update(channel.idLong, channel.guild.idLong)
+        else
+            welcomeChannels.set(channel.guild.idLong, channel.idLong)
+    }
+
+    fun getWelcomeMessage(guild: Guild) = welcomesMessages.get(guild, guild.idLong)
+    fun setWelcomeMessage(guild: Guild, welcome: String) {
+        if(getWelcomeMessage(guild)!=null)
+            welcomesMessages.update(welcome, guild.idLong)
+        else
+            welcomesMessages.set(guild.idLong, welcome)
+    }
+
     fun evaluate(string: String) {
         try {
             val statement = connection.prepareStatement(string)
-            statement.execute()
-            statement.close()
+            statement.use { it.execute() }
         } catch (e: SQLException) { throw e }
     }
 
@@ -267,6 +227,8 @@ class DatabaseManager(url: String, user: String, pass: String) {
         prefixes.removeAll(guild.idLong)
         localTags.deleteAllTags(guild)
         customCommands.removeAll(guild)
+        welcomeChannels.reset(guild.idLong)
+        welcomesMessages.reset(guild.idLong)
     }
 
     fun shutdown() = try { connection.close() } catch (e: SQLException) { LOG.warn(e) }

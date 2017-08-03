@@ -16,6 +16,7 @@
 package me.kgustave.nightfury
 
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
+import me.kgustave.nightfury.annotations.MustHaveArguments
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import java.util.*
@@ -64,7 +65,7 @@ abstract class Command
     var children: Array<Command> = emptyArray()
         protected set(value) {field = value}
 
-    var fullname: String = name
+    var fullname: String = "null"
         protected set(value) {field = value}
 
     @Suppress("unused")
@@ -85,6 +86,7 @@ abstract class Command
             return {event, command ->
                 val b = StringBuilder()
                 val aliases = command.aliases
+                val help = command.help
                 val arguments = command.arguments
                 val children = command.children
                 val ownerId = event.client.devId
@@ -94,7 +96,7 @@ abstract class Command
 
                 b.append("\n**Usage:** `")
                         .append(event.client.prefix)
-                        .append(command.name)
+                        .append((if(command.fullname!="null") command.fullname else command.name).toLowerCase())
                         .append(if(arguments.isNotEmpty()) " $arguments`" else "`")
                         .append("\n")
 
@@ -109,6 +111,8 @@ abstract class Command
                     b.append("\n")
                 }
 
+                if(help != "no help available")
+                    b.append("\n$help\n")
                 if(explanation != null)
                     b.append("\n$explanation\n")
 
@@ -124,7 +128,7 @@ abstract class Command
                             if(cat!=null)
                                 b.append("\n__${cat.title}__\n\n")
                         }
-                        b.append("`").append(event.client.prefix).append(child.fullname)
+                        b.append("`").append(event.client.prefix).append(child.fullname.toLowerCase())
                                 .append(if(child.arguments.isNotEmpty()) " ${child.arguments}" else "")
                                 .append("` ").append(child.help).append("\n")
                     }
@@ -207,24 +211,31 @@ abstract class Command
             }
         }
 
-        if(cooldown > 0)
+        val key = if(cooldown > 0) getCooldownKey(event) else null
+        if(key!=null)
         {
-            val key = getCooldownKey(event)
-            if(key!=null)
+            val remaining = event.client.getRemainingCooldown(key)
+            if(remaining > 0)
             {
-                val remaining = event.client.getRemainingCooldown(key)
-                if(remaining > 0)
-                {
-                    val error = getCooldownError(event)
-                    return terminate(event,
-                            "${event.client.warning} That command is on cooldown for $remaining more seconds${
-                            if (error.isEmpty()) "!"
-                            else " $error"
-                            }!"
+                val error = getCooldownError(event)
+                return terminate(event,
+                        "${event.client.warning} That command is on cooldown for $remaining more seconds${
+                        if (error.isEmpty()) "!"
+                        else " $error"
+                        }!"
+                )
+            }
+        }
+
+        this::class.annotations.forEach {
+            if(it is AutoInvokeCooldown && key!=null)
+                event.client.applyCooldown(key, cooldown)
+            if(event.args.isEmpty() && it is MustHaveArguments) {
+                if(it.error.isNotEmpty()) return event.replyError(TOO_FEW_ARGS_ERROR.format(it.error[0]))
+                else
+                    return event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix,
+                            (if(fullname!="null") fullname else name)).toLowerCase()
                     )
-                }
-                if(this::class.annotations.filterIsInstance<AutoInvokeCooldown>().isNotEmpty())
-                    event.client.applyCooldown(key, cooldown)
             }
         }
 

@@ -19,10 +19,8 @@ import club.minnced.kjda.builders.colorAwt
 import club.minnced.kjda.builders.embed
 import club.minnced.kjda.promise
 import me.kgustave.nightfury.*
-import me.kgustave.nightfury.extensions.Find
-import me.kgustave.nightfury.extensions.giveRole
-import me.kgustave.nightfury.extensions.isAdmin
-import me.kgustave.nightfury.extensions.removeRole
+import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.extensions.*
 import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
@@ -36,25 +34,30 @@ import kotlin.streams.toList
 class ModeratorCmd : NoBaseExecutionCommand()
 {
     init {
-        this.name = "moderator"
+        this.name = "Moderator"
         this.aliases = arrayOf("mod")
-        this.arguments = "[add|remove|set] <arguments>"
-        this.help = "add, remove, and manage moderators"
+        this.arguments = "[Add|Remove|Set]"
+        this.help = "Add, remove, and manage moderators for this ser"
         this.guildOnly = true
         this.category = Category.ADMIN
-        this.children = arrayOf(ModeratorAddCmd(), ModeratorListBaseCmd.ModeratorListCmd(), ModeratorOnlineCmd(), ModeratorRemoveCmd(), ModeratorSetCmd()
+        this.children = arrayOf(
+                ModeratorAddCmd(),
+                ModeratorListBaseCmd.ModeratorListCmd(),
+                ModeratorOnlineCmd(),
+                ModeratorRemoveCmd(),
+                ModeratorSetCmd()
         )
     }
 }
 
+@MustHaveArguments
 private class ModeratorAddCmd : Command()
 {
-
     init {
-        this.name = "add"
-        this.fullname = "moderator add"
-        this.arguments = "[@user or ID] <reason>"
-        this.help = "gives a member the moderator role"
+        this.name = "Add"
+        this.fullname = "Moderator Add"
+        this.arguments = "[@User or ID] <Reason>"
+        this.help = "Gives a member the moderator role."
         this.guildOnly = true
         this.category = Category.ADMIN
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
@@ -100,13 +103,14 @@ private class ModeratorAddCmd : Command()
     }
 }
 
+@MustHaveArguments
 private class ModeratorRemoveCmd : Command()
 {
     init {
-        this.name = "remove"
-        this.fullname = "moderator remove"
-        this.arguments = "[@user or ID] <reason>"
-        this.help = "removes a moderator's mod role"
+        this.name = "Remove"
+        this.fullname = "Moderator Remove"
+        this.arguments = "[@User or ID] <Reason>"
+        this.help = "Removes a moderator's mod role."
         this.guildOnly = true
         this.category = Category.ADMIN
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
@@ -152,13 +156,14 @@ private class ModeratorRemoveCmd : Command()
     }
 }
 
+@MustHaveArguments
 private class ModeratorSetCmd : Command()
 {
     init {
-        this.name = "set"
-        this.fullname = "moderator set"
-        this.arguments = "<role>"
-        this.help = "sets the server's moderator role"
+        this.name = "Set"
+        this.fullname = "Moderator Set"
+        this.arguments = "[Role]"
+        this.help = "Sets the server's moderator role."
         this.guildOnly = true
         this.category = Category.ADMIN
     }
@@ -166,9 +171,7 @@ private class ModeratorSetCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        if(query.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
-        val found = Find.roles(query, event.guild)
+        val found = event.guild.findRoles(query)
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
@@ -190,7 +193,7 @@ private class ModeratorSetCmd : Command()
 abstract class ModeratorListBaseCmd : Command()
 {
     init {
-        this.help = "lists moderators on the server"
+        this.help = "Lists moderators on the server."
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
@@ -222,16 +225,16 @@ abstract class ModeratorListBaseCmd : Command()
     class ModeratorListCmd : ModeratorListBaseCmd()
     {
         init {
-            this.name = "list"
-            this.fullname = "moderator list"
+            this.name = "List"
+            this.fullname = "Moderator List"
         }
     }
 
     class ServerModeratorsCmd : ModeratorListBaseCmd()
     {
         init {
-            this.name = "moderators"
-            this.fullname = "server moderators"
+            this.name = "Moderators"
+            this.fullname = "Server Moderators"
             this.aliases = arrayOf("mods")
         }
     }
@@ -240,9 +243,9 @@ abstract class ModeratorListBaseCmd : Command()
 private class ModeratorOnlineCmd : Command()
 {
     init {
-        this.name = "online"
-        this.fullname = "moderator online"
-        this.help = "lists moderators on the server"
+        this.name = "Online"
+        this.fullname = "Moderator Online"
+        this.help = "Lists online moderators on the server."
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }

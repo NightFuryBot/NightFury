@@ -31,14 +31,13 @@ import net.dv8tion.jda.core.utils.SimpleLog
  */
 class AboutCmd(vararg val permissions : Permission) : Command()
 {
-
     private var oauthLink: String? = null
     private var isPublic: Boolean = true
     private val perms : Long
 
     init {
-        this.name = "about"
-        this.help = "shows an overview of the bot"
+        this.name = "About"
+        this.help = "Shows an overview of the bot."
         this.guildOnly = false
         perms = with(permissions)
         {

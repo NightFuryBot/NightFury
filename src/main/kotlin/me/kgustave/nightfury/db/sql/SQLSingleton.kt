@@ -48,6 +48,16 @@ abstract class SQLSingleton<in E, out T>(val connection: Connection) {
     var updateStatement : String = ""
     var resetStatement : String = ""
 
+    fun has(vararg  args : Any) : Boolean
+    {
+        return try {
+            val statement = insertArgs(connection.prepareStatement(getStatement), *args)
+            val returns = statement.executeQuery().use { it.next() }
+            statement.close()
+            returns
+        } catch (e: SQLException) { SQL.LOG.warn(e); false }
+    }
+
     fun get(env: E, vararg args: Any) : T?
     {
         return try {

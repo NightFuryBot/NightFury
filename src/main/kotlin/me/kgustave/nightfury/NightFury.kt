@@ -41,8 +41,9 @@ import java.util.logging.Logger
 
 fun main(args: Array<String>?)
 {
+    val arguments = args?:emptyArray()
     NightFury.LOG.info("Starting NightFury...")
-    NightFury(if(args==null || args.isEmpty()) emptyArray<String>() else args)
+    NightFury(arguments)
     Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
 }
 
@@ -59,7 +60,7 @@ class NightFury(args: Array<String>)
             System.exit(exit)
         }
 
-        @JvmStatic val version : String = "0.5.0"
+        @JvmStatic val version : String = "0.5.1"
         @JvmStatic val github : String = "https://github.com/TheMonitorLizard/NightFury/"
     }
 
@@ -71,13 +72,18 @@ class NightFury(args: Array<String>)
         if(args.isNotEmpty())
         {
             args.forEach {
-                if(it == "-setupDB"       && !manager.startup())             throw SQLException("Failed to setup database!")
-                if(it == "-setupCases"    && !manager.createCasesTable())    throw SQLException("Failed to setup cases table!")
-                if(it == "-setupChannels" && !manager.createChannelsTable()) throw SQLException("Failed to setup channels table!")
-                if(it == "-setupPrefixes" && !manager.createPrefixesTable()) throw SQLException("Failed to setup prefixes table!")
-                if(it == "-setupRoles"    && !manager.createRolesTable())    throw SQLException("Failed to setup roles table!")
-                if(it == "-setupTags"     && !manager.createTagsTables())    throw SQLException("Failed to setup tags table!")
-                if(it == "-setupCCs"      && !manager.createCommandsTable()) throw SQLException("Failed to setup custom commands table!")
+                when(it)
+                {
+                    "-setupDB"         -> if(!manager.setupDatabase())        throw SQLException("Failed to setup database!")
+                    "-setupCases"      -> if(!manager.setupCasesTable())      throw SQLException("Failed to setup cases table!")
+                    "-setupChannels"   -> if(!manager.setupChannelsTable())   throw SQLException("Failed to setup channels table!")
+                    "-setupPrefixes"   -> if(!manager.setupPrefixesTable())   throw SQLException("Failed to setup prefixes table!")
+                    "-setupRoles"      -> if(!manager.setupRolesTable())      throw SQLException("Failed to setup roles table!")
+                    "-setupGlobalTags" -> if(!manager.setupGlobalTagsTable()) throw SQLException("Failed to setup global tags table!")
+                    "-setupLocalTags"  -> if(!manager.setupLocalTagsTable())  throw SQLException("Failed to setup local tags table!")
+                    "-setupCCommands"  -> if(!manager.setupCommandsTable())   throw SQLException("Failed to setup custom commands table!")
+                    "-setupWelcomes"   -> if(!manager.setupWelcomesTable())   throw SQLException("Failed to setup welcomes table!")
+                }
             }
         }
 
@@ -119,6 +125,7 @@ class NightFury(args: Array<String>)
                 ModeratorCmd(),
                 ModLogCmd(),
                 PrefixCmd(),
+                WelcomeCmd(),
 
                 EvalCmd(),
                 MemoryCmd(),

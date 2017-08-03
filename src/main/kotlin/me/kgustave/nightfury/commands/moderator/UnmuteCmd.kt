@@ -19,6 +19,7 @@ import club.minnced.kjda.promise
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
+import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.removeRole
 import me.kgustave.nightfury.utils.TARGET_ID_REASON
 import me.kgustave.nightfury.utils.TARGET_MENTION_REASON
@@ -28,12 +29,13 @@ import net.dv8tion.jda.core.Permission
 /**
  * @author Kaidan Gustave
  */
+@MustHaveArguments
 class UnmuteCmd : Command()
 {
     init {
-        this.name = "unmute"
-        this.arguments = "[@user or ID] <reason>"
-        this.help = "unmutes a user"
+        this.name = "Unmute"
+        this.arguments = "[@User or ID] <Reason>"
+        this.help = "Unmutes a user."
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
         this.category = Category.MODERATOR

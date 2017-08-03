@@ -33,8 +33,8 @@ class MemoryCmd : Command()
     }
 
     init {
-        this.name = "memory"
-        this.help = "gets NightFury's runtime memory statistics"
+        this.name = "Memory"
+        this.help = "Gets NightFury's runtime memory statistics."
         this.devOnly = true
         this.category = Category.MONITOR
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)

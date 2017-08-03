@@ -24,7 +24,6 @@ import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.commands.admin.ModeratorListBaseCmd
-import me.kgustave.nightfury.commands.moderator.SettingsCmd
 import me.kgustave.nightfury.extensions.waiting.orderedMenu
 import me.kgustave.nightfury.extensions.waiting.paginator
 import me.kgustave.nightfury.utils.*
@@ -40,12 +39,12 @@ import java.util.Comparator
 class ServerCmd(val waiter: EventWaiter) : Command()
 {
     init {
-        this.name = "server"
+        this.name = "Server"
         this.aliases = arrayOf("guild")
-        this.arguments = "<info category>"
-        this.help = "gets info on the server"
+        this.arguments = "<Info Category>"
+        this.help = "Gets info on the server."
         this.helpBiConsumer = Command.standardSubHelp(
-                "Gets information on the server from based on one of the sub-commands listed " +
+                "What the command outputs is based on one of the sub-commands listed " +
                         "below. If no sub-command is specified, this will generate a menu where you can select which " +
                         "category to get info from.",
                 true
@@ -58,7 +57,7 @@ class ServerCmd(val waiter: EventWaiter) : Command()
                 ServerJoinsCmd(waiter),
                 ModeratorListBaseCmd.ServerModeratorsCmd(),
                 ServerOwnerCmd(),
-                SettingsCmd()
+                ServerSettingsCmd()
         )
     }
 
@@ -111,9 +110,9 @@ private class ServerOwnerCmd : Command()
 
     init
     {
-        this.name = "owner"
-        this.fullname = "server owner"
-        this.help = "gets info on the owner of this server"
+        this.name = "Owner"
+        this.fullname = "Server Owner"
+        this.help = "Gets info on the owner of this server."
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
@@ -189,9 +188,9 @@ private class ServerOwnerCmd : Command()
 private class ServerJoinsCmd(val waiter: EventWaiter) : Command()
 {
     init {
-        this.name = "joins"
-        this.fullname = "server joins"
-        this.help = "gets an ordered list of this server's join history"
+        this.name = "Joins"
+        this.fullname = "Server Joins"
+        this.help = "Gets an ordered list of this server's join history."
         this.guildOnly = true
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER_GUILD
@@ -213,5 +212,61 @@ private class ServerJoinsCmd(val waiter: EventWaiter) : Command()
             useNumberedItems { true }
             waitOnSinglePage { true }
         }
+    }
+}
+
+private class ServerSettingsCmd : Command()
+{
+    init {
+        this.name = "Settings"
+        this.fullname = "Server Settings"
+        this.aliases = arrayOf("config", "configurations")
+        this.help = "Get info on the server's settings."
+        this.guildOnly = true
+        this.category = Category.MODERATOR
+        this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
+    }
+
+    override fun execute(event: CommandEvent)
+    {
+        val guild = event.guild
+        event.reply(embed {
+            author {
+                value = "Settings for ${guild.name} (ID: ${guild.id})"
+                image = guild.iconUrl
+            }
+            colorAwt = event.selfMember.color
+            field {
+                this.name = "Prefixes"
+                this.value = buildString {
+                    this.append("`${event.client.prefix}`")
+                    event.client.manager.getPrefixes(guild).forEach { this.append(", `$it`") }
+                }
+                this.inline = true
+            }
+            field {
+                val modRole = event.client.manager.getModRole(guild)
+                this.name = "Moderator Role"
+                this.value = if(modRole!=null) modRole.name else "None"
+                this.inline = true
+            }
+            field {
+                val modLog = event.client.manager.getModLog(guild)
+                this.name = "Moderator Log"
+                this.value = if(modLog!=null) modLog.asMention else "None"
+                this.inline = true
+            }
+            field {
+                val mutedRole = event.client.manager.getMutedRole(guild)
+                this.name = "Muted Role"
+                this.value = if(mutedRole!=null) mutedRole.name else "None"
+                this.inline = true
+            }
+            field {
+                this.name = "Cases"
+                this.value = "${event.client.manager.getCases(event.guild).size} cases"
+                this.inline = true
+            }
+        })
     }
 }

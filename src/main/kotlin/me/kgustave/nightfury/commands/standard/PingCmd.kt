@@ -19,15 +19,14 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import java.time.temporal.ChronoUnit
 
-
 /**
  * @author Kaidan Gustave
  */
 class PingCmd : Command() {
     init {
-        this.name = "ping"
+        this.name = "Ping"
         this.aliases = arrayOf("pong", "pang", "pyng", "pung", "peng", "png")
-        this.help = "tests the bot's latency"
+        this.help = "Tests the bot's latency."
         this.guildOnly = false
     }
 

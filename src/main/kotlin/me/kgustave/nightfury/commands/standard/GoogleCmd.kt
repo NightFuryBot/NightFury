@@ -19,19 +19,21 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.APICache
+import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.api.GoogleAPI
 
 /**
  * @author Kaidan Gustave
  */
 @APICache
+@MustHaveArguments("Please specify what you want to search for!")
 class GoogleCmd(private val api: GoogleAPI) : Command()
 {
     init {
-        this.name = "google"
+        this.name = "Google"
         this.aliases = arrayOf("g")
-        this.arguments = "[query]"
-        this.help = "searches google"
+        this.arguments = "[Query]"
+        this.help = "Searches Google."
         this.cooldown = 30
         this.cooldownScope = CooldownScope.USER
         this.guildOnly = false
@@ -40,8 +42,7 @@ class GoogleCmd(private val api: GoogleAPI) : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        if(query.isEmpty()) event.replyError(TOO_FEW_ARGS_ERROR.format("Please specify what you want to search for!"))
-        else event.channel.sendTyping().queue {
+        event.channel.sendTyping().queue {
             val results = api.search(query)
             if(results == null) event.replyError("An unexpected error occured while searching!")
             else if(results.isEmpty()) event.replyError("No results were found for \"$query\"!")

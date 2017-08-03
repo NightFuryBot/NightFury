@@ -36,8 +36,8 @@ class InviteCmd(vararg requestedPerms : Permission) : Command()
     }
 
     init {
-        this.name = "invite"
-        this.help = "gets an invite link for NightFury"
+        this.name = "Invite"
+        this.help = "Gets an invite link for NightFury."
         this.guildOnly = false
 
         var p: Long = 0
@@ -59,7 +59,7 @@ class InviteCmd(vararg requestedPerms : Permission) : Command()
             appendln("To see a full list of my commands, type `${event.prefixUsed}help`.")
             append("If you require additional help ")
             val owner = event.jda.getUserById(event.client.devId)
-            if(owner == null)
+            if(owner != null)
                 append("contact ${formatUserName(owner,true)} or ")
             append("join my support server **<${event.client.server}>**")
             return@with toString()

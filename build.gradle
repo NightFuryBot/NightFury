@@ -40,7 +40,7 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 group = 'me.kgustave'
-version = new Version(major: 0, minor: 5, build: 0)
+version = new Version(major: 0, minor: 5, build: 1)
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
 def dirChar = File.separatorChar
@@ -81,15 +81,13 @@ dependencies {
     compile 'com.google.apis:google-api-services-youtube:v3-rev183-1.22.0'
 
     compile group: 'com.jagrosh', name: 'JagTag', version: '0.5'
-
-    compileOnly([group: 'com.jagrosh', name: 'JagTag', version: '0.5', classifier: 'javadoc'],
-            [group: 'com.jagrosh', name: 'JagTag', version: '0.5', classifier: 'sources'])
 }
 
 shadowJar {
     baseName = 'NightFury'
     version = ''
     classifier = ''
+    exclude('com/jagrosh/jdautilities/commandclient/**')
     manifest {
         attributes 'Implementation-Version': version, 'Main-Class': mainClassName
     }

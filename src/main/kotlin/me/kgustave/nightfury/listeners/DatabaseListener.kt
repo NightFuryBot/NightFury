@@ -37,10 +37,33 @@ class DatabaseListener(val manager: DatabaseManager, val executor: ScheduledExec
 
     override fun onRoleDelete(event: RoleDeleteEvent)
     {
-        if(manager.isRoleMe(event.role))                  manager.removeRoleMe(event.role)
-        if(manager.isColorMe(event.role))                 manager.removeColorMe(event.role)
-        if(manager.getModRole(event.guild)==event.role)   manager.resetModRole(event.guild)
-        if(manager.getMutedRole(event.guild)==event.role) manager.resetMutedRole(event.guild)
+        // RoleMe Deleted
+        if(manager.isRoleMe(event.role))
+            manager.removeRoleMe(event.role)
+
+        // ColorMe Deleted
+        if(manager.isColorMe(event.role))
+            manager.removeColorMe(event.role)
+
+        // Mod Role Deleted
+        val modRole = manager.getModRole(event.guild)
+        if(modRole!=null) {
+            if(modRole==event.role)
+                manager.resetModRole(event.guild)
+        } else {
+            if(manager.hasModRole(event.guild))
+                manager.resetModRole(event.guild)
+        }
+
+        // Muted Role Deleted
+        val mutedRole = manager.getMutedRole(event.guild)
+        if(mutedRole!=null) {
+            if(mutedRole==event.role)
+                manager.resetMutedRole(event.guild)
+        } else {
+            if(manager.hasMutedRole(event.guild))
+                manager.resetMutedRole(event.guild)
+        }
     }
 
     override fun onTextChannelCreate(event: TextChannelCreateEvent)
@@ -52,11 +75,31 @@ class DatabaseListener(val manager: DatabaseManager, val executor: ScheduledExec
 
     override fun onTextChannelDelete(event: TextChannelDeleteEvent)
     {
+        // ModLog Deleted
         val modLog = manager.getModLog(event.guild)
-        if(modLog != null && event.channel == modLog)
-            manager.resetModLog(event.guild)
+        if(modLog != null) {
+            if(event.channel == modLog)
+                manager.resetModLog(event.guild)
+        } else {
+            if(manager.hasModLog(event.guild))
+                manager.resetModLog(event.guild)
+        }
+
+        // Ignored Channel Deleted
         if(manager.isIgnoredChannel(event.channel))
             manager.removeIgnoredChannel(event.channel)
+
+        // Welcome Channel Deleted
+        val welcomeChan = manager.getWelcomeChannel(event.guild)
+        if(welcomeChan != null) {
+            if(event.channel == welcomeChan) {
+                manager.resetWelcome(event.guild)
+            }
+        } else {
+            if(manager.hasWelcome(event.guild)) {
+                manager.resetWelcome(event.guild)
+            }
+        }
     }
 
     override fun onVoiceChannelCreate(event: VoiceChannelCreateEvent)

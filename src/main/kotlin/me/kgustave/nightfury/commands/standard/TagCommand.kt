@@ -19,9 +19,11 @@ import club.minnced.kjda.promise
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
+import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.db.sql.SQLGlobalTags
 import me.kgustave.nightfury.db.sql.SQLLocalTags
-import me.kgustave.nightfury.extensions.Find
+import me.kgustave.nightfury.extensions.findMembers
+import me.kgustave.nightfury.extensions.findUsers
 import me.kgustave.nightfury.extensions.waiting.paginator
 import me.kgustave.nightfury.jagtag.TagErrorException
 import me.kgustave.nightfury.utils.formatUserName
@@ -38,12 +40,16 @@ import net.dv8tion.jda.core.entities.User
 class TagCommand(waiter: EventWaiter) : Command()
 {
     init {
-        this.name = "tag"
+        this.name = "Tag"
         this.aliases = arrayOf("t")
-        this.arguments = "[tag name] <tag args>"
-        this.help = "calls a tag"
+        this.arguments = "[Tag Name] <Tag Args>"
+        this.help = "Calls a tag."
         this.helpBiConsumer = Command.standardSubHelp(
-                null,
+                "Tags are a way to store text in a easy-to-call way.\n" +
+                        "In addition to this, tags use JagTag syntax in order to " +
+                        "process syntax structures such as `{@user}` into a user " +
+                        "mention. Listings and descriptions for all structures is " +
+                        "available at ${NightFury.github}wiki",
                 true
         )
         this.guildOnly = false
@@ -63,7 +69,7 @@ class TagCommand(waiter: EventWaiter) : Command()
     override fun execute(event: CommandEvent)
     {
         if(event.args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_ERROR.format("Try specifying a tag name in the format `${event.prefixUsed}tag [tag name]`."))
+            return event.replyError(TOO_FEW_ARGS_ERROR.format("Try specifying a tag name in the format `${event.client.prefix}tag [tag name]`."))
         val parts = event.args.split(Regex("\\s+"),2)
         val name = if(event.client.getCommandByName(parts[0])!=null)
             return event.reply("*You remember Monitor's words: Not everything is a tag!*")
@@ -76,10 +82,12 @@ class TagCommand(waiter: EventWaiter) : Command()
                 event.globalTags.getTagContent(name)
             } else ""
             if(content.isEmpty())
-                return event.replyError("**No Tag Found Matching \"$name\"**\n${SEE_HELP.format(event.prefixUsed,this.name)}")
+                return event.replyError("**No Tag Found Matching \"$name\"**\n" +
+                        SEE_HELP.format(event.client.prefix,this.name))
             else try {
                 event.reply(
-                        event.client.parser.put("args", args.trim())
+                        event.client.parser.clear()
+                                .put("args", args.trim())
                                 .put("user", event.author)
                                 .put("guild", event.guild)
                                 .put("channel", event.textChannel)
@@ -95,10 +103,12 @@ class TagCommand(waiter: EventWaiter) : Command()
             } else ""
 
             if(content.isEmpty())
-                return event.replyError("**No Global Tag Found Matching \"$name\"**\n${SEE_HELP.format(event.prefixUsed,this.name)}")
+                return event.replyError("**No Global Tag Found Matching \"$name\"**\n" +
+                        SEE_HELP.format(event.client.prefix,this.name))
             else try {
                 event.reply(
-                        event.client.parser.put("args", args)
+                        event.client.parser.clear()
+                                .put("args", args)
                                 .put("user", event.author)
                                 .parse(content)
                 )
@@ -107,17 +117,30 @@ class TagCommand(waiter: EventWaiter) : Command()
                 else                event.replyError("Tag matching \"$name\" could not be processed for an unknown reason!")
             }
         }
-        event.client.parser.clear()
     }
 }
 
+@MustHaveArguments
 private class TagCreateCmd : Command()
 {
     init {
-        this.name = "create"
-        this.fullname = "tag create"
-        this.arguments = "[tag name] [tag content]"
-        this.help = "creates a new local tag"
+        this.name = "Create"
+        this.fullname = "Tag Create"
+        this.arguments = "[Tag Name] [Tag Content]"
+        this.help = "Creates a new local Tag."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "Local tags are only available to the server they are created on.\n" +
+                        "If there is already a global tag with the name specified when using this " +
+                        "command, a local tag cannot be created, however a moderator or administrator " +
+                        "may use the `Override` sub-command to create a local version as a replacement.\n\n" +
+
+                        "Tag names cannot exceed 50 characters in length and cannot contain whitespace.\n" +
+                        "Tag content cannot exceed 1900 characters.\n\n" +
+
+                        "*If you discover any NSFW, racist, or in any other way 'harmful' tags, please report " +
+                        "them immediately!*",
+                true
+        )
         this.cooldown = 150
         this.cooldownScope = CooldownScope.USER_GUILD
         this.guildOnly = true
@@ -125,13 +148,11 @@ private class TagCreateCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
         val parts = event.args.split(Regex("\\s+"),2)
 
         val name = if(parts[0].length>50)
             return event.replyError("**Tag names cannot exceed 50 characters in length!**\n" +
-                    SEE_HELP.format(event.prefixUsed, fullname))
+                    SEE_HELP.format(event.client.prefix, fullname))
         else if(event.client.getCommandByName(parts[0])!=null)
             return event.replyError("**Illegal Tag Name!**\n" +
                     "Tags may not have names that match command names!")
@@ -139,10 +160,10 @@ private class TagCreateCmd : Command()
 
         val content = if(parts.size==1)
             return event.replyError("**You must specify content when creating a tag!**\n" +
-                    SEE_HELP.format(event.prefixUsed, fullname))
+                    SEE_HELP.format(event.client.prefix, fullname))
         else if(parts[1].length>1900)
             return event.replyError("**Tag content cannot exceed 1900 characters in length!**\n" +
-                    SEE_HELP.format(event.prefixUsed, fullname))
+                    SEE_HELP.format(event.client.prefix, fullname))
         else parts[1]
 
         if(event.localTags.isTag(name, event.guild) || event.globalTags.isTag(name))
@@ -155,13 +176,27 @@ private class TagCreateCmd : Command()
     }
 }
 
+@MustHaveArguments
 private class TagCreateGlobalCmd : Command()
 {
     init {
-        this.name = "createglobal"
-        this.fullname = "tag createglobal"
-        this.arguments = "[tag name] [tag content]"
-        this.help = "creates a new global tag"
+        this.name = "CreateGlobal"
+        this.fullname = "Tag CreateGlobal"
+        this.arguments = "[Tag Name] [Tag Content]"
+        this.help = "Creates a new global tag."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "Global tags are available to all servers.\n" +
+                        "If there is already a global tag with the name specified when using this " +
+                        "command, a global tag cannot be created, however a local override can be made " +
+                        "on any server by a moderator or administrator using the `Override` sub-command.\n\n" +
+
+                        "Tag names cannot exceed 50 characters in length and cannot contain whitespace.\n" +
+                        "Tag content cannot exceed 1900 characters.\n\n" +
+
+                        "*If you discover any NSFW, racist, or in any other way 'harmful' tags, please report " +
+                        "them immediately!*",
+                true
+        )
         this.cooldown = 240
         this.cooldownScope = CooldownScope.USER
         this.guildOnly = false
@@ -169,13 +204,10 @@ private class TagCreateGlobalCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
         val parts = event.args.split(Regex("\\s+"),2)
-
         val name = if(parts[0].length>50)
             return event.replyError("**Tag names cannot exceed 50 characters in length!**\n" +
-                    SEE_HELP.format(event.prefixUsed, fullname))
+                    SEE_HELP.format(event.client.prefix, fullname))
         else if(event.client.getCommandByName(parts[0])!=null)
             return event.replyError("**Illegal Tag Name!**\n" +
                     "Tags may not have names that match command names!")
@@ -183,10 +215,10 @@ private class TagCreateGlobalCmd : Command()
 
         val content = if(parts.size==1)
             return event.replyError("**You must specify content when creating a tag!**\n" +
-                    SEE_HELP.format(event.prefixUsed, fullname))
+                    SEE_HELP.format(event.client.prefix, fullname))
         else if(parts[1].length>1900)
             return event.replyError("**Tag content cannot exceed 1900 characters in length!**\n" +
-                    SEE_HELP.format(event.prefixUsed, fullname))
+                    SEE_HELP.format(event.client.prefix, fullname))
         else parts[1]
 
         if((event.isFromType(ChannelType.TEXT) && event.localTags.isTag(name, event.guild)) || event.globalTags.isTag(name))
@@ -199,20 +231,25 @@ private class TagCreateGlobalCmd : Command()
     }
 }
 
+@MustHaveArguments
 private class TagDeleteCmd : Command()
 {
     init {
-        this.name = "delete"
-        this.fullname = "tag delete"
-        this.arguments = "[tag name]"
-        this.help = "deletes a tag you own"
+        this.name = "Delete"
+        this.fullname = "Tag Delete"
+        this.arguments = "[Tag Name]"
+        this.help = "Deletes a tag you own."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "It's worth noting that if a user owns both the local and global version " +
+                        "of a tag when using this command on a server, the priority when deleting goes " +
+                        "to the *local* version, not the global one.",
+                true
+        )
         this.guildOnly = true
     }
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
         val name = event.args.split(Regex("\\s+"))[0]
         if(event.isFromType(ChannelType.TEXT)) {
             if(!event.localTags.isTag(name, event.guild)) {
@@ -223,14 +260,14 @@ private class TagDeleteCmd : Command()
                     event.replySuccess("Successfully deleted local tag \"**$name**\"!")
                 } else {
                     event.replyError("**You cannot delete the global tag \"$name\" because you are not it's owner!**\n" +
-                            SEE_HELP.format(event.prefixUsed, fullname))
+                            SEE_HELP.format(event.client.prefix, fullname))
                 }
             } else if(event.localTags.getTagOwnerId(name,event.guild)==event.author.idLong) {
                 event.localTags.deleteTag(name, event.author.idLong, event.guild)
                 event.replySuccess("Successfully deleted local tag \"**$name**\"!")
             } else {
                 event.replyError("**You cannot delete the local tag \"$name\" because you are not it's owner!**\n" +
-                        SEE_HELP.format(event.prefixUsed, fullname))
+                        SEE_HELP.format(event.client.prefix, fullname))
             }
         } else {
             if(!event.globalTags.isTag(name))
@@ -240,19 +277,26 @@ private class TagDeleteCmd : Command()
                 event.replySuccess("Successfully deleted local tag \"**$name**\"!")
             } else {
                 event.replyError("**You cannot delete the global tag \"$name\" because you are not it's owner!**\n" +
-                        SEE_HELP.format(event.prefixUsed, fullname))
+                        SEE_HELP.format(event.client.prefix, fullname))
             }
         }
     }
 }
 
+@MustHaveArguments
 private class TagEditCmd : Command()
 {
     init {
-        this.name = "edit"
-        this.fullname = "tag edit"
-        this.arguments = "[tag name] [tag content]"
-        this.help = "edits a tag you own"
+        this.name = "Edit"
+        this.fullname = "Tag Edit"
+        this.arguments = "[Tag Name] [New Tag Content]"
+        this.help = "Edits a tag you own."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "It's worth noting that if a user owns both the local and global version " +
+                        "of a tag when using this command on a server, the priority when editing goes " +
+                        "to the *local* version, not the global one.",
+                true
+        )
         this.cooldown = 180
         this.cooldownScope = CooldownScope.USER
         this.guildOnly = false
@@ -260,22 +304,19 @@ private class TagEditCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
         val parts = event.args.split(Regex("\\s+"),2)
-
         val name = if(parts[0].length<=50)
             parts[0]
         else
             return event.replyError("**Tag names cannot exceed 50 characters in length!**\n" +
-                    SEE_HELP.format(event.prefixUsed, fullname))
+                    SEE_HELP.format(event.client.prefix, fullname))
 
         val newContent = if(parts.size==1)
             return event.replyError("**You must specify content when editing a tag!**\n" +
-                    SEE_HELP.format(event.prefixUsed, fullname))
+                    SEE_HELP.format(event.client.prefix, fullname))
         else if(parts[1].length>1900)
             return event.replyError("**Tag content cannot exceed 1900 characters in length!**\n" +
-                    SEE_HELP.format(event.prefixUsed, fullname))
+                    SEE_HELP.format(event.client.prefix, fullname))
         else parts[1]
 
         if(event.isFromType(ChannelType.TEXT)) {
@@ -288,7 +329,7 @@ private class TagEditCmd : Command()
                     event.invokeCooldown()
                 } else {
                     event.replyError("**You cannot edit the global tag \"$name\" because you are not it's owner!**\n" +
-                            SEE_HELP.format(event.prefixUsed, fullname))
+                            SEE_HELP.format(event.client.prefix, fullname))
                 }
             } else if(event.localTags.getTagOwnerId(name, event.guild)==event.author.idLong) {
                 event.localTags.editTag(newContent, name, event.author.idLong, event.guild)
@@ -296,7 +337,7 @@ private class TagEditCmd : Command()
                 event.invokeCooldown()
             } else {
                 event.replyError("**You cannot edit the local tag \"$name\" because you are not it's owner!**\n" +
-                        SEE_HELP.format(event.prefixUsed, fullname))
+                        SEE_HELP.format(event.client.prefix, fullname))
             }
         } else {
             if(!event.globalTags.isTag(name)) {
@@ -307,7 +348,7 @@ private class TagEditCmd : Command()
                 event.invokeCooldown()
             } else {
                 event.replyError("**You cannot edit the global tag \"$name\" because you are not it's owner!**\n" +
-                        SEE_HELP.format(event.prefixUsed, fullname))
+                        SEE_HELP.format(event.client.prefix, fullname))
             }
         }
     }
@@ -317,10 +358,14 @@ private class TagEditCmd : Command()
 private class TagListCmd(val waiter: EventWaiter) : Command()
 {
     init {
-        this.name = "list"
-        this.fullname = "tag list"
-        this.arguments = "<user>"
-        this.help = "gets all the tags owned by a user"
+        this.name = "List"
+        this.fullname = "Tag List"
+        this.arguments = "<User>"
+        this.help = "Gets all the tags owned by a user."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "Not specifying a user will get a list of tags owned by the person using the command.",
+                true
+        )
         this.guildOnly = false
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER
@@ -333,7 +378,7 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
             if(query.isEmpty()) {
                 event.member
             } else {
-                val found = Find.members(query, event.guild)
+                val found = event.guild.findMembers(query)
                 if(found.isEmpty()) null
                 else if(found.size>1) return event.replyError(multipleMembersFound(query, found))
                 else found[0]
@@ -345,7 +390,7 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
         } else if(query.isEmpty()) {
             event.author
         } else {
-            val found = Find.users(query, event.jda)
+            val found = event.jda.findUsers(query)
             if(found.isEmpty()) return event.replyError(noMatch("users", query))
             else if(found.size>1) return event.replyError(multipleUsersFound(query, found))
             else found[0]
@@ -374,14 +419,21 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
     }
 }
 
+@MustHaveArguments
 private class TagOwnerCmd : Command()
 {
     init {
-        this.name = "owner"
+        this.name = "Owner"
+        this.fullname = "Tag Owner"
         this.aliases = arrayOf("creator")
-        this.fullname = "tag owner"
-        this.arguments = "[tag name]"
-        this.help = "gets the owner of a tag"
+        this.arguments = "[Tag Name]"
+        this.help = "Gets the owner of a tag."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "There are several cases where this command **will not work**.\n" +
+                        "It is a semi-reliable way to get the owner of a command, but there is " +
+                        "no guarantee that an owner name (or even ID) will be returned.",
+                true
+        )
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER
         this.guildOnly = false
@@ -389,8 +441,6 @@ private class TagOwnerCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty()) return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
-
         val name = event.args.split(Regex("\\s+"))[0]
         val ownerId : Long
         val isLocal : Boolean = if(event.isFromType(ChannelType.TEXT)) {
@@ -429,20 +479,25 @@ private class TagOwnerCmd : Command()
     }
 }
 
+@MustHaveArguments
 private class TagRawCmd : Command()
 {
     init {
-        this.name = "raw"
-        this.fullname = "tag raw"
-        this.arguments = "[tag name]"
-        this.help = "gets the raw, non-parsed form of a tag"
+        this.name = "Raw"
+        this.fullname = "Tag Raw"
+        this.arguments = "[Tag Name]"
+        this.help = "Gets the raw, non-parsed form of a tag."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "It's worth noting that if a user owns both the local and global version " +
+                        "of a tag when using this command on a server, the priority when getting content goes " +
+                        "to the *local* version, not the global one.",
+                true
+        )
         this.guildOnly = false
     }
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_ERROR.format("Try specifying a tag name in the format `${event.prefixUsed}$fullname [tag name]`."))
         val parts = event.args.split(Regex("\\s+"),2)
         val name = parts[0]
         if(event.isFromType(ChannelType.TEXT))
@@ -453,7 +508,7 @@ private class TagRawCmd : Command()
                 event.globalTags.getTagContent(name)
             } else ""
             if(content.isEmpty())
-                return event.replyError("**No Tag Found Matching \"$name\"**\n${SEE_HELP.format(event.prefixUsed,this.fullname)}")
+                return event.replyError("**No Tag Found Matching \"$name\"**\n${SEE_HELP.format(event.client.prefix,this.fullname)}")
             else event.reply("```\n$content```")
         }
         else
@@ -463,41 +518,46 @@ private class TagRawCmd : Command()
             } else ""
 
             if(content.isEmpty())
-                return event.replyError("**No Global Tag Found Matching \"$name\"**\n${SEE_HELP.format(event.prefixUsed,this.fullname)}")
+                return event.replyError("**No Global Tag Found Matching \"$name\"**\n${SEE_HELP.format(event.client.prefix,this.fullname)}")
             else event.reply("```\n$content```")
         }
     }
 }
 
+@MustHaveArguments
 private class TagOverrideCmd : Command()
 {
     init {
-        this.name = "override"
-        this.fullname = "tag override"
-        this.arguments = "[tag name] [tag content]"
-        this.help = "overrides a local tag"
+        this.name = "Override"
+        this.fullname = "Tag Override"
+        this.arguments = "[Tag Name] [Tag Content]"
+        this.help = "Overrides a local or global tag."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "It's worth noting that if a user owns both the local and global version " +
+                        "of a tag when using this command on a server, the priority when overriding goes " +
+                        "to the *local* version, not the global one.",
+                true
+        )
         this.category = Category.MODERATOR
         this.guildOnly = true
     }
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, fullname))
         val parts = event.args.split(Regex("\\s+"),2)
 
         val name = if(parts[0].length<=50)
             parts[0]
         else
             return event.replyError("**Tag names cannot exceed 50 characters in length!**\n" +
-                    SEE_HELP.format(event.prefixUsed, fullname))
+                    SEE_HELP.format(event.client.prefix, fullname))
 
         val newContent = if(parts.size==1)
             return event.replyError("**You must specify content when overriding a tag!**\n" +
-                    SEE_HELP.format(event.prefixUsed, fullname))
+                    SEE_HELP.format(event.client.prefix, fullname))
         else if(parts[1].length>1900)
             return event.replyError("**Tag content cannot exceed 1900 characters in length!**\n" +
-                    SEE_HELP.format(event.prefixUsed, fullname))
+                    SEE_HELP.format(event.client.prefix, fullname))
         else parts[1]
 
         if(!event.localTags.isTag(name,event.guild)) {

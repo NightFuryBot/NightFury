@@ -20,6 +20,7 @@ import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
+import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.api.E621API
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
@@ -32,50 +33,55 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Kaidan Gustave
  */
-@AutoInvokeCooldown
 @APICache
+@AutoInvokeCooldown
+@MustHaveArguments
 class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = Random()) : Command()
 {
     init {
-        this.name = "e621"
-        this.arguments = "<number of posts> [tags...]"
+        this.name = "E621"
+        this.arguments = "<Number of Posts> [Tags... (maximum of 6)]"
         this.aliases = arrayOf("pron","porn")
+        this.help = "Searches e621.net for images matching the tags specified."
         this.cooldown = 15
         this.cooldownScope = CooldownScope.USER_GUILD
         this.guildOnly = true
         this.category = Category.NSFW
-        this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
+        this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
+        this.helpBiConsumer = Command.standardSubHelp(
+                "Only up to 6 tags are allowed per request. The maximum number of posts " +
+                        "retrievable is 320 and the default 100.\n\n" +
+
+                        "**This command is only available in NSFW channels.**",
+                true
+        )
     }
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty())
-            return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
         val args = event.args.split(Regex("\\s+"))
-        if(args.isEmpty())
-            return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
         if(args[0].matches(Regex("\\d+"))) {
             val limit = args[0].toInt()
             val tags = args.subList(1, args.size)
             if(tags.isEmpty())
-                return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
+                return event.replyError("**No tags specified!**\nPlease specify at least one tag after the number of posts!")
             if(tags.size>6)
                 return event.replyError("**Too many tags specified!**\nPlease specify no more than 6 tags!")
             val arr = e621.search(limit, *args.toTypedArray())
-                    ?:return event.replyError("Found no results matching ${buildString { args.forEach { append("$it ") } }}")
+                    ?:return event.replyError("Found no results matching ${buildString { args.forEach { append("$it ") } }.trim()}")
             if(arr.length()==0)
-                return event.replyError("No results found matching $args!")
+                return event.replyError("No results found matching ${buildString { args.forEach { append("$it ") } }.trim()}!")
             generate(arr,event)
         } else {
             val tags = args
             if(tags.isEmpty())
-                return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
+                return event.replyError("**No tags specified!**\nPlease specify at least one tag!")
             if(tags.size>6)
                 return event.replyError("**Too many tags specified!**\nPlease specify no more than 6 tags!")
             val arr = e621.search(100, *args.toTypedArray())
-                    ?:return event.replyError("Found no results matching ${buildString { args.forEach { append("$it ") } }}")
+                    ?:return event.replyError("Found no results matching ${event.args}")
             if(arr.length()==0)
-                return event.replyError("No results found matching $args!")
+                return event.replyError("No results found matching ${event.args}!")
             generate(arr,event)
         }
     }
@@ -97,6 +103,8 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
                                 && (e.message.rawContent == "${event.prefixUsed}save" || e.message.rawContent == "${event.client.prefix}save")
                     }, {
                         message.delete().queue()
+                        event.message.delete().queue()
+                        m.clearReactions().queue()
                     }, 20, TimeUnit.SECONDS, {
                         message.delete().queue()
                         m.delete().queue()

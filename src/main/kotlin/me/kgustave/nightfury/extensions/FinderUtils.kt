@@ -19,16 +19,7 @@ import com.jagrosh.jdautilities.utils.FinderUtil
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.entities.*
 
-class Find
-{
-    companion object
-    {
-        fun users(query: String, jda: JDA) : MutableList<User> = FinderUtil.findUsers(query, jda)
-        fun members(query: String, guild: Guild) : MutableList<Member> = FinderUtil.findMembers(query, guild)
-        fun textChannels(query: String, guild: Guild) : MutableList<TextChannel> = FinderUtil.findTextChannels(query, guild)
-        fun textChannels(query: String, jda: JDA) : MutableList<TextChannel> = FinderUtil.findTextChannels(query, jda)
-        fun voiceChannels(query: String, guild: Guild) : MutableList<VoiceChannel> = FinderUtil.findVoiceChannels(query, guild)
-        fun voiceChannels(query: String, jda: JDA) : MutableList<VoiceChannel> = FinderUtil.findVoiceChannels(query, jda)
-        fun roles(query: String, guild: Guild) : MutableList<Role> = FinderUtil.findRoles(query, guild)
-    }
-}
+fun JDA.findUsers(query: String) : MutableList<User> = FinderUtil.findUsers(query, this)
+fun Guild.findMembers(query: String) : MutableList<Member> = FinderUtil.findMembers(query, this)
+fun Guild.findTextChannels(query: String) : MutableList<TextChannel> = FinderUtil.findTextChannels(query, this)
+fun Guild.findRoles(query: String) : MutableList<Role> = FinderUtil.findRoles(query, this)

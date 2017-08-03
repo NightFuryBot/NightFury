@@ -19,6 +19,7 @@ import club.minnced.kjda.builders.colorAwt
 import club.minnced.kjda.builders.embed
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
+import me.kgustave.nightfury.annotations.MustHaveArguments
 import net.dv8tion.jda.core.Permission
 
 /**
@@ -26,23 +27,27 @@ import net.dv8tion.jda.core.Permission
  */
 class PrefixCmd : NoBaseExecutionCommand() {
     init {
-        this.name = "prefix"
-        this.arguments = "[add|remove|list]"
-        this.help = "manages the server's custom prefixes"
+        this.name = "Prefix"
+        this.arguments = "[Add|Remove|List]"
+        this.help = "Manage the server's custom prefixes."
         this.guildOnly = true
         this.category = Category.ADMIN
-        this.children = arrayOf(PrefixAddCmd(), ListPrefixCmd(), PrefixRemoveCmd()
+        this.children = arrayOf(
+                PrefixAddCmd(),
+                PrefixListCmd(),
+                PrefixRemoveCmd()
         )
     }
 }
 
+@MustHaveArguments
 private class PrefixAddCmd : Command() {
 
     init {
-        this.name = "add"
-        this.fullname = "prefix add"
-        this.arguments = "<prefix>"
-        this.help = "adds a custom prefix for the bot"
+        this.name = "Add"
+        this.fullname = "Prefix Add"
+        this.arguments = "[Prefix]"
+        this.help = "Adds a custom prefix for this server."
         this.cooldown = 30
         this.cooldownScope = CooldownScope.GUILD
         this.guildOnly = true
@@ -52,9 +57,7 @@ private class PrefixAddCmd : Command() {
     override fun execute(event: CommandEvent)
     {
         val args = event.args
-        if(args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix,"prefix $name"))
-        else if(args.equals(event.client.prefix, true))
+        if(args.equals(event.client.prefix, true))
             return event.replyError("`$args` cannot be added as a prefix because it is the default prefix!")
         else if(event.manager.isPrefixFor(event.guild, args))
             return event.replyError("`$args` cannot be added as a prefix because it is already a prefix!")
@@ -69,13 +72,14 @@ private class PrefixAddCmd : Command() {
     }
 }
 
+@MustHaveArguments
 private class PrefixRemoveCmd : Command() {
 
     init {
-        this.name = "remove"
-        this.name = "prefix remove"
-        this.arguments = "<prefix>"
-        this.help = "removes a custom prefix for the bot"
+        this.name = "Pemove"
+        this.name = "Prefix Remove"
+        this.arguments = "[Prefix]"
+        this.help = "Removes a custom prefix for this server."
         this.guildOnly = true
         this.category = Category.ADMIN
     }
@@ -83,9 +87,7 @@ private class PrefixRemoveCmd : Command() {
     override fun execute(event: CommandEvent)
     {
         val args = event.args
-        if(args.isEmpty())
-            return event.replyError(Command.TOO_FEW_ARGS_HELP.format(event.client.prefix,"prefix $name"))
-        else if(args.equals(event.client.prefix, true))
+        if(args.equals(event.client.prefix, true))
             return event.replyError("`$args` cannot be removed as a prefix because it is the default prefix!")
         else if(!event.manager.isPrefixFor(event.guild, args))
             return event.replyError("`$args` cannot be removed as a prefix because it is not a prefix!")
@@ -98,12 +100,12 @@ private class PrefixRemoveCmd : Command() {
 }
 
 @AutoInvokeCooldown
-private class ListPrefixCmd: Command() {
+private class PrefixListCmd : Command() {
 
     init {
-        this.name = "list"
-        this.fullname = "prefix list"
-        this.help = "lists all custom prefixes for this server"
+        this.name = "List"
+        this.fullname = "Prefix List"
+        this.help = "Lists all custom prefixes for this server."
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER_GUILD
         this.guildOnly = true

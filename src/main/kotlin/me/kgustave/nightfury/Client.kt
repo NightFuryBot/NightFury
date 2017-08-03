@@ -33,6 +33,7 @@ import net.dv8tion.jda.core.events.ReadyEvent
 import net.dv8tion.jda.core.events.ShutdownEvent
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent
+import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.core.events.message.MessageDeleteEvent
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
@@ -180,7 +181,7 @@ class Client internal constructor
     {
         if(cooldowns.containsKey(name)) {
             val time = OffsetDateTime.now().until(cooldowns[name], ChronoUnit.SECONDS).toInt()
-            if (time <= 0) {
+            if(time <= 0) {
                 cooldowns.remove(name)
                 return 0
             }
@@ -198,8 +199,8 @@ class Client internal constructor
     {
         val now = OffsetDateTime.now()
         cooldowns.keys.stream()
-                .filter { str -> cooldowns[str]!!.isBefore(now) }
-                .collect(Collectors.toList<String>()).stream().forEach { str -> cooldowns.remove(str) }
+                .filter { cooldowns[it]!!.isBefore(now) }
+                .toList().stream().forEach { cooldowns.remove(it) }
     }
 
     @Suppress("unused")
@@ -231,9 +232,8 @@ class Client internal constructor
         synchronized(scheduled)
         {
             scheduled.keys.stream()
-                    .filter { key -> scheduled[key]!!.isDone || scheduled[key]!!.isCancelled }
-                    .collect(Collectors.toSet())
-                    .forEach { key -> scheduled.remove(key) }
+                    .filter { scheduled[it]!!.isDone || scheduled[it]!!.isCancelled }
+                    .toList().forEach { scheduled.remove(it) }
         }
     }
 
@@ -317,7 +317,7 @@ class Client internal constructor
             rawContent.startsWith(prefix, true) ->
                 parts = Arrays.copyOf(rawContent.substring(prefixUsed.length).trim()
                         .split(Regex("\\s+"), 2).toTypedArray(),2)
-            else -> {
+            event.guild != null -> {
                 val prefixes = manager.getPrefixes(event.guild)
                 if(!prefixes.isEmpty())
                 {
@@ -329,6 +329,7 @@ class Client internal constructor
                     }
                 }
             }
+            else -> return
         }
         if(parts != null)
         {
@@ -381,6 +382,17 @@ class Client internal constructor
     {
         executor.shutdown()
         manager.shutdown()
+    }
+
+    override fun onGuildMemberJoin(event: GuildMemberJoinEvent)
+    {
+        val welcomeChannel = manager.getWelcomeChannel(event.guild)?:return
+        val message = parser.clear()
+                .put("guild", event.guild)
+                .put("channel", welcomeChannel)
+                .put("user", event.user)
+                .parse(manager.getWelcomeMessage(event.guild))
+        welcomeChannel.sendMessage(message).queue()
     }
 
     private fun testGuild(guild: Guild) : Boolean
