@@ -26,7 +26,6 @@ import net.dv8tion.jda.core.entities.User
 import java.awt.Color
 import java.util.concurrent.TimeUnit
 
-
 /**
  * @author Kaidan Gustave
  */

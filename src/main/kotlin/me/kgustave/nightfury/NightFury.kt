@@ -60,7 +60,7 @@ class NightFury(args: Array<String>)
             System.exit(exit)
         }
 
-        @JvmStatic val version : String = "0.5.1"
+        @JvmStatic val version : String = "0.5.2"
         @JvmStatic val github : String = "https://github.com/TheMonitorLizard/NightFury/"
     }
 
@@ -83,6 +83,7 @@ class NightFury(args: Array<String>)
                     "-setupLocalTags"  -> if(!manager.setupLocalTagsTable())  throw SQLException("Failed to setup local tags table!")
                     "-setupCCommands"  -> if(!manager.setupCommandsTable())   throw SQLException("Failed to setup custom commands table!")
                     "-setupWelcomes"   -> if(!manager.setupWelcomesTable())   throw SQLException("Failed to setup welcomes table!")
+                    "-setupLimits"     -> if(!manager.setupLimitsTable())     throw SQLException("Failed to setup limits table!")
                 }
             }
         }
@@ -115,6 +116,7 @@ class NightFury(args: Array<String>)
                 E621Cmd(e621, waiter),
 
                 BanCmd(),
+                CleanCmd(),
                 KickCmd(),
                 MuteCmd(),
                 ReasonCmd(),

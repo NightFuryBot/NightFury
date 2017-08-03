@@ -22,8 +22,8 @@ import me.kgustave.nightfury.annotations.MustHaveArguments
  * @author Kaidan Gustave
  */
 @MustHaveArguments("Please specify a mode to set to.")
-class ModeCmd : Command() {
-
+class ModeCmd : Command()
+{
     init {
         this.name = "Mode"
         this.arguments = "[Standard, Idle, Debug]"

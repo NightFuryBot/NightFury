@@ -35,10 +35,9 @@ import java.util.Comparator
  * @author Kaidan Gustave
  */
 @AutoInvokeCooldown
-class InfoCmd : Command() {
-
-    companion object
-    {
+class InfoCmd : Command()
+{
+    companion object {
         private val BULLET : String = "\uD83D\uDD39 "
         private val STREAMING_EMOTE_ID = 313956277132853248L
         private val ASTERISK_ESC = "\u002A"
@@ -58,8 +57,7 @@ class InfoCmd : Command() {
                 .replace("]", R_BRACKET_ESC)
     }
 
-    init
-    {
+    init {
         this.name = "Info"
         this.aliases = arrayOf("i", "information")
         this.arguments = "<User>"

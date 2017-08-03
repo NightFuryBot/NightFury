@@ -17,11 +17,9 @@ package me.kgustave.nightfury.extensions.waiting
 
 import java.util.concurrent.TimeUnit
 
-
 /**
  * @author Kaidan Gustave
  */
-
 class TimeOut(val delay: Long, val unit: TimeUnit)
 {
     constructor(delay: Long) : this(delay, TimeUnit.SECONDS)

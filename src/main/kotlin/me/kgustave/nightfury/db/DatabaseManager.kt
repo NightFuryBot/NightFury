@@ -27,16 +27,12 @@ import java.util.Comparator
 /**
  * @author Kaidan Gustave
  */
-class DatabaseManager(url: String, user: String, pass: String) {
-
-    companion object {
-        private val LOG : SimpleLog = SimpleLog.getLog("SQL")
-    }
-
+class DatabaseManager(url: String, user: String, pass: String)
+{
     init {
         try {
             Class.forName("org.h2.Driver").newInstance()
-        } catch (e: Exception) { LOG.fatal(e) }
+        } catch (e: Exception) { SQL.LOG.fatal(e) }
     }
 
     private val connection : Connection = DriverManager.getConnection(url, user, pass)
@@ -59,6 +55,8 @@ class DatabaseManager(url: String, user: String, pass: String) {
     val globalTags : SQLGlobalTags = SQLGlobalTags(connection)
 
     val customCommands : SQLCustomCommands = SQLCustomCommands(connection)
+
+    val commandLimits : SQLLimits = SQLLimits(connection)
 
     fun setupDatabase() : Boolean
     {
@@ -97,14 +95,17 @@ class DatabaseManager(url: String, user: String, pass: String) {
     fun setupWelcomesTable() : Boolean = createTable("Welcomes")
     { "CREATE TABLE welcomes (guild_id long, welcome varchar(1900))" }
 
+    fun setupLimitsTable() : Boolean = createTable("command_limits")
+    { "CREATE TABLE command_limits (guild_id long, command_name varchar(100), limit_number int)"}
+
     private fun createTable(tableName : String, sql : () -> String) : Boolean
     {
         try {
             evaluate(sql())
-            LOG.info("Created $tableName Table!")
+            SQL.LOG.info("Created $tableName Table!")
             return true
         } catch (e : SQLException) {
-            LOG.warn(e)
+            SQL.LOG.warn(e)
             return false
         }
     }
@@ -199,7 +200,6 @@ class DatabaseManager(url: String, user: String, pass: String) {
         else
             welcomeChannels.set(channel.guild.idLong, channel.idLong)
     }
-
     fun getWelcomeMessage(guild: Guild) = welcomesMessages.get(guild, guild.idLong)
     fun setWelcomeMessage(guild: Guild, welcome: String) {
         if(getWelcomeMessage(guild)!=null)
@@ -207,6 +207,16 @@ class DatabaseManager(url: String, user: String, pass: String) {
         else
             welcomesMessages.set(guild.idLong, welcome)
     }
+
+    fun hasLimit(guild: Guild, command: String) = commandLimits.hasLimit(guild, command.toLowerCase())
+    fun getLimit(guild: Guild, command: String) = commandLimits.getLimit(guild, command.toLowerCase())
+    fun setLimit(guild: Guild, command: String, limit: Int) {
+        if(hasLimit(guild, command))
+            commandLimits.setLimit(guild, command.toLowerCase(), limit)
+        else
+            commandLimits.addLimit(guild, command.toLowerCase(), limit)
+    }
+    fun removeLimit(guild: Guild, command: String) = commandLimits.removeLimit(guild, command.toLowerCase())
 
     fun evaluate(string: String) {
         try {
@@ -229,7 +239,8 @@ class DatabaseManager(url: String, user: String, pass: String) {
         customCommands.removeAll(guild)
         welcomeChannels.reset(guild.idLong)
         welcomesMessages.reset(guild.idLong)
+        commandLimits.removeAllLimits(guild)
     }
 
-    fun shutdown() = try { connection.close() } catch (e: SQLException) { LOG.warn(e) }
+    fun shutdown() = try { connection.close() } catch (e: SQLException) { SQL.LOG.warn(e) }
 }

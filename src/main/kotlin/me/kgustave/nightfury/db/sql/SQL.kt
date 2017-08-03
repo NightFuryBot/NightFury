@@ -17,7 +17,6 @@ package me.kgustave.nightfury.db.sql
 
 import net.dv8tion.jda.core.utils.SimpleLog
 
-
 /**
  * @author Kaidan Gustave
  */

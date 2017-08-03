@@ -22,7 +22,8 @@ import java.time.temporal.ChronoUnit
 /**
  * @author Kaidan Gustave
  */
-class PingCmd : Command() {
+class PingCmd : Command()
+{
     init {
         this.name = "Ping"
         this.aliases = arrayOf("pong", "pang", "pyng", "pung", "peng", "png")

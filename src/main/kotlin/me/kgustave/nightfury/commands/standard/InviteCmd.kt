@@ -26,8 +26,7 @@ import net.dv8tion.jda.core.Permission
  */
 class InviteCmd(vararg requestedPerms : Permission) : Command()
 {
-    companion object
-    {
+    companion object {
         private var perms : Long = 0
         private var id : Long = 0
         private val inviteFormat: String = "https://discordapp.com/oauth2/authorize?client_id=%d&permissions=%d&scope=bot"

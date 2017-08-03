@@ -23,7 +23,6 @@ import java.net.URLEncoder
 import java.time.OffsetDateTime
 import kotlin.streams.toList
 
-
 /**
  * @author Kaidan Gustave
  */

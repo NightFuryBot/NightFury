@@ -15,22 +15,28 @@
  */
 package me.kgustave.nightfury.commands.moderator
 
+import club.minnced.kjda.promise
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
+import me.kgustave.nightfury.CooldownScope
+import me.kgustave.nightfury.annotations.MustHaveArguments
 import net.dv8tion.jda.core.Permission
+import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
  */
-@Suppress("unused")
+@MustHaveArguments("Provide a number between 2-100!")
 class CleanCmd : Command() {
 
     init {
         this.name = "Clean"
         this.aliases = arrayOf("clear", "prune")
         this.arguments = "[Number of Messages]"
-        this.help = "deletes a specified number of messages from the channel this is called in"
+        this.help = "Deletes a specified number of messages from the channel this is called in. **[BETA]**"
+        this.cooldown = 15
+        this.cooldownScope = CooldownScope.CHANNEL
         this.category = Category.MODERATOR
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE)
@@ -38,5 +44,25 @@ class CleanCmd : Command() {
 
     override fun execute(event: CommandEvent)
     {
+        val number : Int = if(event.args.isEmpty()) { 100 }
+        else if(event.args.matches(Regex("\\d+"))) {
+            val n = event.args.toInt()
+            if((n<100 || n>3) && n>0) n
+            else return event.replyError(INVALID_ARGS_ERROR.format("${event.args} is not a valid number to clear!"))
+        }
+        else return event.replyError(INVALID_ARGS_ERROR.format("Try specifying a number of messages to delete."))
+
+        event.textChannel.getHistoryAround(event.messageIdLong,number).promise() then {
+            if(it == null)
+                return@then event.replyError("Failed to retrieve past $number messages!")
+            val toDelete = it.retrievedHistory.stream().filter { it.idLong != event.messageIdLong }.toList()
+            event.textChannel.deleteMessages(toDelete).promise() then {
+                event.client.logger.newClean(event.member, event.textChannel, number)
+                event.replySuccess("Successfully cleared past $number messages!")
+            } catch {
+                event.replyError("An error occurred when deleting $number messages!")
+            }
+        } catch { event.replyError("Failed to retrieve past $number messages!") }
+        event.invokeCooldown()
     }
 }

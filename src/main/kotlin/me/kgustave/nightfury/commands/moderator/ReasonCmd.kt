@@ -27,8 +27,8 @@ import me.kgustave.nightfury.entities.Case
  * @author Kaidan Gustave
  */
 @MustHaveArguments
-class ReasonCmd : Command() {
-
+class ReasonCmd : Command()
+{
     init {
         this.name = "Reason"
         this.arguments = "<Case Number> [Reason]"

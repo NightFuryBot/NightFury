@@ -46,7 +46,9 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
 
                         "RoleMe roles must be registered by an Administrator using the `Add` sub-command.\n" +
                         "Conversely, registered RoleMe roles can be unregistered by an Administrator using " +
-                        "the `Remove` sub-command.",
+                        "the `Remove` sub-command.\n" +
+                        "For those looking to limit the number of RoleMe roles a user can have, the `Limit` " +
+                        "sub-command provides a means of doing this.",
                 true
         )
         this.cooldown = 10
@@ -54,8 +56,10 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
         this.cooldownScope = CooldownScope.USER_GUILD
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
         this.children = arrayOf(
-                RoleMeAddCmd(),
                 RoleMeListCmd(waiter),
+
+                RoleMeAddCmd(),
+                RoleMeLimitCmd(),
                 RoleMeRemoveCmd()
         )
     }
@@ -81,6 +85,10 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
             event.replyError("**Cannot interact with requested role!**\n" +
                     SEE_HELP.format(event.client.prefix, name))
         else if(!event.member.roles.contains(requested)) {
+            if(event.hasRoleMeLimit()) {
+                if(event.getRoleMeLimit()<=event.member.roles.filter { event.manager.isRoleMe(it) }.size)
+                    return event.replyError("More RoleMe roles cannot be added because you are at the limit set by the server!")
+            }
             event.member.giveRole(requested).promise() then {
                 event.replySuccess("Successfully gave the role **${requested.name}**!")
                 event.invokeCooldown()
@@ -96,6 +104,10 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
             }
         }
     }
+
+    fun CommandEvent.hasRoleMeLimit() : Boolean = this.manager.hasLimit(this.guild, this@RoleMeCmd.name)
+
+    fun CommandEvent.getRoleMeLimit() : Int = this.manager.getLimit(this.guild, this@RoleMeCmd.name)
 }
 
 @MustHaveArguments
@@ -206,4 +218,41 @@ private class RoleMeListCmd(val waiter: EventWaiter) : Command()
             waitOnSinglePage { false }
         }
     }
+}
+
+@MustHaveArguments("Try specifying a limit in the form of a number.")
+private class RoleMeLimitCmd : Command()
+{
+    init {
+        this.name = "Limit"
+        this.fullname = "RoleMe Limit"
+        this.arguments = "[Number]"
+        this.help = "Sets the limit of RoleMe roles a user can have on the server."
+        this.helpBiConsumer = Command.standardSubHelp(
+                "Note that providing `0` as the limit will set no limit for the server.",
+                true
+        )
+        this.cooldown = 20
+        this.cooldownScope = CooldownScope.USER_GUILD
+        this.category = Category.ADMIN
+        this.guildOnly = true
+    }
+
+    override fun execute(event: CommandEvent)
+    {
+        if(!event.args.matches(Regex("\\d+")))
+            return event.replyError(INVALID_ARGS_ERROR.format("Try specifying a limit in the form of a number."))
+        val limit = event.args.toInt()
+        if(limit==0) {
+            event.removeRoleMeLimit()
+            event.replySuccess("RoleMe limit was removed!")
+        } else {
+            event.setRoleMeLimit(limit)
+            event.replySuccess("RoleMe limit was set to `$limit`!")
+        }
+    }
+
+    fun CommandEvent.setRoleMeLimit(limit: Int) = this.manager.setLimit(this.guild, "RoleMe", limit)
+
+    fun CommandEvent.removeRoleMeLimit() = this.manager.removeLimit(this.guild, "RoleMe")
 }

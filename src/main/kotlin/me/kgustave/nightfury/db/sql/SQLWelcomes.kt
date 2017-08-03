@@ -19,7 +19,6 @@ import net.dv8tion.jda.core.entities.Guild
 import java.sql.Connection
 import java.sql.ResultSet
 
-
 /**
  * @author Kaidan Gustave
  */

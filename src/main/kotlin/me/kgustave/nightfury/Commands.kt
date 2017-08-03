@@ -20,6 +20,7 @@ import me.kgustave.nightfury.annotations.MustHaveArguments
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import java.util.*
+import java.util.function.BiConsumer
 
 /**
  * @author Kaidan Gustave
@@ -47,7 +48,7 @@ abstract class Command
     var category: Category? = null
         protected set(value) {field = value}
 
-    var helpBiConsumer: ((CommandEvent, Command) -> Unit)? = null
+    var helpBiConsumer: BiConsumer<CommandEvent, Command> = defaultSubHelp
         protected set(value) {field = value}
 
     var botPermissions: Array<Permission> = emptyArray()
@@ -68,7 +69,6 @@ abstract class Command
     var fullname: String = "null"
         protected set(value) {field = value}
 
-    @Suppress("unused")
     companion object
     {
         private val BOT_PERM = "%s I need the %s permission in this %s!"
@@ -81,9 +81,10 @@ abstract class Command
         val TOO_FEW_ARGS_ERROR = "**Too Few Arguments!**\n%s"
         val TOO_FEW_ARGS_HELP = "**Too Few Arguments!**\n$SEE_HELP"
 
-        fun standardSubHelp(explanation: String?, helpInDM : Boolean) : (CommandEvent, Command) -> Unit
+        private val defaultSubHelp = BiConsumer<CommandEvent, Command> {_,_ ->}
+        fun standardSubHelp(explanation: String?, helpInDM : Boolean) : BiConsumer<CommandEvent, Command>
         {
-            return {event, command ->
+            return BiConsumer {event, command ->
                 val b = StringBuilder()
                 val aliases = command.aliases
                 val help = command.help
@@ -120,17 +121,17 @@ abstract class Command
                 {
                     b.append("\n**Sub-Commands:**\n\n")
                     var cat : Category? = null
-                    for(child in children) {
-                        if(cat!=child.category) {
-                            if(!child.category!!.test(event))
+                    for(c in children) {
+                        if(cat!=c.category) {
+                            if(!c.category!!.test(event))
                                 continue
-                            cat = child.category
+                            cat = c.category
                             if(cat!=null)
                                 b.append("\n__${cat.title}__\n\n")
                         }
-                        b.append("`").append(event.client.prefix).append(child.fullname.toLowerCase())
-                                .append(if(child.arguments.isNotEmpty()) " ${child.arguments}" else "")
-                                .append("` ").append(child.help).append("\n")
+                        b.append("`").append(event.client.prefix).append(c.fullname.toLowerCase())
+                                .append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
+                                .append("` - ").append(c.help).append("\n")
                     }
                 }
 
@@ -175,8 +176,9 @@ abstract class Command
 
         if(category!=null && !category!!.test(event)) return
 
-        if(event.args.startsWith("help",true) && helpBiConsumer!=null)
-            return helpBiConsumer!!.invoke(event, this)
+        if(event.args.startsWith("help",true))
+            if(helpBiConsumer !== defaultSubHelp)
+                return helpBiConsumer.accept(event, this)
 
         if(guildOnly && !event.isFromType(ChannelType.TEXT))
             return terminate(event,"${event.client.error} This command cannot be used in Direct messages")
@@ -234,7 +236,7 @@ abstract class Command
                 if(it.error.isNotEmpty()) return event.replyError(TOO_FEW_ARGS_ERROR.format(it.error[0]))
                 else
                     return event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix,
-                            (if(fullname!="null") fullname else name)).toLowerCase()
+                            (if(fullname!="null") fullname else name).toLowerCase())
                     )
             }
         }

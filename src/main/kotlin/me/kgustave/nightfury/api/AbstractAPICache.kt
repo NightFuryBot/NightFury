@@ -17,7 +17,6 @@ package me.kgustave.nightfury.api
 
 import java.time.OffsetDateTime
 
-
 /**
  * @author Kaidan Gustave
  */

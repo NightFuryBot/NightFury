@@ -74,8 +74,6 @@ enum class LogAction(val action: String, val act: String, val emoji: String)
     }
 }
 
-// TODO Remove when unnecessary
-@Suppress("unused")
 class ModLogger(val manager: DatabaseManager)
 {
     fun newBan(mod: Member, target: User) = newBan(mod, target, null)
@@ -110,6 +108,7 @@ class ModLogger(val manager: DatabaseManager)
         }
     }
 
+    @Suppress("unused")
     fun newUnban(mod: Member, target: User) = newUnban(mod, target, null)
     fun newUnban(mod: Member, target: User, reason: String?) = newUnban(mod.guild, mod.user, target, reason)
     fun newUnban(guild: Guild, mod: User, target: User, reason: String?) {

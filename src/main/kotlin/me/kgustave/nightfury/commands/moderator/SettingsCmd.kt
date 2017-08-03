@@ -22,7 +22,6 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import net.dv8tion.jda.core.Permission
 
-
 /**
  * @author Kaidan Gustave
  */

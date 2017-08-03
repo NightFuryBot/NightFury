@@ -21,7 +21,6 @@ import me.kgustave.nightfury.extensions.findTextChannels
 import me.kgustave.nightfury.utils.multipleTextChannelsFound
 import me.kgustave.nightfury.utils.noMatch
 
-
 /**
  * @author Kaidan Gustave
  */

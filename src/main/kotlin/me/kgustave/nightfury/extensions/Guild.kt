@@ -50,7 +50,6 @@ fun TextChannel.muteRole(role: Role)
     else createPermissionOverride(role).setDeny(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION).queue()
 }
 
-
 fun VoiceChannel.muteRole(role: Role)
 {
     if(!guild.selfMember.hasPermission(Permission.MANAGE_PERMISSIONS))

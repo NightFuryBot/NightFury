@@ -340,7 +340,7 @@ class Client internal constructor
                 val command = getCommandByName(name)
                 if(command != null)
                 {
-                    val commandEvent = CommandEvent(event.jda,event.responseNumber,event.message,args.trim(),this,prefixUsed)
+                    val commandEvent = CommandEvent(event,args.trim(),this,prefixUsed)
                     listener.onCommandCall(commandEvent, command)
                     return command.run(commandEvent)
                 }

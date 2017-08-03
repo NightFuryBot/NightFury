@@ -16,7 +16,6 @@
 package me.kgustave.nightfury
 
 import me.kgustave.nightfury.db.DatabaseManager
-import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import java.util.function.Consumer
@@ -25,10 +24,24 @@ import java.util.function.Consumer
  * @author Kaidan Gustave
  */
 @Suppress("unused")
-class CommandEvent internal constructor
-(jda: JDA, responseNumber: Long, message: Message, args: String, val client: Client, val prefixUsed: String)
-    : MessageReceivedEvent(jda, responseNumber, message)
+class CommandEvent internal constructor(val event: MessageReceivedEvent, args: String, val client: Client, val prefixUsed: String)
 {
+    val jda = event.jda
+    val author = event.author
+    val member = event.member
+    val guild = event.guild
+    val channel = event.channel
+    val textChannel = event.textChannel
+    val privateChannel = event.privateChannel
+    val group = event.group
+    val channelType = event.channelType
+    val message = event.message
+    val messageId = event.messageId
+    val messageIdLong = event.messageIdLong
+    val responseNumber = event.responseNumber
+
+    fun isFromType(type: ChannelType) = channelType == type
+
     var args: String = args
         internal set(value) {field = value}
     val isDev: Boolean = author.idLong == client.devId
@@ -267,7 +280,7 @@ class CommandEvent internal constructor
 
     fun linkMessage(message: Message)
     {
-        client.linkIds(messageId, message)
+        client.linkIds(messageIdLong, message)
     }
 
     companion object
