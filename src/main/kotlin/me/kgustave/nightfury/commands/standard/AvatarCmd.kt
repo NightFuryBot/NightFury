@@ -36,6 +36,7 @@ class AvatarCmd : Command()
 {
     init {
         this.name = "Avatar"
+        this.aliases = arrayOf("avy", "pfp")
         this.arguments = "<User>"
         this.help = "Gets a user's avatar."
         this.cooldown = 5
