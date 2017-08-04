@@ -28,10 +28,10 @@ import kotlin.streams.toList
  */
 class YouTubeAPI(apiKey : String) : AbstractAPICache<List<String>>()
 {
-
-    companion object {
+    private companion object
+    {
         private val ytLog = SimpleLog.getLog("YouTube")
-        var maxSearchResults = 20L
+        private var maxSearchResults = 20L
     }
 
     private val youtube = YouTube.Builder(NetHttpTransport(),JacksonFactory(),{}).setApplicationName("NightFury").build()

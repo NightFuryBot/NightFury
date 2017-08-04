@@ -47,10 +47,10 @@ abstract class SQLCollection<in E, out T>(val connection: Connection) {
     fun get(env: E, vararg args: Any) : Set<T>
     {
         return try {
-            val statement = insertArgs(connection.prepareStatement(getStatement), *args)
-            val returns = statement.executeQuery().use { results -> get(results, env) }
-            statement.close()
-            returns
+            insertArgs(connection.prepareStatement(getStatement), *args).use {
+                val returns = it.executeQuery().use { get(it, env) }
+                returns
+            }
         } catch (e: SQLException) { SQL.LOG.warn(e); emptySet<T>() }
     }
 
@@ -59,33 +59,27 @@ abstract class SQLCollection<in E, out T>(val connection: Connection) {
     fun add(vararg args: Any)
     {
         try {
-            val statement = insertArgs(connection.prepareStatement(
+            insertArgs(connection.prepareStatement(
                     addStatement, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE
-            ), *args)
-            statement.execute()
-            statement.close()
+            ), *args).use { it.execute() }
         } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 
     fun remove(vararg args: Any)
     {
         try {
-            val statement = insertArgs(connection.prepareStatement(
+            insertArgs(connection.prepareStatement(
                     removeStatement, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE
-            ), *args)
-            statement.execute()
-            statement.close()
+            ), *args).use { it.execute() }
         } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 
     fun removeAll(vararg args: Any)
     {
         try {
-            val statement = insertArgs(connection.prepareStatement(
+            insertArgs(connection.prepareStatement(
                     removeAllStatement, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE
-            ), *args)
-            statement.execute()
-            statement.close()
+            ), *args).use { it.execute() }
         } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 }

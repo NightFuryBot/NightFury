@@ -26,10 +26,7 @@ import me.kgustave.nightfury.extensions.findMembers
 import me.kgustave.nightfury.extensions.findUsers
 import me.kgustave.nightfury.extensions.waiting.paginator
 import me.kgustave.nightfury.jagtag.TagErrorException
-import me.kgustave.nightfury.utils.formatUserName
-import me.kgustave.nightfury.utils.multipleMembersFound
-import me.kgustave.nightfury.utils.multipleUsersFound
-import me.kgustave.nightfury.utils.noMatch
+import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.entities.ChannelType
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.User
@@ -402,11 +399,11 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
         val globalTags = event.globalTags.getAllTags(user.idLong).map { "$it (Global)" }
 
         if(localTags.isEmpty() && globalTags.isEmpty())
-            event.replyError("${if(event.author==user) "You do" else "${formatUserName(user, true)} does"} not have any tags!")
+            event.replyError("${if(event.author==user) "You do" else "${user.formattedName(false)} does"} not have any tags!")
 
         paginator(waiter, event.channel)
         {
-            text             { "Tags owned by ${formatUserName(user, true)}" }
+            text             { "Tags owned by ${user.formattedName(true)}" }
             timeout          { 20 }
             if(localTags.isNotEmpty())
                 items        { addAll(localTags) }
@@ -469,7 +466,7 @@ private class TagOwnerCmd : Command()
 
         event.jda.retrieveUserById(ownerId).promise() then {
             if(it == null) event.replyError("The owner of $str was improperly retrieved!")
-            else           event.replySuccess("The $str is owned by ${formatUserName(it, true)}${
+            else           event.replySuccess("The $str is owned by ${it.formattedName(true)}${
             if(!event.jda.users.contains(it)) " (ID: ${it.id})." else "."
             }")
             event.invokeCooldown()

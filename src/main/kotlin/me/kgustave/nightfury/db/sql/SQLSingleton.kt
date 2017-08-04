@@ -51,20 +51,14 @@ abstract class SQLSingleton<in E, out T>(val connection: Connection) {
     fun has(vararg  args : Any) : Boolean
     {
         return try {
-            val statement = insertArgs(connection.prepareStatement(getStatement), *args)
-            val returns = statement.executeQuery().use { it.next() }
-            statement.close()
-            returns
+            insertArgs(connection.prepareStatement(getStatement), *args).use { it.executeQuery().use { it.next() } }
         } catch (e: SQLException) { SQL.LOG.warn(e); false }
     }
 
     fun get(env: E, vararg args: Any) : T?
     {
         return try {
-            val statement = insertArgs(connection.prepareStatement(getStatement), *args)
-            val returns = statement.executeQuery().use { results -> get(results, env) }
-            statement.close()
-            returns
+            insertArgs(connection.prepareStatement(getStatement), *args).use { it.executeQuery().use { get(it, env) } }
         } catch (e: SQLException) { SQL.LOG.warn(e); null }
     }
 
@@ -73,30 +67,24 @@ abstract class SQLSingleton<in E, out T>(val connection: Connection) {
     fun set(vararg args: Any)
     {
         try {
-            val statement = insertArgs(connection.prepareStatement(setStatement,
-                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args)
-            statement.execute()
-            statement.close()
+            insertArgs(connection.prepareStatement(setStatement,
+                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args).use { it.execute() }
         } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 
     fun update(vararg args: Any)
     {
         try {
-            val statement = insertArgs(connection.prepareStatement(updateStatement,
-                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args)
-            statement.execute()
-            statement.close()
+            insertArgs(connection.prepareStatement(updateStatement,
+                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args).use { it.execute() }
         } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 
     fun reset(vararg args: Any)
     {
         try {
-            val statement = insertArgs(connection.prepareStatement(resetStatement,
-                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args)
-            statement.execute()
-            statement.close()
+            insertArgs(connection.prepareStatement(resetStatement,
+                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args).use { it.execute() }
         } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 }

@@ -87,18 +87,18 @@ private class ModeratorAddCmd : Command()
         val error = when
         {
             target.roles.contains(modRole)
-            -> "I cannot make ${formatUserName(target.user,true)} a moderator because they are already a Moderator!"
+            -> "I cannot make ${target.user.formattedName(true)} a moderator because they are already a Moderator!"
             !event.selfMember.canInteract(modRole)
-            -> "I cannot give **${modRole.name}** to ${formatUserName(target.user,true)} " +
+            -> "I cannot give **${modRole.name}** to ${target.user.formattedName(true)} " +
                     "because it is a higher role I can interact with!"
             else    -> null
         }
         if(error!=null) return event.replyError(error)
 
         target.giveRole(modRole).apply { if(reason!=null) reason(reason) }.promise() then {
-            event.replySuccess("${formatUserName(target.user,true)} was added as a Moderator!")
+            event.replySuccess("${target.user.formattedName(true)} was added as a Moderator!")
         } catch {
-            event.replyError("Adding ${formatUserName(target.user,true)} as a Moderator failed for an unexpected reason!")
+            event.replyError("Adding ${target.user.formattedName(true)} as a Moderator failed for an unexpected reason!")
         }
     }
 }
@@ -140,18 +140,18 @@ private class ModeratorRemoveCmd : Command()
         val error = when
         {
             !target.roles.contains(modRole)
-            -> "I cannot remove the moderator role from ${formatUserName(target.user,true)} because they do not have it!"
+            -> "I cannot remove the moderator role from ${target.user.formattedName(true)} because they do not have it!"
             !event.selfMember.canInteract(modRole)
-            -> "I cannot remove the moderator role from **${modRole.name}** to ${formatUserName(target.user,true)} " +
+            -> "I cannot remove the moderator role from **${modRole.name}** to ${target.user.formattedName(true)} " +
                     "because it is a higher role I can interact with!"
             else    -> null
         }
         if(error!=null) return event.replyError(error)
 
         target.removeRole(modRole).apply { if(reason!=null) reason(reason) }.promise() then {
-            event.replySuccess("The moderator role was removed from ${formatUserName(target.user,true)}!")
+            event.replySuccess("The moderator role was removed from ${target.user.formattedName(true)}!")
         } catch {
-            event.replyError("Removing ${formatUserName(target.user,true)} as a Moderator failed for an unexpected reason!")
+            event.replyError("Removing ${target.user.formattedName(true)} as a Moderator failed for an unexpected reason!")
         }
     }
 }
@@ -213,7 +213,7 @@ abstract class ModeratorListBaseCmd : Command()
             colorAwt = event.selfMember.color
             mods.forEach {
                 append("${event.jda.getEmoteById(statusEmote(it.onlineStatus)).asMention} ")
-                append(formatUserName(it.user, true))
+                append(it.user.formattedName(true))
                 if(it.isOwner)      appendln(" `[OWNER]`")
                 else if(it.isAdmin) appendln(" `[ADMIN]`")
                 else                appendln(" `[ MOD ]`")
@@ -269,7 +269,7 @@ private class ModeratorOnlineCmd : Command()
             colorAwt = event.selfMember.color
             mods.forEach {
                 append("${event.jda.getEmoteById(statusEmote(it.onlineStatus)).asMention} ")
-                append(formatUserName(it.user, true))
+                append(it.user.formattedName(true))
                 if(it.isOwner)      appendln(" `[OWNER]`")
                 else if(it.isAdmin) appendln(" `[ADMIN]`")
                 else                appendln(" `[ MOD ]`")

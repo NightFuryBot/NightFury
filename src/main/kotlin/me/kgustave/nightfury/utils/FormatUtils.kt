@@ -30,7 +30,7 @@ fun multipleUsersFound(argument: String, users: List<User>) : String = with(Stri
     append("Multiple users found matching \"$argument\":\n")
     for(i in 0..3)
     {
-        append("${formatUserName(users[i],true)}\n")
+        append("${users[i].formattedName(true)}\n")
         if(i==3 && users.size>4)
             append("And ${users.size-4} other user${if(users.size-4 > 1) "s..." else "..."}")
         if(users.size==i+1)
@@ -44,7 +44,7 @@ fun multipleMembersFound(argument: String, members: List<Member>) : String = wit
     append("Multiple members found matching \"$argument\":\n")
     for(i in 0..3)
     {
-        append("${formatUserName(members[i].user,true)}\n")
+        append("${members[i].user.formattedName(true)}\n")
         if(i==3 && members.size>4)
             append("And ${members.size-4} other member${if(members.size-4 > 1) "s..." else "..."}")
         if(members.size==i+1)
@@ -97,4 +97,4 @@ fun multipleRolesFound(argument: String, roles: List<Role>) : String = with(Stri
 
 fun noMatch(lookedFor: String, query: String) = "Could not find any $lookedFor matching \"$query\"!"
 
-fun formatUserName(user: User, boldName: Boolean) = "${if(boldName) "**${user.name}**" else user.name}#${user.discriminator}"
+fun User.formattedName(boldName: Boolean) = "${if(boldName) "**${this.name}**" else this.name}#${this.discriminator}"

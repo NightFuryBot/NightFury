@@ -15,20 +15,24 @@
  */
 package me.kgustave.nightfury.commands.moderator
 
-import club.minnced.kjda.promise
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import net.dv8tion.jda.core.Permission
-import kotlin.streams.toList
+import net.dv8tion.jda.core.entities.Message
+import java.util.*
 
 /**
  * @author Kaidan Gustave
  */
-@MustHaveArguments("Provide a number between 2-100!")
-class CleanCmd : Command() {
+@MustHaveArguments("Provide a number between 2-1000!")
+class CleanCmd : Command()
+{
+    companion object {
+        private val number_pattern = Regex("(\\d{1,4})").toPattern()
+    }
 
     init {
         this.name = "Clean"
@@ -44,25 +48,59 @@ class CleanCmd : Command() {
 
     override fun execute(event: CommandEvent)
     {
-        val number : Int = if(event.args.isEmpty()) { 100 }
-        else if(event.args.matches(Regex("\\d+"))) {
-            val n = event.args.toInt()
-            if((n<100 || n>3) && n>0) n
-            else return event.replyError(INVALID_ARGS_ERROR.format("${event.args} is not a valid number to clear!"))
-        }
-        else return event.replyError(INVALID_ARGS_ERROR.format("Try specifying a number of messages to delete."))
+        val matcher = number_pattern.matcher(event.args)
+        val num : Int
+        if(matcher.matches()) {
+            val n = matcher.group(1).trim().toInt()
+            if(n<2 || n>1000)
+                return event.replyError(INVALID_ARGS_ERROR.format("The number of messages to delete must be between 2 and 1000!"))
+            else num = n + 1
+        } else return event.replyError(INVALID_ARGS_ERROR.format("`${event.args}` is not a valid number of messages!"))
 
-        event.textChannel.getHistoryAround(event.messageIdLong,number).promise() then {
-            if(it == null)
-                return@then event.replyError("Failed to retrieve past $number messages!")
-            val toDelete = it.retrievedHistory.stream().filter { it.idLong != event.messageIdLong }.toList()
-            event.textChannel.deleteMessages(toDelete).promise() then {
-                event.client.logger.newClean(event.member, event.textChannel, number)
-                event.replySuccess("Successfully cleared past $number messages!")
-            } catch {
-                event.replyError("An error occurred when deleting $number messages!")
+        val history = event.textChannel.history
+        val messages = LinkedList<Message>()
+        var left = num
+        val twoWeeksPrior = event.message.creationTime.minusWeeks(2).plusMinutes(1)
+        while(left>100)
+        {
+            messages.addAll(history.retrievePast(100).complete())
+            left -= 100
+            if(messages[messages.size-1].creationTime.isBefore(twoWeeksPrior))
+            {
+                left = 0
+                break
             }
-        } catch { event.replyError("Failed to retrieve past $number messages!") }
-        event.invokeCooldown()
+        }
+        if(left>0) messages.addAll(history.retrievePast(left).complete())
+
+        messages.remove(event.message) // Remove call message
+
+        val toDelete = LinkedList<Message>()
+        var pastTwoWeeks = false
+        for(message in messages)
+            if(message.creationTime.isBefore(twoWeeksPrior)) {
+                pastTwoWeeks = true
+                break
+            } else toDelete.add(message)
+        if(toDelete.isEmpty())
+            return event.replyError("**No messages found to delete!**\n${
+                if(pastTwoWeeks) "Messages older than 2 weeks cannot be deleted!"
+                else SEE_HELP.format(event.client.prefix,this.name.toLowerCase())
+            }")
+        val numDeleted = toDelete.size
+        try {
+            var i = 0
+            while(i<numDeleted)
+            {
+                if(i+100>numDeleted)
+                    if(i+1==numDeleted) toDelete[numDeleted-1].delete().complete()
+                    else event.textChannel.deleteMessages(toDelete.subList(i, numDeleted)).complete()
+                else event.textChannel.deleteMessages(toDelete.subList(i, i+100)).complete()
+                i+=100
+            }
+            event.client.logger.newClean(event.member, event.textChannel, numDeleted)
+        } catch (e : Exception) {
+            return event.replyError("An error occurred when deleting $numDeleted messages!")
+        }
     }
 }

@@ -55,16 +55,16 @@ class SQLCases(connection: Connection) : SQLCollection<Guild, Case>(connection) 
 
     fun updateCase(case: Case)
     {
-        val statement = connection.prepareStatement(
-                "UPDATE $CASES SET $REASON = ? WHERE $GUILD_ID = ? AND $NUMBER = ?"
-        )
         try {
-            statement.setString(1, case.reason)
-            statement.setLong(2, case.guildId)
-            statement.setInt(3, case.number)
-            statement.execute()
-            statement.close()
-        } catch (e : SQLException) { SQL.LOG.warn(e); statement.close() }
+            connection.prepareStatement(
+                    "UPDATE $CASES SET $REASON = ? WHERE $GUILD_ID = ? AND $NUMBER = ?")
+            .use {
+                it.setString(1, case.reason)
+                it.setLong(2, case.guildId)
+                it.setInt(3, case.number)
+                it.execute()
+            }
+        } catch (e : SQLException) { SQL.LOG.warn(e) }
     }
 }
 

@@ -33,6 +33,8 @@ annotation class AutoInvokeCooldown
  * When this is annotated in the class overhead of the command, the command
  * will only execute if the arguments of the call [are not empty]
  * [kotlin.text.isNotEmpty].
+ *
+ * @author Kaidan Gustave
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)

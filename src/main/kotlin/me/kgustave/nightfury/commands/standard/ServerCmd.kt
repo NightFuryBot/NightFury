@@ -123,7 +123,7 @@ private class ServerOwnerCmd : Command()
         val user : User = member.user
         event.reply(embed {
             title = "${if(user.isBot) event.jda.getEmoteById(230105988211015680L).asMention else "\u2139"} " +
-                    "__Information on ${formatUserName(user, false)}:__"
+                    "__Information on ${user.formattedName(false)}:__"
             thumbnail = if(user.avatarUrl == null) user.defaultAvatarUrl else user.avatarUrl
             append(BULLET).append("**ID:** ${user.id}")
             appendln()
@@ -201,7 +201,7 @@ private class ServerJoinsCmd(val waiter: EventWaiter) : Command()
     {
         val joins = ArrayList(event.guild.members)
         joins.sortWith(Comparator.comparing(Member::getJoinDate))
-        val names = joins.map { formatUserName(it.user, true) }
+        val names = joins.map { it.user.formattedName(true) }
         paginator(waiter, event.channel)
         {
             text             { "Joins for ${event.guild.name}" }

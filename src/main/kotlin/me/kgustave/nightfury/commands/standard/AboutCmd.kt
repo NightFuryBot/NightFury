@@ -20,7 +20,7 @@ import club.minnced.kjda.builders.embed
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.NightFury
-import me.kgustave.nightfury.utils.formatUserName
+import me.kgustave.nightfury.utils.formattedName
 import net.dv8tion.jda.core.JDAInfo
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
@@ -68,7 +68,7 @@ class AboutCmd(vararg val permissions : Permission) : Command()
             }
             appendln("Hello, I am **${event.selfUser.name}**!")
             appendln("I am a discord bot with many functions from utility, to moderation, to fun commands!")
-            appendln("I was written in Kotlin by ${formatUserName(event.jda.retrieveUserById(event.client.devId).complete(),true)} " +
+            appendln("I was written in Kotlin by ${event.jda.retrieveUserById(event.client.devId).complete().formattedName(true)} " +
                     "using the [JDA Library](${JDAInfo.GITHUB}) (${JDAInfo.VERSION}).")
             appendln("I am at [Version ${NightFury.version}](${NightFury.github}). To see a full list of my commands, type " +
                     "`${event.client.prefix}help`, or if you require additional assistance, join my [support server](${event.client.server})!")

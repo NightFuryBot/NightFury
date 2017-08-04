@@ -28,7 +28,7 @@ import kotlin.streams.toList
  */
 class E621API : AbstractAPICache<JSONArray>()
 {
-    companion object
+    private companion object
     {
         private val BASE_URL = "https://e621.net/post/index.json?"
         private val LOG = SimpleLog.getLog("E621")

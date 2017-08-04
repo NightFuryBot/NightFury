@@ -71,11 +71,11 @@ class MuteCmd : Command() {
             event.author == target
                     -> "You cannot mute yourself!"
             event.guild.owner.user == target
-                    -> "You cannot mute ${formatUserName(target.user,true)} because they are the owner of the server!"
+                    -> "You cannot mute ${target.user.formattedName(true)} because they are the owner of the server!"
             target.roles.contains(mutedRole)
-                    -> "I cannot mute ${formatUserName(target.user,true)} because they are already muted!"
+                    -> "I cannot mute ${target.user.formattedName(true)} because they are already muted!"
             !event.selfMember.canInteract(mutedRole)
-                    -> "I cannot give **${mutedRole.name}** to ${formatUserName(target.user,true)}" +
+                    -> "I cannot give **${mutedRole.name}** to ${target.user.formattedName(true)}" +
                        "because it is a higher role I can interact with!"
             else    -> null
         }
@@ -84,9 +84,9 @@ class MuteCmd : Command() {
         target.giveRole(mutedRole).apply { if(reason!=null) reason(reason) }.promise() then {
             if(reason != null) event.client.logger.newMute(event.member, target.user, reason)
             else               event.client.logger.newMute(event.member, target.user)
-            event.replySuccess("${formatUserName(target.user,true)} was muted!")
+            event.replySuccess("${target.user.formattedName(true)} was muted!")
         } catch {
-            event.replyError("Muting ${formatUserName(target.user,true)} failed for an unexpected reason!")
+            event.replyError("Muting ${target.user.formattedName(true)} failed for an unexpected reason!")
         }
     }
 }

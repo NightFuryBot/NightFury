@@ -23,7 +23,7 @@ import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.kick
 import me.kgustave.nightfury.utils.TARGET_ID_REASON
 import me.kgustave.nightfury.utils.TARGET_MENTION_REASON
-import me.kgustave.nightfury.utils.formatUserName
+import me.kgustave.nightfury.utils.formattedName
 import net.dv8tion.jda.core.Permission
 
 /**
@@ -68,13 +68,13 @@ class KickCmd : Command() {
                     -> "You cannot kick yourself from the server!"
 
             event.guild.owner.user == target
-                    -> "You cannot kick ${formatUserName(target.user,true)} because they are the owner of the server!"
+                    -> "You cannot kick ${target.user.formattedName(true)} because they are the owner of the server!"
 
             !event.selfMember.canInteract(target)
-                    -> "I cannot kick ${formatUserName(target.user,true)}!"
+                    -> "I cannot kick ${target.user.formattedName(true)}!"
 
             !event.member.canInteract(target)
-                    -> "You cannot kick ${formatUserName(target.user,true)}!"
+                    -> "You cannot kick ${target.user.formattedName(true)}!"
 
             else    -> null
         }
@@ -87,9 +87,9 @@ class KickCmd : Command() {
         }.promise() then {
             if(reason != null) event.client.logger.newKick(event.member, target.user, reason)
             else               event.client.logger.newKick(event.member, target.user)
-            event.replySuccess("${formatUserName(target.user,true)} was kicked from the server.")
+            event.replySuccess("${target.user.formattedName(true)} was kicked from the server.")
         } catch {
-            event.replyError("Kicking ${formatUserName(target.user,true)} failed for an unexpected reason!")
+            event.replyError("Kicking ${target.user.formattedName(true)} failed for an unexpected reason!")
         }
     }
 }

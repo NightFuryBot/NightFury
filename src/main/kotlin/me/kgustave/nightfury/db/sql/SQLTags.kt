@@ -44,11 +44,10 @@ class SQLGlobalTags(val connection: Connection)
     fun isTag(name: String) : Boolean
     {
         try {
-            val statement = connection.prepareStatement(isTag)
-            statement.setString(1, name)
-            val isTag = statement.executeQuery().use { it.next() }
-            statement.close()
-            return isTag
+            connection.prepareStatement(isTag).use {
+                it.setString(1, name)
+                return it.executeQuery().use { it.next() }
+            }
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
             return false
@@ -58,13 +57,11 @@ class SQLGlobalTags(val connection: Connection)
     fun addTag(name: String, ownerId: Long, content: String)
     {
         try {
-            with(connection.prepareStatement(addTag))
-            {
-                setString(1, name)
-                setLong(2, ownerId)
-                setString(3, content)
-                execute()
-                close()
+            connection.prepareStatement(addTag).use {
+                it.setString(1, name)
+                it.setLong(2, ownerId)
+                it.setString(3, content)
+                it.execute()
             }
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
@@ -74,13 +71,11 @@ class SQLGlobalTags(val connection: Connection)
     fun editTag(newContent: String, name: String, ownerId: Long)
     {
         try {
-            with(connection.prepareStatement(editTag))
-            {
-                setString(1, newContent)
-                setString(2, name)
-                setLong(3, ownerId)
-                execute()
-                close()
+            connection.prepareStatement(editTag).use {
+                it.setString(1, newContent)
+                it.setString(2, name)
+                it.setLong(3, ownerId)
+                it.execute()
             }
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
@@ -90,12 +85,10 @@ class SQLGlobalTags(val connection: Connection)
     fun deleteTag(name: String, ownerId: Long)
     {
         try {
-            with(connection.prepareStatement(deleteTag))
-            {
-                setString(1, name)
-                setLong(2, ownerId)
-                execute()
-                close()
+            connection.prepareStatement(deleteTag).use {
+                it.setString(1, name)
+                it.setLong(2, ownerId)
+                it.execute()
             }
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
@@ -105,14 +98,13 @@ class SQLGlobalTags(val connection: Connection)
     fun getOriginalName(name: String) : String
     {
         try {
-            val statement = connection.prepareStatement(getTagName)
-            statement.setString(1, name)
-            val content = statement.executeQuery().use {
-                if(it.next()) it.getString(SQLGlobalTags.name)
-                else null
+            connection.prepareStatement(getTagName).use {
+                it.setString(1, name)
+                return it.executeQuery().use {
+                    if(it.next()) it.getString(SQLGlobalTags.name)
+                    else null
+                }?:""
             }
-            statement.close()
-            return content?:""
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
             return ""
@@ -122,14 +114,13 @@ class SQLGlobalTags(val connection: Connection)
     fun getTagContent(name: String) : String
     {
         try {
-            val statement = connection.prepareStatement(getTagContent)
-            statement.setString(1, name)
-            val content = statement.executeQuery().use {
-                if(it.next()) it.getString(content)
-                else null
+            connection.prepareStatement(getTagContent).use {
+                it.setString(1, name)
+                return it.executeQuery().use {
+                    if(it.next()) it.getString(content)
+                    else null
+                }?:""
             }
-            statement.close()
-            return content?:""
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
             return ""
@@ -139,14 +130,13 @@ class SQLGlobalTags(val connection: Connection)
     fun getTagOwnerId(name: String) : Long
     {
         try {
-            val statement = connection.prepareStatement(getTagOwnerId)
-            statement.setString(1, name)
-            val id = statement.executeQuery().use {
-                if(it.next()) it.getLong(owner_id)
-                else null
+            connection.prepareStatement(getTagOwnerId).use {
+                it.setString(1, name)
+                return it.executeQuery().use {
+                    if(it.next()) it.getLong(owner_id)
+                    else null
+                }?:0L
             }
-            statement.close()
-            return id?:0L
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
             return 0L
@@ -157,11 +147,12 @@ class SQLGlobalTags(val connection: Connection)
     {
         val names = HashSet<String>()
         try {
-            val statement = connection.prepareStatement(getAll)
-            statement.setLong(1, userid)
-            statement.executeQuery().use {
-                while(it.next())
-                    names.add(it.getString(name))
+            connection.prepareStatement(getAll).use {
+                it.setLong(1, userid)
+                it.executeQuery().use {
+                    while(it.next())
+                        names.add(it.getString(name))
+                }
             }
         } catch (e : SQLException) {
             SQL.LOG.warn(e)

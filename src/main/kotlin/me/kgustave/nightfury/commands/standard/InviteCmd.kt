@@ -17,9 +17,8 @@ package me.kgustave.nightfury.commands.standard
 
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
-import me.kgustave.nightfury.utils.formatUserName
+import me.kgustave.nightfury.utils.formattedName
 import net.dv8tion.jda.core.Permission
-
 
 /**
  * @author Kaidan Gustave
@@ -59,7 +58,7 @@ class InviteCmd(vararg requestedPerms : Permission) : Command()
             append("If you require additional help ")
             val owner = event.jda.getUserById(event.client.devId)
             if(owner != null)
-                append("contact ${formatUserName(owner,true)} or ")
+                append("contact ${owner.formattedName(true)} or ")
             append("join my support server **<${event.client.server}>**")
             return@with toString()
         })

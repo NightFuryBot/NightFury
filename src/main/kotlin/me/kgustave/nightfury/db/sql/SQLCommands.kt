@@ -35,10 +35,10 @@ class SQLCustomCommands(val connection: Connection)
     {
         val all = HashSet<String>()
         try {
-            val statement = connection.prepareStatement(getAll)
-            statement.setLong(1, guild.idLong)
-            statement.executeQuery().use { while(it.next()) all.add(it.getString("name")) }
-            statement.close()
+            connection.prepareStatement(getAll).use {
+                it.setLong(1, guild.idLong)
+                it.executeQuery().use { while(it.next()) all.add(it.getString("name")) }
+            }
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
         }
@@ -48,11 +48,11 @@ class SQLCustomCommands(val connection: Connection)
     fun getContentFor(name : String, guild: Guild) : String
     {
         try {
-            val statement = connection.prepareStatement(getContent)
-            statement.setString(1, name)
-            statement.setLong(2, guild.idLong)
-            statement.executeQuery().use { if(it.next()) return it.getString("content") }
-            statement.close()
+            connection.prepareStatement(getContent).use {
+                it.setString(1, name)
+                it.setLong(2, guild.idLong)
+                it.executeQuery().use { if(it.next()) return it.getString("content") }
+            }
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
         }
@@ -62,12 +62,12 @@ class SQLCustomCommands(val connection: Connection)
     fun add(name: String, content: String, guild: Guild)
     {
         try {
-            val statement = connection.prepareStatement(add)
-            statement.setString(1, name)
-            statement.setString(2, content)
-            statement.setLong(3, guild.idLong)
-            statement.execute()
-            statement.close()
+            connection.prepareStatement(add).use {
+                it.setString(1, name)
+                it.setString(2, content)
+                it.setLong(3, guild.idLong)
+                it.execute()
+            }
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
         }
@@ -76,11 +76,11 @@ class SQLCustomCommands(val connection: Connection)
     fun remove(name: String, guild: Guild)
     {
         try {
-            val statement = connection.prepareStatement(remove)
-            statement.setString(1, name)
-            statement.setLong(2, guild.idLong)
-            statement.execute()
-            statement.close()
+            connection.prepareStatement(remove).use {
+                it.setString(1, name)
+                it.setLong(2, guild.idLong)
+                it.execute()
+            }
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
         }

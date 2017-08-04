@@ -23,7 +23,7 @@ import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.removeRole
 import me.kgustave.nightfury.utils.TARGET_ID_REASON
 import me.kgustave.nightfury.utils.TARGET_MENTION_REASON
-import me.kgustave.nightfury.utils.formatUserName
+import me.kgustave.nightfury.utils.formattedName
 import net.dv8tion.jda.core.Permission
 
 /**
@@ -67,9 +67,9 @@ class UnmuteCmd : Command()
         val error = when
         {
             !target.roles.contains(mutedRole)
-                    -> "I cannot unmute ${formatUserName(target.user,true)} because they are not muted!"
+                    -> "I cannot unmute ${target.user.formattedName(true)} because they are not muted!"
             !event.selfMember.canInteract(mutedRole)
-                    -> "I cannot remove **${mutedRole.name}** from ${formatUserName(target.user,true)}" +
+                    -> "I cannot remove **${mutedRole.name}** from ${target.user.formattedName(true)}" +
                     "because it is a higher role I can interact with!"
             else    -> null
         }
@@ -78,9 +78,9 @@ class UnmuteCmd : Command()
         target.removeRole(mutedRole).apply { if(reason!=null) reason(reason) }.promise() then {
             if(reason != null) event.client.logger.newUnmute(event.member, target.user, reason)
             else               event.client.logger.newUnmute(event.member, target.user)
-            event.replySuccess("${formatUserName(target.user,true)} was unmuted!")
+            event.replySuccess("${target.user.formattedName(true)} was unmuted!")
         } catch {
-            event.replyError("Unmuting ${formatUserName(target.user,true)} failed for an unexpected reason!")
+            event.replyError("Unmuting ${target.user.formattedName(true)} failed for an unexpected reason!")
         }
     }
 }

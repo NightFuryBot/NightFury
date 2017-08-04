@@ -23,7 +23,7 @@ import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.banFrom
 import me.kgustave.nightfury.utils.TARGET_ID_REASON
 import me.kgustave.nightfury.utils.TARGET_MENTION_REASON
-import me.kgustave.nightfury.utils.formatUserName
+import me.kgustave.nightfury.utils.formattedName
 import net.dv8tion.jda.core.Permission
 
 /**
@@ -70,13 +70,13 @@ class BanCmd : Command()
                         -> "You cannot ban yourself from the server!"
 
                 event.guild.owner.user == it
-                        -> "You cannot ban ${formatUserName(it,true)} because they are the owner of the server!"
+                        -> "You cannot ban ${it.formattedName(true)} because they are the owner of the server!"
 
                 event.guild.isMember(it) && !event.selfMember.canInteract(event.guild.getMember(it))
-                        -> "I cannot ban ${formatUserName(it,true)}!"
+                        -> "I cannot ban ${it.formattedName(true)}!"
 
                 event.guild.isMember(it) && !event.member.canInteract(event.guild.getMember(it))
-                        -> "You cannot ban ${formatUserName(it,true)}!"
+                        -> "You cannot ban ${it.formattedName(true)}!"
 
                 else    -> null
             }
@@ -90,9 +90,9 @@ class BanCmd : Command()
             }.promise() then {
                 if(reason != null) event.client.logger.newBan(event.member, target, reason)
                 else               event.client.logger.newBan(event.member, target)
-                event.replySuccess("${formatUserName(target,true)} was banned from the server.")
+                event.replySuccess("${target.formattedName(true)} was banned from the server.")
             } catch {
-                event.replyError("Banning ${formatUserName(target,true)} failed for an unexpected reason!")
+                event.replyError("Banning ${target.formattedName(true)} failed for an unexpected reason!")
             }
         } catch { event.replyError("An unexpected error occurred when finding a user with ID: $id!") }
     }

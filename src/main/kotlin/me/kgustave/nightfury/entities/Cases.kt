@@ -16,7 +16,7 @@
 package me.kgustave.nightfury.entities
 
 import me.kgustave.nightfury.db.DatabaseManager
-import me.kgustave.nightfury.utils.formatUserName
+import me.kgustave.nightfury.utils.formattedName
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.TextChannel
@@ -96,7 +96,7 @@ class ModLogger(val manager: DatabaseManager)
                     Case.FORMAT,
                     case.number,
                     case.action.emoji,
-                    formatUserName(mod, true),
+                    mod.formattedName(true),
                     case.action.action,
                     target.name,
                     target.idLong,
@@ -129,7 +129,7 @@ class ModLogger(val manager: DatabaseManager)
                     Case.FORMAT,
                     case.number,
                     case.action.emoji,
-                    formatUserName(mod, true),
+                    mod.formattedName(true),
                     case.action.action,
                     target.name,
                     target.idLong,
@@ -161,7 +161,7 @@ class ModLogger(val manager: DatabaseManager)
                     Case.FORMAT,
                     case.number,
                     case.action.emoji,
-                    formatUserName(mod, true),
+                    mod.formattedName(true),
                     case.action.action,
                     target.name,
                     target.idLong,
@@ -193,7 +193,7 @@ class ModLogger(val manager: DatabaseManager)
                     Case.FORMAT,
                     case.number,
                     case.action.emoji,
-                    formatUserName(mod, true),
+                    mod.formattedName(true),
                     case.action.action,
                     target.name,
                     target.idLong,
@@ -225,7 +225,7 @@ class ModLogger(val manager: DatabaseManager)
                     Case.FORMAT,
                     case.number,
                     case.action.emoji,
-                    formatUserName(mod, true),
+                    mod.formattedName(true),
                     case.action.action,
                     target.name,
                     target.idLong,
@@ -257,7 +257,7 @@ class ModLogger(val manager: DatabaseManager)
                     Case.FORMAT,
                     case.number,
                     case.action.emoji,
-                    formatUserName(mod, true),
+                    mod.formattedName(true),
                     case.action.action.format(number),
                     target.name,
                     target.idLong,

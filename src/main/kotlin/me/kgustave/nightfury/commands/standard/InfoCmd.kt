@@ -100,7 +100,7 @@ class InfoCmd : Command()
 
         event.reply(embed {
             title = "${if(user.isBot) event.jda.getEmoteById(230105988211015680L).asMention else "\u2139"} " +
-                    "__Information on ${formatUserName(user, false)}:__"
+                    "__Information on ${user.formattedName(false)}:__"
             thumbnail = if(user.avatarUrl == null) user.defaultAvatarUrl else user.avatarUrl
             append(BULLET).append("**ID:** ${user.id}")
             appendln()
