@@ -16,9 +16,9 @@
 package me.kgustave.nightfury.jagtag
 
 import com.jagrosh.jagtag.*
-import me.kgustave.nightfury.extensions.findMembers
-import me.kgustave.nightfury.extensions.findTextChannels
-import me.kgustave.nightfury.extensions.findUsers
+import me.kgustave.kjdautils.utils.findMembers
+import me.kgustave.kjdautils.utils.findTextChannels
+import me.kgustave.kjdautils.utils.findUsers
 import me.kgustave.nightfury.utils.multipleMembersFound
 import me.kgustave.nightfury.utils.multipleTextChannelsFound
 import me.kgustave.nightfury.utils.multipleUsersFound

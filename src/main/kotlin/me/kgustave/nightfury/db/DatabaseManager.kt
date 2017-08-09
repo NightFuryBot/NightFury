@@ -18,7 +18,6 @@ package me.kgustave.nightfury.db
 import me.kgustave.nightfury.db.sql.*
 import me.kgustave.nightfury.entities.Case
 import net.dv8tion.jda.core.entities.*
-import net.dv8tion.jda.core.utils.SimpleLog
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException

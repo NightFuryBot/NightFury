@@ -44,7 +44,7 @@ class GoogleCmd(private val api: GoogleAPI) : Command()
         val query = event.args
         event.channel.sendTyping().queue {
             val results = api.search(query)
-            if(results == null) event.replyError("An unexpected error occured while searching!")
+            if(results == null) event.replyError("An unexpected error occurred while searching!")
             else if(results.isEmpty()) event.replyError("No results were found for \"$query\"!")
             else event.replySuccess("**${event.author.asMention} ${results[0]}**")
             event.invokeCooldown()

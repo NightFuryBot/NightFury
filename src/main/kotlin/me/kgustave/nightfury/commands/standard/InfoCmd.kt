@@ -17,12 +17,12 @@ package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.builders.colorAwt
 import club.minnced.kjda.builders.embed
+import me.kgustave.kjdautils.utils.findMembers
+import me.kgustave.kjdautils.utils.findUsers
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
-import me.kgustave.nightfury.extensions.findMembers
-import me.kgustave.nightfury.extensions.findUsers
 import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType

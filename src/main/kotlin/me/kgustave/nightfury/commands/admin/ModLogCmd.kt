@@ -15,9 +15,9 @@
  */
 package me.kgustave.nightfury.commands.admin
 
+import me.kgustave.kjdautils.utils.findTextChannels
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.MustHaveArguments
-import me.kgustave.nightfury.extensions.findTextChannels
 import me.kgustave.nightfury.utils.multipleTextChannelsFound
 import me.kgustave.nightfury.utils.noMatch
 

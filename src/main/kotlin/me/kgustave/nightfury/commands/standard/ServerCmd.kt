@@ -17,15 +17,16 @@ package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.builders.colorAwt
 import club.minnced.kjda.builders.embed
+import com.jagrosh.jdautilities.menu.orderedmenu.OrderedMenuBuilder
+import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
 import com.jagrosh.jdautilities.waiter.EventWaiter
+import me.kgustave.kjdautils.menu.*
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.commands.admin.ModeratorListBaseCmd
-import me.kgustave.nightfury.extensions.waiting.orderedMenu
-import me.kgustave.nightfury.extensions.waiting.paginator
 import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Member
@@ -36,7 +37,7 @@ import java.util.Comparator
 /**
  * @author Kaidan Gustave
  */
-class ServerCmd(val waiter: EventWaiter) : Command()
+class ServerCmd(waiter: EventWaiter) : Command()
 {
     init {
         this.name = "Server"
@@ -61,24 +62,35 @@ class ServerCmd(val waiter: EventWaiter) : Command()
         )
     }
 
+    val builder : OrderedMenuBuilder = OrderedMenuBuilder()
+            .useCancelButton { true }
+            .description { "Choose a field to get info on:" }
+            .timeout { delay { 20 } }
+            .waiter  { waiter }
+
     override fun execute(event: CommandEvent)
     {
         if(event.args.isNotEmpty())
             return event.replyError("**Invalid Information Category**\n" +
                     SEE_HELP.format(event.client.prefix, name))
         val children = children
-        orderedMenu(waiter, event.channel)
+
+        with(builder)
         {
-            description                         { "Choose a field to get info on:" }
-            timeout                             { 20 }
-            choice                              { name { "Joins" } action { children[0].run(event) } }
-            choice                              { name { "Moderator" } action { children[1].run(event) } }
-            choice                              { name { "Owner" } action { children[2].run(event) } }
-            if(Category.MODERATOR.test(event))
-                choice                          { name { "Settings" } action { children[3].run(event) } }
-            users                               { arrayOf(event.author) }
-            colorAwt                            { event.selfMember.color }
-            useCancelButton                     { true }
+            choices {
+                choice    { name { "Joins" }      action { children[0].run(event) } }
+
+                choice    { name { "Moderators" } action { children[1].run(event) } }
+
+                if(Category.MODERATOR.test(event))
+                choice    { name { "Owner" }      action { children[2].run(event) } }
+
+                choice    { name { "Settings" }   action { children[3].run(event) } }
+
+                user      { event.author }
+                color     { event.selfMember.color }
+                displayIn { event.channel }
+            }
         }
         event.invokeCooldown()
     }
@@ -185,7 +197,7 @@ private class ServerOwnerCmd : Command()
 }
 
 @AutoInvokeCooldown
-private class ServerJoinsCmd(val waiter: EventWaiter) : Command()
+private class ServerJoinsCmd(waiter: EventWaiter) : Command()
 {
     init {
         this.name = "Joins"
@@ -197,20 +209,25 @@ private class ServerJoinsCmd(val waiter: EventWaiter) : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
+    val builder : PaginatorBuilder = PaginatorBuilder()
+            .timeout          { delay { 20 } }
+            .showPageNumbers  { true }
+            .useNumberedItems { true }
+            .waitOnSinglePage { true }
+            .waiter           { waiter }
+
     override fun execute(event: CommandEvent)
     {
         val joins = ArrayList(event.guild.members)
         joins.sortWith(Comparator.comparing(Member::getJoinDate))
         val names = joins.map { it.user.formattedName(true) }
-        paginator(waiter, event.channel)
+        with(builder)
         {
-            text             { "Joins for ${event.guild.name}" }
+            text { -> "Joins for ${event.guild.name}" }
             items            { addAll(names) }
             finalAction      { it.delete().queue() }
             users            { arrayOf(event.author) }
-            showPageNumbers  { true }
-            useNumberedItems { true }
-            waitOnSinglePage { true }
+            displayIn { event.channel }
         }
     }
 }

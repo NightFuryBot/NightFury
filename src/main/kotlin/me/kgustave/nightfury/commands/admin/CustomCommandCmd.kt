@@ -15,14 +15,15 @@
  */
 package me.kgustave.nightfury.commands.admin
 
+import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
 import com.jagrosh.jdautilities.waiter.EventWaiter
+import me.kgustave.kjdautils.menu.*
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.commands.standard.globalTags
 import me.kgustave.nightfury.commands.standard.localTags
 import me.kgustave.nightfury.db.sql.SQLCustomCommands
-import me.kgustave.nightfury.extensions.waiting.paginator
 
 /**
  * @author Kaidan Gustave
@@ -178,20 +179,25 @@ private class CustomCommandListCmd(val waiter: EventWaiter) : Command()
         this.cooldownScope = CooldownScope.USER_GUILD
     }
 
+    val builder : PaginatorBuilder = PaginatorBuilder()
+            .waiter           { waiter }
+            .timeout          { delay { 20 } }
+            .waitOnSinglePage { false }
+            .showPageNumbers  { true }
+            .useNumberedItems { true }
+
     override fun execute(event: CommandEvent)
     {
         val ccs = event.customCommands.getAll(event.guild)
         if(ccs.isEmpty())
             return event.replyError("There are no custom commands on this server!")
-        paginator(waiter, event.channel)
+        builder.clearItems()
+        with(builder)
         {
-            text             { "Custom Commands on ${event.guild.name}" }
-            timeout          { 20 }
-            items            { addAll(ccs) }
-            finalAction      { event.linkMessage(it) }
-            showPageNumbers  { true }
-            useNumberedItems { true }
-            waitOnSinglePage { false }
+            text        { -> "Custom Commands on ${event.guild.name}" }
+            items       { addAll(ccs) }
+            finalAction { event.linkMessage(it) }
+            displayIn   { event.channel }
         }
     }
 }

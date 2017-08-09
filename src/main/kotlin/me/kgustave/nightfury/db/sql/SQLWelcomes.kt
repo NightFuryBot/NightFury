@@ -29,7 +29,7 @@ class SQLWelcomeMessage(connection: Connection) : SQLSingleton<Guild, String>(co
         this.getStatement = "SELECT welcome FROM welcomes WHERE guild_id = ?"
         this.setStatement = "INSERT INTO welcomes (guild_id, welcome) VALUES (?, ?)"
         this.updateStatement = "UPDATE welcomes SET welcome = ? WHERE guild_id = ?"
-        this.resetStatement = "REMOVE FROM welcomes WHERE guild_id = ?"
+        this.resetStatement = "DELETE FROM welcomes WHERE guild_id = ?"
     }
 
     override fun get(results: ResultSet, env: Guild): String? = if(results.next()) results.getString("welcome") else null

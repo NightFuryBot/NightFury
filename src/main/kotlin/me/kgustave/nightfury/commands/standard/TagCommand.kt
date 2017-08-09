@@ -16,15 +16,16 @@
 package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.promise
+import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
 import com.jagrosh.jdautilities.waiter.EventWaiter
+import me.kgustave.kjdautils.utils.findMembers
+import me.kgustave.kjdautils.utils.findUsers
+import me.kgustave.kjdautils.menu.*
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.db.sql.SQLGlobalTags
 import me.kgustave.nightfury.db.sql.SQLLocalTags
-import me.kgustave.nightfury.extensions.findMembers
-import me.kgustave.nightfury.extensions.findUsers
-import me.kgustave.nightfury.extensions.waiting.paginator
 import me.kgustave.nightfury.jagtag.TagErrorException
 import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.entities.ChannelType
@@ -354,6 +355,13 @@ private class TagEditCmd : Command()
 @AutoInvokeCooldown
 private class TagListCmd(val waiter: EventWaiter) : Command()
 {
+    val builder : PaginatorBuilder = PaginatorBuilder()
+            .timeout          { delay { 20 } }
+            .showPageNumbers  { true }
+            .useNumberedItems { true }
+            .waitOnSinglePage { true }
+            .waiter           { waiter }
+
     init {
         this.name = "List"
         this.fullname = "Tag List"
@@ -394,24 +402,20 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
         }
         val member : Member? = if(temp == null && event.isFromType(ChannelType.TEXT)) event.guild.getMember(user) else temp
 
-
         val localTags = (if(member!=null) event.localTags.getAllTags(member.user.idLong,event.guild) else emptySet()).map { "$it (Local)" }
         val globalTags = event.globalTags.getAllTags(user.idLong).map { "$it (Global)" }
 
         if(localTags.isEmpty() && globalTags.isEmpty())
             event.replyError("${if(event.author==user) "You do" else "${user.formattedName(false)} does"} not have any tags!")
 
-        paginator(waiter, event.channel)
+        with(builder)
         {
-            text             { "Tags owned by ${user.formattedName(true)}" }
-            timeout          { 20 }
+            text        { -> "Tags owned by ${user.formattedName(true)}" }
             if(localTags.isNotEmpty())
-                items        { addAll(localTags) }
-            items            { addAll(globalTags) }
-            finalAction      { event.linkMessage(it) }
-            showPageNumbers  { true }
-            useNumberedItems { true }
-            waitOnSinglePage { false }
+                items   { addAll(localTags) }
+            items       { addAll(globalTags) }
+            finalAction { event.linkMessage(it) }
+            displayIn   { event.channel }
         }
     }
 }
@@ -453,7 +457,7 @@ private class TagOwnerCmd : Command()
             false
         } else return event.replyError("Tag named \"$name\" does not exist!")
 
-        // If this happens... Uh... Let's just put this here incase :/
+        // If this happens... Uh... Let's just put this here in case :/
         if(ownerId==0L) return event.replyError("Tag named \"$name\" does not exist!")
         // Cover overrides
         if(isLocal && ownerId==1L) {

@@ -76,7 +76,7 @@ private class PrefixAddCmd : Command() {
 private class PrefixRemoveCmd : Command() {
 
     init {
-        this.name = "Pemove"
+        this.name = "Remove"
         this.name = "Prefix Remove"
         this.arguments = "[Prefix]"
         this.help = "Removes a custom prefix for this server."

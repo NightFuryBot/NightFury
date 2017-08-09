@@ -16,6 +16,7 @@
 package me.kgustave.nightfury
 
 import me.kgustave.nightfury.db.DatabaseManager
+import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import java.util.function.Consumer
@@ -26,17 +27,17 @@ import java.util.function.Consumer
 @Suppress("unused")
 class CommandEvent internal constructor(val event: MessageReceivedEvent, args: String, val client: Client, val prefixUsed: String)
 {
-    val jda = event.jda
-    val author = event.author
+    val jda = event.jda!!
+    val author = event.author!!
     val member = event.member
     val guild = event.guild
-    val channel = event.channel
+    val channel = event.channel!!
     val textChannel = event.textChannel
     val privateChannel = event.privateChannel
     val group = event.group
-    val channelType = event.channelType
-    val message = event.message
-    val messageId = event.messageId
+    val channelType = event.channelType!!
+    val message = event.message!!
+    val messageId = event.messageId!!
     val messageIdLong = event.messageIdLong
     val responseNumber = event.responseNumber
 
@@ -266,22 +267,30 @@ class CommandEvent internal constructor(val event: MessageReceivedEvent, args: S
         }
     }
 
-    fun react(string: String)
-    {
+    fun reactSuccess() = react(client.success)
+    fun reactWarning() = react(client.warning)
+    fun reactError() = react(client.error)
+    fun react(string: String) {
         if(string.matches(emoteRegex)) {
             val emote = jda.getEmoteById(string.replace(emoteRegex, "$1"))
-            if(emote!=null) message.addReaction(emote)
+            if(emote!=null) addReaction(emote)
         }
-        else message.addReaction(string)
+        else addReaction(string)
     }
-    fun reactSuccess() = message.addReaction(client.success).queue()
-    fun reactWarning() = message.addReaction(client.warning).queue()
-    fun reactError() = message.addReaction(client.error).queue()
+    fun addReaction(emote: String) {
+        if(event.isFromType(ChannelType.TEXT)) {
+            if(selfMember.hasPermission(textChannel, Permission.MESSAGE_ADD_REACTION))
+                message.addReaction(emote).queue()
+        } else message.addReaction(emote).queue()
+    }
+    fun addReaction(emote: Emote) {
+        if(event.isFromType(ChannelType.TEXT)) {
+            if(selfMember.hasPermission(textChannel, Permission.MESSAGE_ADD_REACTION))
+                message.addReaction(emote).queue()
+        } else message.addReaction(emote).queue()
+    }
 
-    fun linkMessage(message: Message)
-    {
-        client.linkIds(messageIdLong, message)
-    }
+    fun linkMessage(message: Message) = client.linkIds(messageIdLong, message)
 
     companion object
     {

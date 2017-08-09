@@ -16,9 +16,9 @@
 package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.promise
+import me.kgustave.kjdautils.utils.findRoles
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.MustHaveArguments
-import me.kgustave.nightfury.extensions.findRoles
 import me.kgustave.nightfury.utils.multipleRolesFound
 import me.kgustave.nightfury.utils.noMatch
 import net.dv8tion.jda.core.Permission

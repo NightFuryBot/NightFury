@@ -16,14 +16,15 @@
 package me.kgustave.nightfury.commands.standard
 
 import club.minnced.kjda.promise
+import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
 import com.jagrosh.jdautilities.waiter.EventWaiter
+import me.kgustave.kjdautils.utils.findRoles
+import me.kgustave.kjdautils.menu.*
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
-import me.kgustave.nightfury.extensions.findRoles
 import me.kgustave.nightfury.extensions.giveRole
 import me.kgustave.nightfury.extensions.removeRole
-import me.kgustave.nightfury.extensions.waiting.paginator
 import me.kgustave.nightfury.utils.multipleRolesFound
 import me.kgustave.nightfury.utils.noMatch
 import net.dv8tion.jda.core.Permission
@@ -189,7 +190,7 @@ private class RoleMeRemoveCmd : Command()
 }
 
 @AutoInvokeCooldown
-private class RoleMeListCmd(val waiter: EventWaiter) : Command()
+private class RoleMeListCmd(waiter: EventWaiter) : Command()
 {
     init {
         this.name = "List"
@@ -201,21 +202,25 @@ private class RoleMeListCmd(val waiter: EventWaiter) : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
     }
 
+    val builder : PaginatorBuilder = PaginatorBuilder()
+            .timeout          { delay { 20 } }
+            .showPageNumbers  { true }
+            .useNumberedItems { true }
+            .waitOnSinglePage { false }
+            .waiter           { waiter }
+
     override fun execute(event: CommandEvent)
     {
         val rolemes = event.manager.getRoleMes(event.guild).map { it.name }
         if(rolemes.isEmpty())
             return event.replyError("**No RoleMe roles on this server!**\n" +
                     SEE_HELP.format(event.client.prefix, "RoleMe"))
-        paginator(waiter, event.channel)
+        with(builder)
         {
-            text             { "RoleMe Roles On ${event.guild.name}" }
-            timeout          { 20 }
-            items            { addAll(rolemes) }
-            finalAction      { event.linkMessage(it) }
-            showPageNumbers  { true }
-            useNumberedItems { true }
-            waitOnSinglePage { false }
+            text        { -> "RoleMe Roles On ${event.guild.name}" }
+            items       { addAll(rolemes) }
+            finalAction { event.linkMessage(it) }
+            displayIn   { event.channel }
         }
     }
 }
