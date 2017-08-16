@@ -23,7 +23,7 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
-import me.kgustave.nightfury.utils.*
+import me.kgustave.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import net.dv8tion.jda.core.entities.Member
@@ -75,25 +75,31 @@ class InfoCmd : Command()
     {
         val query = event.args
         val temp : Member? = if(event.isFromType(ChannelType.TEXT)) {
-            if(query.isEmpty()) {
+            if(query.isEmpty())
                 event.member
-            } else {
+            else {
                 val found = event.guild.findMembers(query)
-                if(found.isEmpty()) null
-                else if(found.size>1) return event.replyError(multipleMembersFound(query, found))
-                else found[0]
+                when
+                {
+                    found.isEmpty() -> null
+                    found.size>1 -> return event.replyError(found.multipleMembers(query))
+                    else -> found[0]
+                }
             }
         } else null
 
-        val user : User = if(temp!=null) {
-            temp.user
-        } else if(query.isEmpty()) {
-            event.author
-        } else {
-            val found =  event.jda.findUsers(query)
-            if(found.isEmpty()) return event.replyError(noMatch("users", query))
-            else if(found.size>1) return event.replyError(multipleUsersFound(query, found))
-            else found[0]
+        val user : User = when {
+            temp!=null -> temp.user
+            query.isEmpty() -> event.author
+            else -> {
+                val found =  event.jda.findUsers(query)
+                when
+                {
+                    found.isEmpty() -> return event.replyError(noMatch("users", query))
+                    found.size>1    -> return event.replyError(found.multipleUsers(query))
+                    else            -> found[0]
+                }
+            }
         }
 
         val member : Member? = if(temp == null && event.isFromType(ChannelType.TEXT)) event.guild.getMember(user) else temp
@@ -117,7 +123,7 @@ class InfoCmd : Command()
                 {
                     append(BULLET).append("**Role${if (roles.size > 1) "s" else ""}:** ")
                     append("`${roles[0].name}`")
-                    for(i in 1..roles.size-1)
+                    for(i in 1 until roles.size)
                         append(", `${roles[i].name}`")
                     appendln()
                 }
@@ -127,11 +133,11 @@ class InfoCmd : Command()
                         append(event.jda.getEmoteById(STREAMING_EMOTE_ID).asMention)
                         append(" Streaming **[${cleanEscapes(member.game.name)}](${member.game.url})**")
                     } else {
-                        append(event.jda.getEmoteById(statusEmote(member.onlineStatus)).asMention)
+                        append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
                         append(" Playing **${cleanEscapes(member.game.name)}**")
                     }
                 } else
-                    append(event.jda.getEmoteById(statusEmote(member.onlineStatus)).asMention).append(" *${member.onlineStatus.name}*")
+                    append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention).append(" *${member.onlineStatus.name}*")
                 appendln()
             }
             append(BULLET).append("**Creation Date:** ").append(user.creationTime.format(DateTimeFormatter.ISO_LOCAL_DATE))
@@ -153,7 +159,7 @@ class InfoCmd : Command()
                     append("**[${user.name}]()**")
                 else
                     append(joins[index].user.name)
-                for(i in index + 1..index + 7 - 1) {
+                for(i in index + 1 until index + 7) {
                     if(i>=joins.size)
                         break
                     val m = joins[i]

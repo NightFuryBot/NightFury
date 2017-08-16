@@ -17,6 +17,8 @@ package me.kgustave.nightfury
 
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.extensions.TARGET_ID_REASON
+import me.kgustave.nightfury.extensions.TARGET_MENTION_REASON
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import java.util.*
@@ -233,9 +235,10 @@ abstract class Command
             if(it is AutoInvokeCooldown && key!=null)
                 event.client.applyCooldown(key, cooldown)
             if(event.args.isEmpty() && it is MustHaveArguments) {
-                if(it.error.isNotEmpty()) return event.replyError(TOO_FEW_ARGS_ERROR.format(it.error[0]))
+                return if(it.error.isNotEmpty())
+                    event.replyError(TOO_FEW_ARGS_ERROR.format(it.error))
                 else
-                    return event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix,
+                    event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix,
                             (if(fullname!="null") fullname else name).toLowerCase())
                     )
             }
@@ -252,12 +255,6 @@ abstract class Command
 
     abstract protected fun execute(event: CommandEvent)
 
-    private fun terminate(event: CommandEvent, msg: String)
-    {
-        event.client.listener.onCommandTerminated(event, this, msg)
-        event.client.incrementUses(this)
-    }
-
     fun isForCommand(string: String) : Boolean
     {
         if(string.equals(name, true))
@@ -267,13 +264,23 @@ abstract class Command
         return false
     }
 
+    fun CommandEvent.modSearch() : Pair<Long, String?>?
+    {
+        val targetId = TARGET_ID_REASON.matcher(this.args)
+        val targetMention = TARGET_MENTION_REASON.matcher(this.args)
+
+        return when {
+            targetId.matches()      -> Pair(targetId.group(1).trim().toLong(), targetId.group(2)?.trim())
+            targetMention.matches() -> Pair(targetMention.group(1).trim().toLong(), targetMention.group(2)?.trim())
+            else                    -> { this.replyError(INVALID_ARGS_HELP.format(this.prefixUsed, name)); null }
+        }
+    }
+
     fun CommandEvent.invokeCooldown()
     {
         val key = getCooldownKey(this)
-        if(key != null) invokeCooldown(this, key)
+        if(key != null) this.client.applyCooldown(key, cooldown)
     }
-
-    private fun invokeCooldown(event: CommandEvent, key: String) = event.client.applyCooldown(key, cooldown)
 
     fun getCooldownKey(event: CommandEvent): String?
     {
@@ -302,11 +309,18 @@ abstract class Command
 
     fun getCooldownError(event: CommandEvent): String
     {
-        if((cooldownScope == CooldownScope.USER_GUILD || cooldownScope == CooldownScope.GUILD) && event.guild == null)
-            return CooldownScope.CHANNEL.errorFlair
+        return if((cooldownScope == CooldownScope.USER_GUILD || cooldownScope == CooldownScope.GUILD) && event.guild == null)
+            CooldownScope.CHANNEL.errorFlair
         else
-            return cooldownScope.errorFlair
+            cooldownScope.errorFlair
     }
+
+    private fun terminate(event: CommandEvent, msg: String)
+    {
+        event.client.listener.onCommandTerminated(event, this, msg)
+        event.client.incrementUses(this)
+    }
+
 }
 
 enum class Category(val title: String, private val predicate: (CommandEvent) -> Boolean)
@@ -357,12 +371,12 @@ enum class CooldownScope constructor(private val format: String, internal val er
     }
 
     internal fun genKey(name: String, idOne: Long, idTwo: Long): String {
-        if(this == GLOBAL)
-            return name + "|" + format
-        else if(idTwo == -1L)
-            return name + "|" + String.format(format, idOne)
-        else
-            return name + "|" + String.format(format, idOne, idTwo)
+        return "$name|${when {
+                this == GLOBAL -> format
+                idTwo == -1L   -> format.format(idOne)
+                else           -> format.format(idOne, idTwo)
+            }
+        }"
     }
 }
 

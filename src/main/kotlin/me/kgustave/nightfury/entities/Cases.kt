@@ -16,7 +16,7 @@
 package me.kgustave.nightfury.entities
 
 import me.kgustave.nightfury.db.DatabaseManager
-import me.kgustave.nightfury.utils.formattedName
+import me.kgustave.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.TextChannel
@@ -42,10 +42,7 @@ class Case
     var action : LogAction = LogAction.OTHER
     var reason : String = default_case_reason
         set(value) {
-            if(value.length>200)
-                field = "${value.substring(0,197)}..."
-            else
-                field = value
+            field = if(value.length>200) "${value.substring(0,197)}..." else value
         }
 
     fun toDBArgs() : Array<Any> = arrayOf(number,guildId,messageId,modId,targetId,isOnUser,action.act,reason)

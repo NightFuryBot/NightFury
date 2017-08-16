@@ -187,16 +187,16 @@ class SQLLocalTags(val connection: Connection)
 
     fun isTag(name: String, guild: Guild) : Boolean
     {
-        try {
+        return try {
             val statement = connection.prepareStatement(isTag)
             statement.setString(1, name)
             statement.setLong(2, guild.idLong)
             val isTag = statement.executeQuery().use { it.next() }
             statement.close()
-            return isTag
+            isTag
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
-            return false
+            false
         }
     }
 
@@ -266,7 +266,7 @@ class SQLLocalTags(val connection: Connection)
 
     fun getOriginalName(name: String, guild: Guild) : String
     {
-        try {
+        return try {
             val statement = connection.prepareStatement(getTagName)
             statement.setString(1, name)
             statement.setLong(2, guild.idLong)
@@ -275,16 +275,16 @@ class SQLLocalTags(val connection: Connection)
                 else null
             }
             statement.close()
-            return content?:""
+            content?:""
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
-            return ""
+            ""
         }
     }
 
     fun getTagContent(name: String, guild: Guild) : String
     {
-        try {
+        return try {
             val statement = connection.prepareStatement(getTagContent)
             statement.setString(1, name)
             statement.setLong(2, guild.idLong)
@@ -293,16 +293,16 @@ class SQLLocalTags(val connection: Connection)
                 else null
             }
             statement.close()
-            return content?:""
+            content?:""
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
-            return ""
+            ""
         }
     }
 
     fun getTagOwnerId(name: String, guild: Guild) : Long
     {
-        try {
+        return try {
             val statement = connection.prepareStatement(getTagOwnerId)
             statement.setString(1, name)
             statement.setLong(2, guild.idLong)
@@ -311,10 +311,10 @@ class SQLLocalTags(val connection: Connection)
                 else null
             }
             statement.close()
-            return id?:0L
+            id?:0L
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
-            return 0L
+            0L
         }
     }
 

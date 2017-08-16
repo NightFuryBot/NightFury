@@ -99,13 +99,13 @@ class DatabaseManager(url: String, user: String, pass: String)
 
     private fun createTable(tableName : String, sql : () -> String) : Boolean
     {
-        try {
+        return try {
             evaluate(sql())
             SQL.LOG.info("Created $tableName Table!")
-            return true
+            true
         } catch (e : SQLException) {
             SQL.LOG.warn(e)
-            return false
+            false
         }
     }
 

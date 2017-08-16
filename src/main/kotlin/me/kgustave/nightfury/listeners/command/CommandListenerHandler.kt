@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("UNUSED_PARAMETER")
 package me.kgustave.nightfury.listeners.command
 
 import me.kgustave.nightfury.Client
@@ -58,7 +59,6 @@ class StandardListener : CommandListener.Companion.BlankListener()
         if(msg != null) event.reply(msg)
     }
 
-    @Suppress("UNUSED_PARAMETER")
     override fun onException(event: CommandEvent, command: Command, exception: Throwable)
     {
         NightFury.LOG.fatal("The CommandListener caught an Exception!")
@@ -75,7 +75,6 @@ class IdleListener : CommandListener.Companion.BlankListener()
         val name = "idle"
     }
 
-    @Suppress("UNUSED_PARAMETER")
     override fun checkCall(event: MessageReceivedEvent, client: Client, name: String, args: String): Boolean
     {
         return event.author.idLong == client.devId
@@ -86,7 +85,6 @@ class IdleListener : CommandListener.Companion.BlankListener()
         if(msg != null) event.reply(msg)
     }
 
-    @Suppress("UNUSED_PARAMETER")
     override fun onException(event: CommandEvent, command: Command, exception: Throwable)
     {
         NightFury.LOG.fatal("The CommandListener caught an Exception!")
@@ -119,7 +117,6 @@ class DebugListener : CommandListener.Companion.BlankListener()
         DEBUG.info("Completed Command \"${command.name}\"")
     }
 
-    @Suppress("UNUSED_PARAMETER")
     override fun onException(event: CommandEvent, command: Command, exception: Throwable)
     {
         DEBUG.fatal("Exception Caught for Command \"${command.name}\"")

@@ -15,11 +15,9 @@
  */
 package me.kgustave.nightfury.extensions
 
+import club.minnced.kjda.entities.isSelf
 import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.Guild
-import net.dv8tion.jda.core.entities.Role
-import net.dv8tion.jda.core.entities.TextChannel
-import net.dv8tion.jda.core.entities.VoiceChannel
+import net.dv8tion.jda.core.entities.*
 
 fun Guild.refreshMutedRole(role: Role)
 {
@@ -63,4 +61,14 @@ fun VoiceChannel.muteRole(role: Role)
         overrides.manager.deny(Permission.VOICE_SPEAK).queue()
     }
     else createPermissionOverride(role).setDeny(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION).queue()
+}
+
+fun Message.removeMenuReactions()
+{
+    if(!author.isSelf) return
+    if(isFromType(ChannelType.TEXT) && member.hasPermission(textChannel,Permission.MESSAGE_MANAGE))
+        clearReactions()
+    else reactions.forEach {
+        if(it.isSelf) it.removeReaction()
+    }
 }

@@ -50,13 +50,13 @@ class E621API : AbstractAPICache<JSONArray>()
                     .url(BASE_URL + "tags=$key&limit=$limit").build())
                     .execute().body()?.charStream()
                     .use {
-                        if(it == null) {
+                        return if(it == null) {
                             LOG.warn("Reader retrieved from e621.net was null!")
-                            return null
+                            null
                         } else {
                             val arr = JSONArray(JSONTokener(it))
                             addToCache(key, arr)
-                            return arr
+                            arr
                         }
                     }
         } catch (e : Exception) {

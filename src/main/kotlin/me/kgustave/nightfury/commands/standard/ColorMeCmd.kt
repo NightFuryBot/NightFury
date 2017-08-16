@@ -19,8 +19,8 @@ import club.minnced.kjda.promise
 import me.kgustave.kjdautils.utils.findRoles
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.MustHaveArguments
-import me.kgustave.nightfury.utils.multipleRolesFound
-import me.kgustave.nightfury.utils.noMatch
+import me.kgustave.nightfury.extensions.multipleRoles
+import me.kgustave.nightfury.extensions.noMatch
 import net.dv8tion.jda.core.Permission
 import java.awt.Color
 import kotlin.streams.toList
@@ -28,7 +28,7 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
-@MustHaveArguments("Try specifying a color or hex code!")
+@MustHaveArguments("Specify a color or hex code!")
 class ColorMeCmd : Command()
 {
 
@@ -112,7 +112,7 @@ class ColorMeCmd : Command()
     }
 }
 
-@MustHaveArguments("You must specify the name of a role to add!")
+@MustHaveArguments("Specify the name of a role to add!")
 private class ColorMeAddCmd : Command()
 {
     init {
@@ -134,7 +134,7 @@ private class ColorMeAddCmd : Command()
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
-            return event.replyError(multipleRolesFound(query, found))
+            return event.replyError(found.multipleRoles(query))
         val requested = found[0]
         if(event.manager.isColorMe(requested))
             return event.replyError("The role **${requested.name}** is already a ColorMe role!")
@@ -150,7 +150,7 @@ private class ColorMeAddCmd : Command()
 
 }
 
-@MustHaveArguments("You must specify the name of a role to remove!")
+@MustHaveArguments("Specify the name of a role to remove!")
 private class ColorMeRemoveCmd : Command()
 {
     init {
@@ -170,7 +170,7 @@ private class ColorMeRemoveCmd : Command()
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
-            return event.replyError(multipleRolesFound(query, found))
+            return event.replyError(found.multipleRoles(query))
         event.manager.removeColorMe(found[0])
         event.replySuccess("The role **${found[0].name}** was removed from ColorMe!")
     }

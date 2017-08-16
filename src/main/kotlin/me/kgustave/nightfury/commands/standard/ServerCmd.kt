@@ -27,7 +27,8 @@ import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.commands.admin.ModeratorListBaseCmd
-import me.kgustave.nightfury.utils.*
+import me.kgustave.nightfury.extensions.emoteId
+import me.kgustave.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.User
@@ -53,7 +54,7 @@ class ServerCmd(waiter: EventWaiter) : Command()
         this.guildOnly = true
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER_GUILD
-        this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
+        this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
         this.children = arrayOf(
                 ServerJoinsCmd(waiter),
                 ModeratorListBaseCmd.ServerModeratorsCmd(),
@@ -87,10 +88,10 @@ class ServerCmd(waiter: EventWaiter) : Command()
 
                 choice    { name { "Settings" }   action { children[3].run(event) } }
 
-                user      { event.author }
-                color     { event.selfMember.color }
-                displayIn { event.channel }
             }
+            user      { event.author }
+            color     { event.selfMember.color }
+            displayIn { event.channel }
         }
         event.invokeCooldown()
     }
@@ -150,7 +151,7 @@ private class ServerOwnerCmd : Command()
             {
                 append(BULLET).append("**Role${if (roles.size > 1) "s" else ""}:** ")
                 append("`${roles[0].name}`")
-                for(i in 1..roles.size-1)
+                for(i in 1 until roles.size)
                     append(", `${roles[i].name}`")
                 appendln()
             }
@@ -160,11 +161,11 @@ private class ServerOwnerCmd : Command()
                     append(event.jda.getEmoteById(STREAMING_EMOTE_ID).asMention)
                     append(" Streaming **[${cleanEscapes(member.game.name)}](${member.game.url})**")
                 } else {
-                    append(event.jda.getEmoteById(statusEmote(member.onlineStatus)).asMention)
+                    append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
                     append(" Playing **${cleanEscapes(member.game.name)}**")
                 }
             } else
-                append(event.jda.getEmoteById(statusEmote(member.onlineStatus)).asMention).append(" *${member.onlineStatus.name}*")
+                append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention).append(" *${member.onlineStatus.name}*")
             appendln()
             append(BULLET).append("**Creation Date:** ").append(user.creationTime.format(DateTimeFormatter.ISO_LOCAL_DATE))
             appendln()
@@ -183,7 +184,7 @@ private class ServerOwnerCmd : Command()
                 append("**[${user.name}]()**")
             else
                 append(joins[index].user.name)
-            for(i in index + 1..index + 7 - 1) {
+            for(i in index + 1 until index + 7) {
                 if(i>=joins.size)
                     break
                 val m = joins[i]

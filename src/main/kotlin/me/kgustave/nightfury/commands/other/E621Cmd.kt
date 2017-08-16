@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit
  */
 @APICache
 @AutoInvokeCooldown
-@MustHaveArguments
+@MustHaveArguments("Provide up to 6 tags or a number of posts followed by the tags.")
 class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = Random()) : Command()
 {
     init {
@@ -73,10 +73,9 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
                 return event.replyError("No results found matching ${buildString { args.forEach { append("$it ") } }.trim()}!")
             generate(arr,event)
         } else {
-            val tags = args
-            if(tags.isEmpty())
+            if(args.isEmpty())
                 return event.replyError("**No tags specified!**\nPlease specify at least one tag!")
-            if(tags.size>6)
+            if(args.size>6)
                 return event.replyError("**Too many tags specified!**\nPlease specify no more than 6 tags!")
             val arr = e621.search(100, *args.toTypedArray())
                     ?:return event.replyError("Found no results matching ${event.args}")

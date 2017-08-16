@@ -38,4 +38,4 @@ annotation class AutoInvokeCooldown
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class MustHaveArguments(vararg val error : String)
+annotation class MustHaveArguments(val error : String = "")

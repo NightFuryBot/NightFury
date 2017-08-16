@@ -20,7 +20,7 @@ import club.minnced.kjda.builders.embed
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.NightFury
-import me.kgustave.nightfury.utils.formattedName
+import me.kgustave.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.JDAInfo
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType

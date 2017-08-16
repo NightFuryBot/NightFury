@@ -30,14 +30,12 @@ abstract class SQLSingleton<in E, out T>(val connection: Connection) {
         private fun insertArgs(statement: PreparedStatement, vararg args: Any) : PreparedStatement
         {
             args.forEachIndexed { index, any ->
-                if(any is String)
-                    statement.setString(index+1, any)
-                else if(any is Long)
-                    statement.setLong(index+1, any)
-                else if(any is Int)
-                    statement.setInt(index+1, any)
-                else if(any is Boolean)
-                    statement.setBoolean(index+1, any)
+                when (any) {
+                    is String -> statement.setString(index+1, any)
+                    is Long -> statement.setLong(index+1, any)
+                    is Int -> statement.setInt(index+1, any)
+                    is Boolean -> statement.setBoolean(index+1, any)
+                }
             }
             return statement
         }

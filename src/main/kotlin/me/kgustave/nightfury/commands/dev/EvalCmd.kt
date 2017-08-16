@@ -28,7 +28,7 @@ import javax.script.ScriptException
 /**
  * @author Kaidan Gustave
  */
-@MustHaveArguments
+@MustHaveArguments("Specify script to evaluate.")
 class EvalCmd : Command()
 {
     init {

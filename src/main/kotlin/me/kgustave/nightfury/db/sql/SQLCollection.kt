@@ -30,10 +30,12 @@ abstract class SQLCollection<in E, out T>(val connection: Connection) {
         private fun insertArgs(statement: PreparedStatement, vararg args: Any) : PreparedStatement
         {
             args.forEachIndexed { index: Int, any: Any ->
-                if(any is String) statement.setString(index + 1, any)
-                else if(any is Long) statement.setLong(index + 1, any)
-                else if(any is Int) statement.setInt(index + 1, any)
-                else if(any is Boolean) statement.setBoolean(index + 1, any)
+                when (any) {
+                    is String -> statement.setString(index + 1, any)
+                    is Long -> statement.setLong(index + 1, any)
+                    is Int -> statement.setInt(index + 1, any)
+                    is Boolean -> statement.setBoolean(index + 1, any)
+                }
             }
             return statement
         }
@@ -51,7 +53,7 @@ abstract class SQLCollection<in E, out T>(val connection: Connection) {
                 val returns = it.executeQuery().use { get(it, env) }
                 returns
             }
-        } catch (e: SQLException) { SQL.LOG.warn(e); emptySet<T>() }
+        } catch (e: SQLException) { SQL.LOG.warn(e); emptySet() }
     }
 
     abstract fun get(results: ResultSet, env: E) : Set<T>

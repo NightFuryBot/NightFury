@@ -18,8 +18,8 @@ package me.kgustave.nightfury.commands.admin
 import me.kgustave.kjdautils.utils.findTextChannels
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.MustHaveArguments
-import me.kgustave.nightfury.utils.multipleTextChannelsFound
-import me.kgustave.nightfury.utils.noMatch
+import me.kgustave.nightfury.extensions.multipleTextChannels
+import me.kgustave.nightfury.extensions.noMatch
 
 /**
  * @author Kaidan Gustave
@@ -35,7 +35,7 @@ class ModLogCmd : NoBaseExecutionCommand()
     }
 }
 
-@MustHaveArguments
+@MustHaveArguments("Specify a text channel to use as the server's moderation log.")
 private class ModLogSetCmd : Command()
 {
     init {
@@ -53,7 +53,7 @@ private class ModLogSetCmd : Command()
             if(this.isEmpty())
                 return event.replyError(noMatch("channels", event.args))
             if(this.size>1)
-                return event.replyError(multipleTextChannelsFound(event.args, this))
+                return event.replyError(this.multipleTextChannels(event.args))
             return@with this[0]
         }
 

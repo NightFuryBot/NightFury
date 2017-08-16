@@ -21,15 +21,13 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.banFrom
-import me.kgustave.nightfury.utils.TARGET_ID_REASON
-import me.kgustave.nightfury.utils.TARGET_MENTION_REASON
-import me.kgustave.nightfury.utils.formattedName
+import me.kgustave.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
 
 /**
  * @author Kaidan Gustave
  */
-@MustHaveArguments
+@MustHaveArguments("Mention a user or provide a user ID to ban.")
 class BanCmd : Command()
 {
     init {
@@ -43,50 +41,41 @@ class BanCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val args = event.args
-        val targetId = TARGET_ID_REASON.matcher(args)
-        val targetMention = TARGET_MENTION_REASON.matcher(args)
+        val parsed = event.modSearch()?:return
 
-        val id : String =
-                if(targetId.matches()) targetId.group(1).trim()
-                else if(targetMention.matches()) targetMention.group(1).trim()
-                else return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
-        val reason : String? =
-                if(targetId.matches()) targetId.group(2)?.trim()
-                else if(targetMention.matches()) targetMention.group(2)?.trim()
-                else return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
+        val id = parsed.first
+        val reason = parsed.second
 
-        event.jda.retrieveUserById(id).promise() then {
+        event.jda.retrieveUserById(id).promise() then { target ->
             // If no user is found we just respond and end.
-            if(it == null) return@then event.replyError("Could not find a user matching \"$args\"!")
+            if(target == null) return@then event.replyError("Could not find a user matching \"${event.args}\"!")
 
             // Error Responses
             val error = when
             {
-                event.selfUser == it
+                event.selfUser == target
                         -> "I cannot ban myself from the server!"
 
-                event.author == it
+                event.author == target
                         -> "You cannot ban yourself from the server!"
 
-                event.guild.owner.user == it
-                        -> "You cannot ban ${it.formattedName(true)} because they are the owner of the server!"
+                event.guild.owner.user == target
+                        -> "You cannot ban ${target.formattedName(true)} because they are the owner of the server!"
 
-                event.guild.isMember(it) && !event.selfMember.canInteract(event.guild.getMember(it))
-                        -> "I cannot ban ${it.formattedName(true)}!"
+                event.guild.isMember(target) && !event.selfMember.canInteract(event.guild.getMember(target))
+                        -> "I cannot ban ${target.formattedName(true)}!"
 
-                event.guild.isMember(it) && !event.member.canInteract(event.guild.getMember(it))
-                        -> "You cannot ban ${it.formattedName(true)}!"
+                event.guild.isMember(target) && !event.member.canInteract(event.guild.getMember(target))
+                        -> "You cannot ban ${target.formattedName(true)}!"
 
                 else    -> null
             }
             if(error!=null) return@then event.replyError(error)
 
-            val target = it
             if(reason != null) {
-                it.banFrom(event.guild, 1, reason)
+                target.banFrom(event.guild, 1, reason)
             } else {
-                it.banFrom(event.guild, 1)
+                target.banFrom(event.guild, 1)
             }.promise() then {
                 if(reason != null) event.client.logger.newBan(event.member, target, reason)
                 else               event.client.logger.newBan(event.member, target)

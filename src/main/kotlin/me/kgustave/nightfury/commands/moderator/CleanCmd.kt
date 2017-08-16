@@ -49,12 +49,11 @@ class CleanCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val matcher = number_pattern.matcher(event.args)
-        val num : Int
-        if(matcher.matches()) {
+        val num : Int = if(matcher.matches()) {
             val n = matcher.group(1).trim().toInt()
             if(n<2 || n>1000)
                 return event.replyError(INVALID_ARGS_ERROR.format("The number of messages to delete must be between 2 and 1000!"))
-            else num = n + 1
+            else n + 1
         } else return event.replyError(INVALID_ARGS_ERROR.format("`${event.args}` is not a valid number of messages!"))
 
         val history = event.textChannel.history

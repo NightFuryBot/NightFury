@@ -34,15 +34,15 @@ class SQLLimits(val connection: Connection)
 
     fun getLimit(guild: Guild, command: String) : Int
     {
-        try {
-            return connection.prepareStatement(getCommandLimit).use {
+        return try {
+            connection.prepareStatement(getCommandLimit).use {
                 it.setLong(1, guild.idLong)
                 it.setString(2, command)
                 it.executeQuery().use { if(it.next()) it.getInt("limit_number") else 0 }
             }
         } catch (e: SQLException) {
             SQL.LOG.warn(e)
-            return 0
+            0
         }
     }
 

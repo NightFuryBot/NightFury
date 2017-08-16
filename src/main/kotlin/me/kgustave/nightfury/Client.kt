@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("unused")
 package me.kgustave.nightfury
 
 import com.jagrosh.jagtag.Parser
@@ -67,7 +68,6 @@ class Client internal constructor
  val parser: Parser,
  vararg commands: Command) : ListenerAdapter()
 {
-    // TODO Remove all occurrences of @Suppress("unused")
     private val executor : ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val commandIndex : HashMap<String, Int> = HashMap()
     private val cooldowns : HashMap<String, OffsetDateTime> = HashMap()
@@ -133,7 +133,6 @@ class Client internal constructor
         commands.forEach { addCommand(it) }
     }
 
-    @Suppress("unused")
     fun removeCommand(cmdRef: String)
     {
         val name = cmdRef.toLowerCase()
@@ -157,21 +156,18 @@ class Client internal constructor
     fun getCommandByName(name: String) : Command?
     {
         val index = synchronized(commandIndex) { commandIndex.getOrDefault(name.toLowerCase(), -1) }
-        if(index!=-1)
-            return synchronized(commands) { commands[index] }
-        else return null
+        return if(index!=-1) synchronized(commands) { commands[index] } else null
     }
 
     fun targetListener(name: String)
     {
-        if(!listeners.containsKey(name.toLowerCase()))
+        listener = if(!listeners.containsKey(name.toLowerCase()))
             throw IllegalArgumentException("Name provided has not been registered!")
         else {
-            listener = listeners[name.toLowerCase()]!!
+            listeners[name.toLowerCase()]!!
         }
     }
 
-    @Suppress("unused")
     fun getCooldown(name: String): OffsetDateTime?
     {
         return cooldowns[name]
@@ -203,19 +199,16 @@ class Client internal constructor
                 .toList().stream().forEach { cooldowns.remove(it) }
     }
 
-    @Suppress("unused")
     fun hasFuture(key: String) : Boolean
     {
         synchronized(scheduled) { return scheduled.containsKey(key.toLowerCase()) }
     }
 
-    @Suppress("unused")
     fun saveFuture(key: String, future: ScheduledFuture<*>)
     {
         synchronized(scheduled) { scheduled.put(key.toLowerCase(),future) }
     }
 
-    @Suppress("unused")
     fun cancelFuture(key: String)
     {
         synchronized(scheduled) { scheduled[key.toLowerCase()]!!.cancel(false) }
@@ -227,7 +220,7 @@ class Client internal constructor
         synchronized(scheduled) { scheduled.remove(key.toLowerCase()) }
     }
 
-    fun cleanSchedule()
+    private fun cleanSchedule()
     {
         synchronized(scheduled)
         {
@@ -237,12 +230,11 @@ class Client internal constructor
         }
     }
 
-    @Suppress("unused")
     fun getUsesFor(command: Command) = synchronized(uses) { uses.getOrDefault(command.name, 0) }
 
     fun incrementUses(command: Command) = synchronized(uses) { uses.put(command.name, uses.getOrDefault(command.name, 0)+1) }
 
-    fun clearAPICaches()
+    private fun clearAPICaches()
     {
         commands.stream().filter {
             it::class.annotations.filterIsInstance<APICache>().isNotEmpty()
@@ -278,7 +270,7 @@ class Client internal constructor
         event.jda.presence.status = OnlineStatus.ONLINE
         event.jda.presence.game = Game.of("Type ${prefix}help")
         LOG.info("NightFury is Online!")
-        val toLeave = event.jda.guilds.stream().filter { !testGuild(it) }.toList()
+        val toLeave = event.jda.guilds.stream().filter { !it.isGood }.toList()
         if(toLeave.isNotEmpty()) {
             toLeave.forEach { it.leave().queue() }
             LOG.info("Left ${toLeave.size} bad guilds!")
@@ -296,7 +288,7 @@ class Client internal constructor
     {
         if(event.guild.selfMember.joinDate.plusMinutes(5).isAfter(OffsetDateTime.now()))
         {
-            if(testGuild(event.guild)) updateStats(event.jda)
+            if(event.guild.isGood) updateStats(event.jda)
             else                       event.guild.leave().queue()
         }
     }
@@ -395,11 +387,11 @@ class Client internal constructor
         welcomeChannel.sendMessage(message).queue()
     }
 
-    private fun testGuild(guild: Guild) : Boolean
-    {
-        val bots = guild.members.stream().filter { it.user.isBot }.count()
-        return bots<=30 || guild.getMemberById(devId)!=null
-    }
+    private val Guild.isGood : Boolean
+        get() {
+            val bots = this.members.stream().filter { it.user.isBot }.count()
+            return bots<=30 || this.getMemberById(devId)!=null
+        }
 
     private fun updateStats(jda: JDA)
     {

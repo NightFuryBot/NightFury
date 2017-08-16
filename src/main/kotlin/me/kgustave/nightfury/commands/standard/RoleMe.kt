@@ -25,8 +25,8 @@ import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.giveRole
 import me.kgustave.nightfury.extensions.removeRole
-import me.kgustave.nightfury.utils.multipleRolesFound
-import me.kgustave.nightfury.utils.noMatch
+import me.kgustave.nightfury.extensions.multipleRoles
+import me.kgustave.nightfury.extensions.noMatch
 import net.dv8tion.jda.core.Permission
 import kotlin.streams.toList
 
@@ -80,7 +80,7 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
             return event.replyError("**${roles[0].name} is not a RoleMe role!**\n" +
                     SEE_HELP.format(event.client.prefix, name))
         if(roleMes.size>1)
-            return event.replyError(multipleRolesFound(query, roleMes))
+            return event.replyError(roleMes.multipleRoles(query))
         val requested = roleMes[0]
         if(!event.selfMember.canInteract(requested))
             event.replyError("**Cannot interact with requested role!**\n" +
@@ -142,7 +142,7 @@ private class RoleMeAddCmd : Command()
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
-            return event.replyError(multipleRolesFound(query, found))
+            return event.replyError(found.multipleRoles(query))
         val requested = found[0]
         if(event.manager.isRoleMe(requested))
             return event.replyError("The role **${requested.name}** is already a RoleMe role!")
@@ -183,7 +183,7 @@ private class RoleMeRemoveCmd : Command()
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
-            return event.replyError(multipleRolesFound(query, found))
+            return event.replyError(found.multipleRoles(query))
         event.manager.removeRoleMe(found[0])
         event.replySuccess("The role **${found[0].name}** was removed from RoleMe!")
     }

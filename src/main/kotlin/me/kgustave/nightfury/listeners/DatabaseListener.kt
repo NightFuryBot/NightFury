@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Kaidan Gustave
  */
-class DatabaseListener(val manager: DatabaseManager, val executor: ScheduledExecutorService) : ListenerAdapter()
+class DatabaseListener(private val manager: DatabaseManager, private val executor: ScheduledExecutorService) : ListenerAdapter()
 {
     private val leaving = HashMap<Long, ScheduledFuture<*>>()
 

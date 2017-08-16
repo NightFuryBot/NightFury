@@ -21,7 +21,7 @@ import me.kgustave.nightfury.annotations.MustHaveArguments
 /**
  * @author Kaidan Gustave
  */
-@MustHaveArguments("Please specify a mode to set to.")
+@MustHaveArguments("Specify a mode to set to.")
 class ModeCmd : Command()
 {
     init {

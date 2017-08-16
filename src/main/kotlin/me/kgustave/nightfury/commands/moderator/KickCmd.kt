@@ -21,15 +21,13 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.kick
-import me.kgustave.nightfury.utils.TARGET_ID_REASON
-import me.kgustave.nightfury.utils.TARGET_MENTION_REASON
-import me.kgustave.nightfury.utils.formattedName
+import me.kgustave.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
 
 /**
  * @author Kaidan Gustave
  */
-@MustHaveArguments
+@MustHaveArguments("Mention a user or provide a user ID to kick.")
 class KickCmd : Command() {
 
     init {
@@ -43,20 +41,12 @@ class KickCmd : Command() {
 
     override fun execute(event: CommandEvent)
     {
-        val args = event.args
-        val targetId = TARGET_ID_REASON.matcher(args)
-        val targetMention = TARGET_MENTION_REASON.matcher(args)
+        val parsed = event.modSearch()?:return
 
-        val id : String =
-                if(targetId.matches()) targetId.group(1).trim()
-                else if(targetMention.matches()) targetMention.group(1).trim()
-                else return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
-        val reason : String? =
-                if(targetId.matches()) targetId.group(2)?.trim()
-                else if(targetMention.matches()) targetMention.group(2)?.trim()
-                else return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
+        val id = parsed.first
+        val reason = parsed.second
 
-        val target = event.guild.getMemberById(id) ?: return event.replyError("Could not find a member matching \"$args\"!")
+        val target = event.guild.getMemberById(id)?:return event.replyError("Could not find a member matching \"${event.args}\"!")
 
         // Error Responses
         val error = when

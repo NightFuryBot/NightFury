@@ -18,8 +18,8 @@ package me.kgustave.nightfury.commands.admin
 import me.kgustave.kjdautils.utils.findTextChannels
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.MustHaveArguments
-import me.kgustave.nightfury.utils.multipleTextChannelsFound
-import me.kgustave.nightfury.utils.noMatch
+import me.kgustave.nightfury.extensions.multipleTextChannels
+import me.kgustave.nightfury.extensions.noMatch
 
 /**
  * @author Kaidan Gustave
@@ -65,9 +65,9 @@ private class WelcomeSetCmd : Command()
         val channel = with(event.guild.findTextChannels(args[0]))
         {
             if(isEmpty())
-                return event.replyError(noMatch("text channels", event.args))
+                return event.replyError(noMatch("text channels", args[0]))
             if(size > 1)
-                return event.replyError(multipleTextChannelsFound(event.args, this))
+                return event.replyError(this.multipleTextChannels(args[0]))
             return@with this[0]
         }
 

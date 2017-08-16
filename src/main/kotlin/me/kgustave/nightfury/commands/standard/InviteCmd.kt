@@ -17,7 +17,7 @@ package me.kgustave.nightfury.commands.standard
 
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
-import me.kgustave.nightfury.utils.formattedName
+import me.kgustave.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
 
 /**

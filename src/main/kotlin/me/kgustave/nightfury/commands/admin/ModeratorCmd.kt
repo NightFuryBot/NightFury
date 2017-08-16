@@ -22,7 +22,6 @@ import me.kgustave.kjdautils.utils.findRoles
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.*
-import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Member
@@ -51,7 +50,7 @@ class ModeratorCmd : NoBaseExecutionCommand()
     }
 }
 
-@MustHaveArguments
+@MustHaveArguments("Specify a member to give the moderator role.")
 private class ModeratorAddCmd : Command()
 {
     init {
@@ -69,20 +68,12 @@ private class ModeratorAddCmd : Command()
         val modRole = event.manager.getModRole(event.guild)
                 ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.prefixUsed, fullname)}")
 
-        val args = event.args
-        val targetId = TARGET_ID_REASON.matcher(args)
-        val targetMention = TARGET_MENTION_REASON.matcher(args)
+        val parsed = event.modSearch()?:return
 
-        val id : String =
-                if(targetId.matches()) targetId.group(1).trim()
-                else if(targetMention.matches()) targetMention.group(1).trim()
-                else return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, fullname))
-        val reason : String? =
-                if(targetId.matches()) targetId.group(2)?.trim()
-                else if(targetMention.matches()) targetMention.group(2)?.trim()
-                else return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, fullname))
+        val id = parsed.first
+        val reason = parsed.second
 
-        val target = event.guild.getMemberById(id) ?: return event.replyError("Could not find a member matching \"$args\"!")
+        val target = event.guild.getMemberById(id)?:return event.replyError("Could not find a member matching \"${event.args}\"!")
 
         // Error Responses
         val error = when
@@ -104,7 +95,7 @@ private class ModeratorAddCmd : Command()
     }
 }
 
-@MustHaveArguments
+@MustHaveArguments("Specify a member with the moderator role to remove it from.")
 private class ModeratorRemoveCmd : Command()
 {
     init {
@@ -122,20 +113,12 @@ private class ModeratorRemoveCmd : Command()
         val modRole = event.manager.getModRole(event.guild)
                 ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.prefixUsed, fullname)}")
 
-        val args = event.args
-        val targetId = TARGET_ID_REASON.matcher(args)
-        val targetMention = TARGET_MENTION_REASON.matcher(args)
+        val parsed = event.modSearch()?:return
 
-        val id : String =
-                if(targetId.matches()) targetId.group(1).trim()
-                else if(targetMention.matches()) targetMention.group(1).trim()
-                else return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, fullname))
-        val reason : String? =
-                if(targetId.matches()) targetId.group(2)?.trim()
-                else if(targetMention.matches()) targetMention.group(2)?.trim()
-                else return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, fullname))
+        val id = parsed.first
+        val reason = parsed.second
 
-        val target = event.guild.getMemberById(id) ?: return event.replyError("Could not find a member matching \"$args\"!")
+        val target = event.guild.getMemberById(id)?:return event.replyError("Could not find a member matching \"${event.args}\"!")
 
         // Error Responses
         val error = when
@@ -157,7 +140,7 @@ private class ModeratorRemoveCmd : Command()
     }
 }
 
-@MustHaveArguments
+@MustHaveArguments("Specify a role to use as the moderator role.")
 private class ModeratorSetCmd : Command()
 {
     init {
@@ -176,7 +159,7 @@ private class ModeratorSetCmd : Command()
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
-            return event.replyError(multipleRolesFound(query, found))
+            return event.replyError(found.multipleRoles(query))
         val requested = found[0]
         val mod = event.manager.getModRole(event.guild)
         if(mod!=null && mod == requested)
@@ -213,11 +196,14 @@ abstract class ModeratorListBaseCmd : Command()
             title { "**Moderators On ${event.guild.name}**" }
             colorAwt = event.selfMember.color
             mods.forEach {
-                append("${event.jda.getEmoteById(statusEmote(it.onlineStatus)).asMention} ")
+                append("${event.jda.getEmoteById(it.onlineStatus.emoteId).asMention} ")
                 append(it.user.formattedName(true))
-                if(it.isOwner)      appendln(" `[OWNER]`")
-                else if(it.isAdmin) appendln(" `[ADMIN]`")
-                else                appendln(" `[ MOD ]`")
+                when
+                {
+                    it.isOwner -> appendln(" `[OWNER]`")
+                    it.isAdmin -> appendln(" `[ADMIN]`")
+                    else ->       appendln(" `[ MOD ]`")
+                }
             }
             footer { this.value = "Total ${mods.size}" }
         })
@@ -269,11 +255,14 @@ private class ModeratorOnlineCmd : Command()
             title { "**Moderators On ${event.guild.name}**" }
             colorAwt = event.selfMember.color
             mods.forEach {
-                append("${event.jda.getEmoteById(statusEmote(it.onlineStatus)).asMention} ")
+                append("${event.jda.getEmoteById(it.onlineStatus.emoteId).asMention} ")
                 append(it.user.formattedName(true))
-                if(it.isOwner)      appendln(" `[OWNER]`")
-                else if(it.isAdmin) appendln(" `[ADMIN]`")
-                else                appendln(" `[ MOD ]`")
+                when
+                {
+                    it.isOwner -> appendln(" `[OWNER]`")
+                    it.isAdmin -> appendln(" `[ADMIN]`")
+                    else ->       appendln(" `[ MOD ]`")
+                }
             }
             footer { this.value = "Total ${mods.size}" }
         })

@@ -22,14 +22,13 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.*
-import me.kgustave.nightfury.utils.*
 import net.dv8tion.jda.core.Permission
 import java.awt.Color
 
 /**
  * @author Kaidan Gustave
  */
-@MustHaveArguments
+@MustHaveArguments("Mention a user or provide a user ID to mute.")
 class MuteCmd : Command() {
 
     init {
@@ -46,23 +45,15 @@ class MuteCmd : Command() {
     {
         val mutedRole = event.client.manager.getMutedRole(event.guild)
                 ?:return event.replyError("**Muted role has not been setup!**\n" +
-                "Try using `${event.prefixUsed}mute setup` to create a new mute role, or `${event.prefixUsed}mute set` to " +
+                "Try using `${event.client.prefix}mute setup` to create a new mute role, or `${event.client.prefix}mute set` to " +
                 "register an existing one!")
 
-        val args = event.args
-        val targetId = TARGET_ID_REASON.matcher(args)
-        val targetMention = TARGET_MENTION_REASON.matcher(args)
+        val parsed = event.modSearch()?:return
 
-        val id : String =
-                if(targetId.matches()) targetId.group(1).trim()
-                else if(targetMention.matches()) targetMention.group(1).trim()
-                else return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
-        val reason : String? =
-                if(targetId.matches()) targetId.group(2)?.trim()
-                else if(targetMention.matches()) targetMention.group(2)?.trim()
-                else return event.replyError(INVALID_ARGS_HELP.format(event.prefixUsed, name))
+        val id = parsed.first
+        val reason = parsed.second
 
-        val target = event.guild.getMemberById(id) ?: return event.replyError("Could not find a member matching \"$args\"!")
+        val target = event.guild.getMemberById(id)?:return event.replyError("Could not find a member matching \"${event.args}\"!")
 
         // Error Responses
         val error = when
@@ -108,7 +99,7 @@ private class SetupMuteCmd : Command()
     {
         if(event.client.manager.getMutedRole(event.guild)!=null)
             return event.replyError("**Muted role already exists on this server!**\n" +
-                    "To change it, use `${event.prefixUsed}mute set`!")
+                    "To change it, use `${event.client.prefix}mute set`!")
         else {
             event.guild.controller.createRole() promise {
                 name = if(event.args.isEmpty()) "Muted" else event.args
@@ -121,7 +112,7 @@ private class SetupMuteCmd : Command()
     }
 }
 
-@MustHaveArguments
+@MustHaveArguments("Specify a role to use as the moderator role.")
 private class SetMutedRoleCmd : Command()
 {
     init {
@@ -141,7 +132,7 @@ private class SetMutedRoleCmd : Command()
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
-            return event.replyError(multipleRolesFound(query, found))
+            return event.replyError(found.multipleRoles(query))
         val requested = found[0]
         val muted = event.client.manager.getMutedRole(event.guild)
         if(muted!=null && muted == requested)

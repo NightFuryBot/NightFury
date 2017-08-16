@@ -55,7 +55,7 @@ class CustomCommandCmd(waiter: EventWaiter) : NoBaseExecutionCommand()
     }
 }
 
-@MustHaveArguments("Try specifying arguments in the format `[Command Name] [Command Content]`.")
+@MustHaveArguments("Specify arguments in the format `[Command Name] [Command Content]`.")
 private class CustomCommandAddCmd : Command()
 {
     init {
@@ -73,21 +73,23 @@ private class CustomCommandAddCmd : Command()
     {
         val parts = event.args.split(Regex("\\s+"),2)
 
-        val name = if(parts[0].length>50)
-            return event.replyError("**Custom Command names cannot exceed 50 characters in length!**\n" +
-                    SEE_HELP.format(event.client.prefix, fullname))
-        else if(event.client.getCommandByName(parts[0])!=null)
-                return event.replyError("**Illegal Custom Command Name!**\n" +
-                        "Custom Commands may not have names that match standard command names!")
-        else parts[0]
+        val error = when
+        {
+            parts[0].length>50 ->
+                "**Custom Command names cannot exceed 50 characters in length!**\n${SEE_HELP.format(event.client.prefix, fullname)}"
+            event.client.getCommandByName(parts[0])!=null ->
+                "**Illegal Custom Command Name!**\nCustom Commands may not have names that match standard command names!"
+            parts.size==1 ->
+                "**You must specify content when creating a Custom Command!**\n${SEE_HELP.format(event.client.prefix, fullname)}"
+            parts[1].length>1900 ->
+                "**Custom Command content cannot exceed 1900 characters in length!**\n${SEE_HELP.format(event.client.prefix, fullname)}"
+            else -> null
+        }
 
-        val content = if(parts.size==1)
-            return event.replyError("**You must specify content when creating a Custom Command!**\n" +
-                    SEE_HELP.format(event.client.prefix, fullname))
-        else if(parts[1].length>1900)
-            return event.replyError("**Custom Command content cannot exceed 1900 characters in length!**\n" +
-                    SEE_HELP.format(event.client.prefix, fullname))
-        else parts[1]
+        if(error!=null) return event.replyError(error)
+
+        val name = parts[0]
+        val content = parts[1]
 
         if(event.customCommands.getContentFor(name, event.guild).isNotEmpty())
             return event.replyError("Custom Command named \"$name\" already exists!")
@@ -99,7 +101,7 @@ private class CustomCommandAddCmd : Command()
     }
 }
 
-@MustHaveArguments("Please specify a custom command you own to remove.")
+@MustHaveArguments("Specify a custom command you own to remove.")
 private class CustomCommandRemoveCmd : Command()
 {
     init {
@@ -123,7 +125,7 @@ private class CustomCommandRemoveCmd : Command()
     }
 }
 
-@MustHaveArguments("Please specify the name of the tag to import.")
+@MustHaveArguments("Specify the name of the tag to import.")
 private class CustomCommandImportCmd : Command()
 {
     init {
@@ -167,13 +169,12 @@ private class CustomCommandImportCmd : Command()
 }
 
 @AutoInvokeCooldown
-private class CustomCommandListCmd(val waiter: EventWaiter) : Command()
+private class CustomCommandListCmd(waiter: EventWaiter) : Command()
 {
     init {
         this.name = "List"
         this.fullname = "CCommand List"
         this.help = "Gets a list of all the available custom commands."
-        this.category = Category.ADMIN
         this.guildOnly = true
         this.cooldown = 20
         this.cooldownScope = CooldownScope.USER_GUILD

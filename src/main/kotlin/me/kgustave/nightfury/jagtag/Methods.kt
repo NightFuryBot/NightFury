@@ -19,10 +19,10 @@ import com.jagrosh.jagtag.*
 import me.kgustave.kjdautils.utils.findMembers
 import me.kgustave.kjdautils.utils.findTextChannels
 import me.kgustave.kjdautils.utils.findUsers
-import me.kgustave.nightfury.utils.multipleMembersFound
-import me.kgustave.nightfury.utils.multipleTextChannelsFound
-import me.kgustave.nightfury.utils.multipleUsersFound
-import me.kgustave.nightfury.utils.noMatch
+import me.kgustave.nightfury.extensions.multipleMembers
+import me.kgustave.nightfury.extensions.multipleTextChannels
+import me.kgustave.nightfury.extensions.multipleUsers
+import me.kgustave.nightfury.extensions.noMatch
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.TextChannel
@@ -160,7 +160,7 @@ internal fun userSearch(env: Environment, input: Array<out String>) : User
             if(this.isEmpty())
                 throw TagErrorException(noMatch("members", input[0]))
             if(this.size>1)
-                throw TagErrorException(multipleMembersFound(input[0], this))
+                throw TagErrorException(this.multipleMembers(input[0]))
             return this[0].user
         }
     } else {
@@ -168,7 +168,7 @@ internal fun userSearch(env: Environment, input: Array<out String>) : User
             if(this.isEmpty())
                 throw TagErrorException(noMatch("users", input[0]))
             if(this.size>1)
-                throw TagErrorException(multipleUsersFound(input[0], this))
+                throw TagErrorException(this.multipleUsers(input[0]))
             return this[0]
         }
     }
@@ -185,7 +185,7 @@ internal fun channelSearch(env: Environment, input: Array<out String>) : TextCha
         if(this.isEmpty())
             throw TagErrorException(noMatch("channels", input[0]))
         if(this.size>1)
-            throw TagErrorException(multipleTextChannelsFound(input[0], this))
+            throw TagErrorException(this.multipleTextChannels(input[0]))
         return this[0]
     }
 }

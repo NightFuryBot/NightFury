@@ -26,7 +26,7 @@ import me.kgustave.nightfury.entities.Case
 /**
  * @author Kaidan Gustave
  */
-@MustHaveArguments
+@MustHaveArguments("Provide a reason to give or specify a case number followed by a reason.")
 class ReasonCmd : Command()
 {
     init {
@@ -42,7 +42,7 @@ class ReasonCmd : Command()
         val modLog = event.client.manager.getModLog(event.guild)
                 ?: return event.replyError("The moderator log channel has not been set!")
         if(event.args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_HELP.format(event.prefixUsed, name))
+            return event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix, name))
         val parts = event.args.split(Regex("\\s+"),2)
         val case : Case
         val number : Int

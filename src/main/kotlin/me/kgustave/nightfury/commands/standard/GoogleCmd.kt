@@ -26,7 +26,7 @@ import me.kgustave.nightfury.api.GoogleAPI
  * @author Kaidan Gustave
  */
 @APICache
-@MustHaveArguments("Please specify what you want to search for!")
+@MustHaveArguments("Specify what to search google for.")
 class GoogleCmd(private val api: GoogleAPI) : Command()
 {
     init {
@@ -44,9 +44,11 @@ class GoogleCmd(private val api: GoogleAPI) : Command()
         val query = event.args
         event.channel.sendTyping().queue {
             val results = api.search(query)
-            if(results == null) event.replyError("An unexpected error occurred while searching!")
-            else if(results.isEmpty()) event.replyError("No results were found for \"$query\"!")
-            else event.replySuccess("**${event.author.asMention} ${results[0]}**")
+            when {
+                results == null   -> event.replyError("An unexpected error occurred while searching!")
+                results.isEmpty() -> event.replyError("No results were found for \"$query\"!")
+                else              -> event.replySuccess("**${event.author.asMention} ${results[0]}**")
+            }
             event.invokeCooldown()
         }
     }

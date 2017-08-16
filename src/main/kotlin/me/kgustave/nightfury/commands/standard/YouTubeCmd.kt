@@ -26,7 +26,7 @@ import me.kgustave.nightfury.api.YouTubeAPI
  * @author Kaidan Gustave
  */
 @APICache
-@MustHaveArguments("Please specify what you want to search for!")
+@MustHaveArguments("Specify what to search youtube for.")
 class YouTubeCmd(val ytAPI: YouTubeAPI) : Command()
 {
     init {
@@ -44,9 +44,12 @@ class YouTubeCmd(val ytAPI: YouTubeAPI) : Command()
         val query = event.args
         event.channel.sendTyping().queue {
             val results = ytAPI.search(query)
-            if(results == null) event.replyError("An unexpected error occurred while searching!")
-            else if(results.isEmpty()) event.replyError("No results were found for \"$query\"!")
-            else event.replySuccess("**${event.author.asMention} https://youtube.com/watch?v=${results[0]}**")
+            when
+            {
+                results == null -> event.replyError("An unexpected error occurred while searching!")
+                results.isEmpty() -> event.replyError("No results were found for \"$query\"!")
+                else -> event.replySuccess("**${event.author.asMention} https://youtube.com/watch?v=${results[0]}**")
+            }
             event.invokeCooldown()
         }
     }

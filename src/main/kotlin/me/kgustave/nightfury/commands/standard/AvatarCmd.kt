@@ -22,10 +22,10 @@ import me.kgustave.kjdautils.utils.findUsers
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
-import me.kgustave.nightfury.utils.formattedName
-import me.kgustave.nightfury.utils.multipleMembersFound
-import me.kgustave.nightfury.utils.multipleUsersFound
-import me.kgustave.nightfury.utils.noMatch
+import me.kgustave.nightfury.extensions.formattedName
+import me.kgustave.nightfury.extensions.multipleMembers
+import me.kgustave.nightfury.extensions.multipleUsers
+import me.kgustave.nightfury.extensions.noMatch
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 
@@ -53,7 +53,7 @@ class AvatarCmd : Command()
                     if(this.isEmpty())
                         return event.replyError(noMatch("members", event.args))
                     if(this.size > 1)
-                        return event.replyError(multipleMembersFound(event.args, this))
+                        return event.replyError(this.multipleMembers(event.args))
                 }[0].user
             } else { event.author }
         } else {
@@ -62,7 +62,7 @@ class AvatarCmd : Command()
                     if(this.isEmpty())
                         return event.replyError(noMatch("users", event.args))
                     if(this.size > 1)
-                        return event.replyError(multipleUsersFound(event.args, this))
+                        return event.replyError(this.multipleUsers(event.args))
                 }[0]
             } else { event.author }
         }
@@ -71,8 +71,7 @@ class AvatarCmd : Command()
             title { "Avatar For ${user.formattedName(true)}" }
             if(event.isFromType(ChannelType.TEXT)) {
                 val member = event.guild.getMember(user)
-                if(member!=null) colorAwt = member.color
-                else             colorAwt = event.selfMember.color
+                colorAwt = if(member!=null) member.color else event.selfMember.color
             }
             ("${user.effectiveAvatarUrl}?size=1024").apply { url { this } image { this } }
         })

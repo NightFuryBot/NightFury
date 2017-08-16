@@ -33,7 +33,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter
 /**
  * @author Kaidan Gustave
  */
-class AutoLoggingListener(val manager: DatabaseManager, val logger: ModLogger) : ListenerAdapter()
+class AutoLoggingListener(private val manager: DatabaseManager, private val logger: ModLogger) : ListenerAdapter()
 {
     // Handle Bans
     override fun onGuildBan(event: GuildBanEvent)

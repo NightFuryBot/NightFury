@@ -40,7 +40,7 @@ class PrefixCmd : NoBaseExecutionCommand() {
     }
 }
 
-@MustHaveArguments
+@MustHaveArguments("Specify a prefix to add.")
 private class PrefixAddCmd : Command() {
 
     init {
@@ -57,27 +57,28 @@ private class PrefixAddCmd : Command() {
     override fun execute(event: CommandEvent)
     {
         val args = event.args
-        if(args.equals(event.client.prefix, true))
-            return event.replyError("`$args` cannot be added as a prefix because it is the default prefix!")
-        else if(event.manager.isPrefixFor(event.guild, args))
-            return event.replyError("`$args` cannot be added as a prefix because it is already a prefix!")
-        else if(args.length>50)
-            return event.replyError("`$args` cannot be added as a prefix because it's longer than 50 characters!")
-        else
-        {
-            event.manager.addPrefix(event.guild, args)
-            event.replySuccess("`$args` was added as a prefix!")
-            event.invokeCooldown()
+        when {
+            args.equals(event.client.prefix, true) ->
+                event.replyError("`$args` cannot be added as a prefix because it is the default prefix!")
+            event.manager.isPrefixFor(event.guild, args) ->
+                event.replyError("`$args` cannot be added as a prefix because it is already a prefix!")
+            args.length>50 ->
+                event.replyError("`$args` cannot be added as a prefix because it's longer than 50 characters!")
+            else -> {
+                event.manager.addPrefix(event.guild, args)
+                event.replySuccess("`$args` was added as a prefix!")
+                event.invokeCooldown()
+            }
         }
     }
 }
 
-@MustHaveArguments
+@MustHaveArguments("Specify a prefix to remove.")
 private class PrefixRemoveCmd : Command() {
 
     init {
         this.name = "Remove"
-        this.name = "Prefix Remove"
+        this.fullname = "Prefix Remove"
         this.arguments = "[Prefix]"
         this.help = "Removes a custom prefix for this server."
         this.guildOnly = true
