@@ -46,8 +46,10 @@ class EvalCmd : Command()
     {
         val args = event.args
 
+        engine.load(event)
+
         when {
-            args matches Regex("9\\s*+\\s*10")
+            args matches Regex("9\\s*\\+\\s*10")
             -> event.reply("```java\n$args```Evaluated:\n```\n21```")
 
             args == "require(\"discord.js\");"
@@ -67,16 +69,6 @@ class EvalCmd : Command()
             } catch (e: Exception) {
                 event.reply("```java\n$args```An exception was thrown:\n```\n$e```")
             }
-        }
-
-        engine.load(event)
-
-        try {
-            event.reply("```java\n$args```Evaluated:\n```\n${engine.eval(args)}```")
-        } catch (e: ScriptException) {
-            event.reply("```java\n$args```A ScriptException was thrown:\n```\n${e.message}```")
-        } catch (e: Exception) {
-            event.reply("```java\n$args```An exception was thrown:\n```\n$e```")
         }
     }
 
