@@ -102,8 +102,8 @@ private class SetupMuteCmd : Command()
                     "To change it, use `${event.client.prefix}mute set`!")
         else {
             event.guild.controller.createRole() promise {
-                name = if(event.args.isEmpty()) "Muted" else event.args
-                color = Color.BLACK
+                name  { if(event.args.isEmpty()) "Muted" else event.args }
+                color { Color.BLACK }
             } then {
                 if(it != null)
                 event.replySuccess("Successfully created muted role: **${it.name}**!")

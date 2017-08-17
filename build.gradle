@@ -25,27 +25,32 @@ class Version {
 buildscript {
     ext.kotlin_version = '1.1.4'
 
-    repositories.mavenCentral()
+    repositories {
+        mavenCentral()
+    }
 
-    dependencies { classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
 }
 
 plugins {
     id 'idea'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '1.2.4'
+    id "com.github.johnrengelman.shadow" version "2.0.1"
 }
 
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
+def versionObj = new Version(major: 0, minor: 5, build: 6)
 group = 'me.kgustave'
-version = new Version(major: 0, minor: 5, build: 5)
+version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
 def dirChar = File.separatorChar
-def jdaVersion = '3.2.0_239'
-def jdaUtilsVersion = '1.4'
+def jdaVersion = '3.2.0_242'
+def jdaUtilsVersion = '1.5'
 def localLibDir = "${System.getProperty('user.home')}${dirChar}Desktop${dirChar}"
 
 sourceCompatibility = 1.8
@@ -76,7 +81,7 @@ dependencies {
     compile "com.jagrosh:JDA-Utilities:$jdaUtilsVersion"
     compile 'com.github.TheMonitorLizard:KJDA-Utilities:6ae9f00'
 
-    compile 'com.h2database:h2:1.3.148'
+    compile 'com.h2database:h2:1.4.196'
 
     compile 'org.jsoup:jsoup:1.10.2'
     compile 'com.google.apis:google-api-services-youtube:v3-rev183-1.22.0'
@@ -84,21 +89,48 @@ dependencies {
     compile group: 'com.jagrosh', name: 'JagTag', version: '0.5'
 }
 
+jar {
+    manifest {
+        attributes 'Implementation-Version': version.toString(), 'Main-Class': mainClassName
+    }
+}
+
 shadowJar {
     baseName = 'NightFury'
     version = ''
     classifier = ''
 
-    // Non-Necessary Resources
+    // Non-Necessary Resources //
+
+    // JDA-Utilities
     exclude('com/jagrosh/jdautilities/commandclient/**')
 
-    exclude('me/kgustave/kjdautils/command/**')
-    exclude('me/kgustave/kjdautils/waiter/**')
-    exclude('me/kgustave/kjdautils/KCommandClientBuilder')
+    // KJDA-Utilities
+    exclude(
+            'me/kgustave/kjdautils/command/**',
+            'me/kgustave/kjdautils/waiter/**',
+            'me/kgustave/kjdautils/KCommandClient**',
+            'me/kgustave/kjdautils/KJDA**',
+            'me/kgustave/kjdautils/Emojis**'
+    )
+
+    // h2
+    exclude('android/**')
 
     manifest {
-        attributes 'Implementation-Version': version, 'Main-Class': mainClassName
+        attributes 'Manifest-Version' : "${versionObj.major}.${versionObj.minor}"
     }
+}
+
+kotlin.experimental.coroutines 'enable'
+
+compileJava.options.encoding = 'UTF-8'
+compileKotlin.kotlinOptions.jvmTarget = "1.8"
+compileTestJava.options.encoding = 'UTF-8'
+compileTestKotlin.kotlinOptions.jvmTarget = "1.8"
+
+wrapper {
+    gradleVersion '4.0'
 }
 
 build {
@@ -109,10 +141,3 @@ build {
     classes.mustRunAfter clean
     shadowJar.mustRunAfter classes
 }
-
-kotlin.experimental.coroutines 'enable'
-
-compileJava.options.encoding = 'UTF-8'
-compileKotlin.kotlinOptions.jvmTarget = "1.8"
-compileTestJava.options.encoding = 'UTF-8'
-compileTestKotlin.kotlinOptions.jvmTarget = "1.8"

@@ -16,80 +16,21 @@
 @file:Suppress("UNUSED")
 package me.kgustave.nightfury.extensions
 
-import club.minnced.kjda.RestPromise
 import club.minnced.kjda.promise
 import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.Role
 import net.dv8tion.jda.core.managers.GuildController
 import net.dv8tion.jda.core.requests.restaction.RoleAction
 import java.awt.Color
 
-infix fun RoleAction.promise(init: RolePromise.() -> Unit) : RestPromise<Role> = with(RolePromise(this))
-{
-    init()
-    promise()
-}
+infix inline fun GuildController.createRole(init: RoleAction.() -> Unit) = createRole() promise(init)
 
-infix fun GuildController.createRole(init: RolePromise.() -> Unit) : RestPromise<Role> = this.createRole().promise(init)
+infix inline fun RoleAction.promise(init: RoleAction.() -> Unit) = with(this) { init(); promise() }
 
-class RolePromise internal constructor(private val roleAction: RoleAction)
-{
-    var name : String? = null
-    var color : Color? = null
-    val permissions : MutableList<Permission> = ArrayList()
-    var isHoisted : Boolean = false
-    var isMentionable : Boolean = false
-
-    operator fun component1() = name
-    operator fun component2() = color
-    operator fun component3() = permissions
-    operator fun component4() = isHoisted
-    operator fun component5() = isMentionable
-
-    internal fun promise() = with(roleAction)
-    {
-        val(name, color, permissions, isHoisted, isMentionable) = this@RolePromise
-        setName(name)
-        setColor(color)
-        setPermissions(permissions)
-        setHoisted(isHoisted)
-        setMentionable(isMentionable)
-        return@with promise()
-    }
-
-    infix inline fun name(lazy: () -> String?) : RolePromise
-    {
-        this.name = lazy()
-        return this
-    }
-
-    infix inline fun color(lazy: () -> Color?) : RolePromise
-    {
-        this.color = lazy()
-        return this
-    }
-
-    infix inline fun permissions(lazy: MutableList<Permission>.() -> Unit) : RolePromise
-    {
-        lazy(permissions)
-        return this
-    }
-
-    fun clearPermissions() : RolePromise
-    {
-        permissions.clear()
-        return this
-    }
-
-    infix inline fun hoisted(lazy: () -> Boolean) : RolePromise
-    {
-        this.isHoisted = lazy()
-        return this
-    }
-
-    infix inline fun mentionable(lazy: () -> Boolean) : RolePromise
-    {
-        this.isMentionable = lazy()
-        return this
-    }
+infix inline fun RoleAction.name(lazy: () -> String?) = setName(lazy())!!
+infix inline fun RoleAction.color(lazy: () -> Color?) = setColor(lazy())!!
+infix inline fun RoleAction.hoisted(lazy: () -> Boolean) = setHoisted(lazy())!!
+infix inline fun RoleAction.mentionable(lazy: () -> Boolean) = setMentionable(lazy())!!
+infix inline fun RoleAction.permissions(lazy: MutableList<Permission>.() -> Unit) = with(ArrayList<Permission>()) {
+    lazy()
+    setPermissions(this)!!
 }

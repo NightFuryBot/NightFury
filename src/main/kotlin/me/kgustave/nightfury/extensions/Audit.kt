@@ -15,6 +15,9 @@
  */
 package me.kgustave.nightfury.extensions
 
+import net.dv8tion.jda.core.audit.ActionType
 import net.dv8tion.jda.core.requests.restaction.pagination.AuditLogPaginationAction
 
 infix inline fun AuditLogPaginationAction.limit(lazy: () -> Int) : AuditLogPaginationAction = limit(lazy())
+
+infix inline fun AuditLogPaginationAction.action(lazy: () -> ActionType) : AuditLogPaginationAction = type(lazy())

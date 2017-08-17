@@ -19,27 +19,23 @@ package me.kgustave.nightfury.extensions
 import net.dv8tion.jda.core.entities.*
 import java.util.regex.Pattern
 
-val TARGET_ID_REASON : Pattern = Regex("(\\d{17,20})(?:\\s+(?:for\\s+)?([\\s\\S]+))?").toPattern()
-
-val TARGET_MENTION_REASON : Pattern = Regex("<@!?(\\d{17,20})>(?:\\s+(?:for\\s+)?([\\s\\S]+))?").toPattern()
-
-infix fun List<User>.multipleUsers(argument: String) =
-        map { it.formattedName(true) }.listOut("user", argument)
-infix fun List<Member>.multipleMembers(argument: String) =
-        map { it.user.formattedName(true) }.listOut("member", argument)
-infix fun List<TextChannel>.multipleTextChannels(argument: String) =
-        map { it.asMention }.listOut("text channel", argument)
-infix fun List<VoiceChannel>.multipleVoiceChannels(argument: String) =
-        map { it.name }.listOut("voice channel", argument)
-infix fun List<Role>.multipleRoles(argument: String) =
-        map { it.name }.listOut("role", argument)
-
-private fun List<String>.listOut(kind: String, argument: String) = with(StringBuilder())
+object ArgumentPatterns
 {
+    val targetIDWithReason: Pattern = Regex("(\\d{17,20})(?:\\s+(?:for\\s+)?([\\s\\S]+))?").toPattern()
+    val targetMentionWithReason: Pattern = Regex("<@!?(\\d{17,20})>(?:\\s+(?:for\\s+)?([\\s\\S]+))?").toPattern()
+}
+
+infix fun List<User>.multipleUsers(argument: String) = listOut("user", argument) { it.formattedName(true) }
+infix fun List<Member>.multipleMembers(argument: String) = listOut("member", argument) { it.user.formattedName(true) }
+infix fun List<TextChannel>.multipleTextChannels(argument: String) = listOut("text channel", argument) { it.asMention }
+infix fun List<VoiceChannel>.multipleVoiceChannels(argument: String) = listOut("voice channel", argument) { it.name }
+infix fun List<Role>.multipleRoles(argument: String) = listOut("role", argument) { it.name }
+
+private fun <T> List<T>.listOut(kind: String, argument: String, conversion: (T) -> String) = with(StringBuilder()) {
     append("Multiple ${kind}s found matching \"$argument\":\n")
     for(i in 0..3)
     {
-        append("${this@listOut[i]}\n")
+        append("${this@listOut[i].let(conversion)}\n")
         if(i==3 && this@listOut.size>4)
             append("And ${this@listOut.size-4} other $kind${if(this@listOut.size-4 > 1) "s..." else "..."}")
         if(this@listOut.size==i+1)

@@ -77,7 +77,7 @@ private class CustomCommandAddCmd : Command()
         {
             parts[0].length>50 ->
                 "**Custom Command names cannot exceed 50 characters in length!**\n${SEE_HELP.format(event.client.prefix, fullname)}"
-            event.client.getCommandByName(parts[0])!=null ->
+            event.client.commands[parts[0]]!=null ->
                 "**Illegal Custom Command Name!**\nCustom Commands may not have names that match standard command names!"
             parts.size==1 ->
                 "**You must specify content when creating a Custom Command!**\n${SEE_HELP.format(event.client.prefix, fullname)}"
@@ -147,7 +147,7 @@ private class CustomCommandImportCmd : Command()
                 event.replyError("Tag named \"$name\" does not exist!")
             } else {
                 val cmdName = event.globalTags.getOriginalName(name)
-                if(event.client.getCommandByName(cmdName)!=null)
+                if(event.client.commands[cmdName]!=null)
                     return event.replyError("**Illegal Custom Command Name!**\n" +
                             "Custom Commands may not have names that match standard command names!")
                 val cmdCont = event.globalTags.getTagContent(name)
@@ -157,7 +157,7 @@ private class CustomCommandImportCmd : Command()
             }
         } else {
             val cmdName = event.localTags.getOriginalName(name, event.guild)
-            if(event.client.getCommandByName(cmdName)!=null)
+            if(event.client.commands[cmdName]!=null)
                 return event.replyError("**Illegal Custom Command Name!**\n" +
                         "Custom Commands may not have names that match standard command names!")
             val cmdCont = event.localTags.getTagContent(name, event.guild)

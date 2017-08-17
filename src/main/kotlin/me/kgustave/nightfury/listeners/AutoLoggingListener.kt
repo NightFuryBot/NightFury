@@ -19,6 +19,7 @@ import club.minnced.kjda.entities.isSelf
 import club.minnced.kjda.promise
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
+import me.kgustave.nightfury.extensions.action
 import me.kgustave.nightfury.extensions.limit
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.audit.ActionType
@@ -40,12 +41,12 @@ class AutoLoggingListener(private val manager: DatabaseManager, private val logg
     {
         if(!event.shouldLog()) return
 
-        event.guild.auditLogs.limit { 10 }.promise() then {
+        event.guild.auditLogs.limit { 10 }.action { ActionType.BAN }.promise() then {
             if(it==null) return@then
 
-            val entry = with(it.stream().filter {
-                it.type == ActionType.BAN && it.targetIdLong == event.user.idLong && !it.user.isSelf
-            }) { try { this.findFirst() } catch (e: NullPointerException) { null } }?:return@then
+            val entry = with(it.stream().filter { it.targetIdLong == event.user.idLong && !it.user.isSelf }) {
+                try { this.findFirst() } catch (e: NullPointerException) { null }
+            }?:return@then
 
             entry.ifPresent {
                 logger.newBan(event.guild, it.user, event.user, it.reason)
@@ -58,12 +59,12 @@ class AutoLoggingListener(private val manager: DatabaseManager, private val logg
     {
         if(!event.shouldLog()) return
 
-        event.guild.auditLogs.limit { 10 }.promise() then {
+        event.guild.auditLogs.limit { 10 }.action { ActionType.UNBAN }.promise() then {
             if(it==null) return@then
 
-            val entry = with(it.stream().filter {
-                it.type == ActionType.UNBAN && it.targetIdLong == event.user.idLong && !it.user.isSelf
-            }) { try { this.findFirst() } catch (e: NullPointerException) { null } }?:return@then
+            val entry = with(it.stream().filter { it.targetIdLong == event.user.idLong && !it.user.isSelf }) {
+                try { this.findFirst() } catch (e: NullPointerException) { null }
+            }?:return@then
 
             entry.ifPresent {
                 logger.newUnban(event.guild, it.user, event.user, it.reason)
@@ -76,12 +77,12 @@ class AutoLoggingListener(private val manager: DatabaseManager, private val logg
     {
         if(!event.shouldLog()) return
 
-        event.guild.auditLogs.limit { 10 }.promise() then {
+        event.guild.auditLogs.limit { 10 }.action { ActionType.KICK }.promise() then {
             if(it==null) return@then
 
-            val entry = with(it.stream().filter {
-                it.type == ActionType.KICK && it.targetIdLong == event.user.idLong && !it.user.isSelf
-            }) { try { this.findFirst() } catch (e: NullPointerException) { null } }?:return@then
+            val entry = with(it.stream().filter { it.targetIdLong == event.user.idLong && !it.user.isSelf }) {
+                try { this.findFirst() } catch (e: NullPointerException) { null }
+            }?:return@then
 
             entry.ifPresent {
                 logger.newKick(event.guild, it.user, event.user, it.reason)
@@ -97,12 +98,12 @@ class AutoLoggingListener(private val manager: DatabaseManager, private val logg
 
         if(!event.roles.contains(mutedRole)) return
 
-        event.guild.auditLogs.limit { 10 }.promise() then {
+        event.guild.auditLogs.limit { 10 }.action { ActionType.MEMBER_ROLE_UPDATE }.promise() then {
             if(it==null) return@then
 
-            val entry = with(it.stream().filter {
-                it.type == ActionType.MEMBER_ROLE_UPDATE && it.targetIdLong == event.member.user.idLong && !it.user.isSelf
-            }) { try { this.findFirst() } catch (e: NullPointerException) { null } }?:return@then
+            val entry = with(it.stream().filter { it.targetIdLong == event.user.idLong && !it.user.isSelf }) {
+                try { this.findFirst() } catch (e: NullPointerException) { null }
+            }?:return@then
 
             entry.ifPresent {
                 logger.newMute(event.guild, it.user, event.user, it.reason)
@@ -118,12 +119,12 @@ class AutoLoggingListener(private val manager: DatabaseManager, private val logg
 
         if(!event.roles.contains(mutedRole)) return
 
-        event.guild.auditLogs.limit { 10 }.promise() then {
+        event.guild.auditLogs.limit { 10 }.action { ActionType.MEMBER_ROLE_UPDATE }.promise() then {
             if(it==null) return@then
 
-            val entry = with(it.stream().filter {
-                it.type == ActionType.MEMBER_ROLE_UPDATE && it.targetIdLong == event.member.user.idLong && !it.user.isSelf
-            }) { try { this.findFirst() } catch (e: NullPointerException) { null } }?:return@then
+            val entry = with(it.stream().filter { it.targetIdLong == event.user.idLong && !it.user.isSelf }) {
+                try { this.findFirst() } catch (e: NullPointerException) { null }
+            }?:return@then
 
             entry.ifPresent {
                 logger.newUnmute(event.guild, it.user, event.user, it.reason)

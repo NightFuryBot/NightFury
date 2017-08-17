@@ -28,17 +28,16 @@ import net.dv8tion.jda.core.utils.SimpleLog
  */
 interface CommandListener
 {
-    companion object
+    abstract class BlankListener : CommandListener
     {
-        abstract class BlankListener : CommandListener
-        {
-            override fun checkCall(event: MessageReceivedEvent, client: Client, name: String, args: String) : Boolean = true
-            override fun onCommandCall(event: CommandEvent, command: Command){}
-            override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?){}
-            override fun onCommandCompleted(event: CommandEvent, command: Command){}
-            override fun onException(event: CommandEvent, command: Command, exception: Throwable){}
-        }
+        override fun checkCall(event: MessageReceivedEvent, client: Client, name: String, args: String) : Boolean = true
+        override fun onCommandCall(event: CommandEvent, command: Command){}
+        override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?){}
+        override fun onCommandCompleted(event: CommandEvent, command: Command){}
+        override fun onException(event: CommandEvent, command: Command, exception: Throwable){}
     }
+
+    val name : String
 
     fun checkCall(event: MessageReceivedEvent, client: Client, name: String, args: String) : Boolean
     fun onCommandCall(event: CommandEvent, command: Command)
@@ -47,12 +46,9 @@ interface CommandListener
     fun onException(event: CommandEvent, command: Command, exception: Throwable)
 }
 
-class StandardListener : CommandListener.Companion.BlankListener()
+class StandardListener : CommandListener.BlankListener()
 {
-    companion object
-    {
-        val name = "standard"
-    }
+    override val name = "standard"
 
     override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?)
     {
@@ -68,12 +64,9 @@ class StandardListener : CommandListener.Companion.BlankListener()
     }
 }
 
-class IdleListener : CommandListener.Companion.BlankListener()
+class IdleListener : CommandListener.BlankListener()
 {
-    companion object
-    {
-        val name = "idle"
-    }
+    override val name = "idle"
 
     override fun checkCall(event: MessageReceivedEvent, client: Client, name: String, args: String): Boolean
     {
@@ -93,33 +86,30 @@ class IdleListener : CommandListener.Companion.BlankListener()
     }
 }
 
-class DebugListener : CommandListener.Companion.BlankListener()
+class DebugListener : CommandListener.BlankListener()
 {
-    companion object
-    {
-        private val DEBUG : SimpleLog = SimpleLog.getLog("Debug")
-        val name = "debug"
-    }
+    private val debug: SimpleLog = SimpleLog.getLog("Debug")
+    override val name = "debug"
 
     override fun onCommandCall(event: CommandEvent, command: Command)
     {
-        DEBUG.info("Call to Command \"${command.name}\"")
+        debug.info("Call to Command \"${command.name}\"")
     }
 
     override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?)
     {
         if(msg != null) event.reply(msg)
-        DEBUG.warn("Terminated Command \"${command.name}\" with message: \"$msg\"")
+        debug.warn("Terminated Command \"${command.name}\" with message: \"$msg\"")
     }
 
     override fun onCommandCompleted(event: CommandEvent, command: Command)
     {
-        DEBUG.info("Completed Command \"${command.name}\"")
+        debug.info("Completed Command \"${command.name}\"")
     }
 
     override fun onException(event: CommandEvent, command: Command, exception: Throwable)
     {
-        DEBUG.fatal("Exception Caught for Command \"${command.name}\"")
-        DEBUG.log(exception)
+        debug.fatal("Exception Caught for Command \"${command.name}\"")
+        debug.log(exception)
     }
 }

@@ -17,8 +17,7 @@ package me.kgustave.nightfury
 
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
-import me.kgustave.nightfury.extensions.TARGET_ID_REASON
-import me.kgustave.nightfury.extensions.TARGET_MENTION_REASON
+import me.kgustave.nightfury.extensions.ArgumentPatterns
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import java.util.*
@@ -266,8 +265,8 @@ abstract class Command
 
     fun CommandEvent.modSearch() : Pair<Long, String?>?
     {
-        val targetId = TARGET_ID_REASON.matcher(this.args)
-        val targetMention = TARGET_MENTION_REASON.matcher(this.args)
+        val targetId = ArgumentPatterns.targetIDWithReason.matcher(this.args)
+        val targetMention = ArgumentPatterns.targetMentionWithReason.matcher(this.args)
 
         return when {
             targetId.matches()      -> Pair(targetId.group(1).trim().toLong(), targetId.group(2)?.trim())

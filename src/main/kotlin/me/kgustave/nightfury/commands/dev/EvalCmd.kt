@@ -46,7 +46,30 @@ class EvalCmd : Command()
     {
         val args = event.args
 
-        loadSE(engine, event)
+        when {
+            args matches Regex("9\\s*+\\s*10")
+            -> event.reply("```java\n$args```Evaluated:\n```\n21```")
+
+            args == "require(\"discord.js\");"
+            -> event.reply("```java\n$args```Evaluated:\n```\nNo```")
+
+            args matches Regex("System\\.exit\\(\\d+\\)")
+            -> {
+                event.replyWarning("Shutting down...")
+                Thread.sleep(4000)
+                event.reply("Naaaah, just kidding!")
+            }
+
+            else -> try {
+                event.reply("```java\n$args```Evaluated:\n```\n${engine.eval(args)}```")
+            } catch (e: ScriptException) {
+                event.reply("```java\n$args```A ScriptException was thrown:\n```\n${e.message}```")
+            } catch (e: Exception) {
+                event.reply("```java\n$args```An exception was thrown:\n```\n$e```")
+            }
+        }
+
+        engine.load(event)
 
         try {
             event.reply("```java\n$args```Evaluated:\n```\n${engine.eval(args)}```")
@@ -57,38 +80,38 @@ class EvalCmd : Command()
         }
     }
 
-    private fun loadSE(se: ScriptEngine, event: CommandEvent) : ScriptEngine
+    private fun ScriptEngine.load(event: CommandEvent) : ScriptEngine
     {
         // STANDARD
-        se.put("event", event)
-        se.put("args", event.args)
-        se.put("jda", event.jda)
-        se.put("author", event.author)
-        se.put("channel", event.channel)
-        se.put("client", event.client)
-        se.put("manager", event.manager)
+        put("event", event)
+        put("args", event.args)
+        put("jda", event.jda)
+        put("author", event.author)
+        put("channel", event.channel)
+        put("client", event.client)
+        put("manager", event.manager)
 
         // GUILD
         if(event.isFromType(ChannelType.TEXT))
         {
-            se.put("guild", event.guild)
-            se.put("member", event.member)
-            se.put("textChannel", event.textChannel)
+            put("guild", event.guild)
+            put("member", event.member)
+            put("textChannel", event.textChannel)
 
             // VOICE
             if(event.selfMember.connectedChannel != null)
             {
-                se.put("voiceChannel", event.selfMember.connectedChannel)
-                se.put("voiceState", event.member.voiceState)
+                put("voiceChannel", event.selfMember.connectedChannel)
+                put("voiceState", event.member.voiceState)
             }
         }
 
         // PRIVATE
         if(event.isFromType(ChannelType.PRIVATE))
         {
-            se.put("privateChannel", event.privateChannel)
+            put("privateChannel", event.privateChannel)
         }
 
-        return se
+        return this
     }
 }

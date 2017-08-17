@@ -69,7 +69,7 @@ class TagCommand(waiter: EventWaiter) : Command()
         if(event.args.isEmpty())
             return event.replyError(TOO_FEW_ARGS_ERROR.format("Try specifying a tag name in the format `${event.client.prefix}tag [tag name]`."))
         val parts = event.args.split(Regex("\\s+"),2)
-        val name = if(event.client.getCommandByName(parts[0])!=null)
+        val name = if(event.client.commands[parts[0]]!=null)
             return event.reply("*You remember Monitor's words: Not everything is a tag!*")
         else parts[0]
         val args = if(parts.size>1) parts[1] else ""
@@ -152,7 +152,7 @@ private class TagCreateCmd : Command()
         {
             parts[0].length>50 ->
                 "**Tag names cannot exceed 50 characters in length!**\n${SEE_HELP.format(event.client.prefix, fullname)}"
-            event.client.getCommandByName(parts[0])!=null ->
+            event.client.commands[parts[0]]!=null ->
                 "**Illegal Tag Name!**\nTags may not have names that match standard command names!"
             parts.size==1 ->
                 "**You must specify content when creating a Tag!**\n${SEE_HELP.format(event.client.prefix, fullname)}"
@@ -210,7 +210,7 @@ private class TagCreateGlobalCmd : Command()
         {
             parts[0].length>50 ->
                 "**Tag names cannot exceed 50 characters in length!**\n${SEE_HELP.format(event.client.prefix, fullname)}"
-            event.client.getCommandByName(parts[0])!=null ->
+            event.client.commands[parts[0]]!=null ->
                 "**Illegal Tag Name!**\nTags may not have names that match standard command names!"
             parts.size==1 ->
                 "**You must specify content when creating a Tag!**\n${SEE_HELP.format(event.client.prefix, fullname)}"
@@ -313,7 +313,7 @@ private class TagEditCmd : Command()
         {
             parts[0].length>50 ->
                 "**Tag names cannot exceed 50 characters in length!**\n${SEE_HELP.format(event.client.prefix, fullname)}"
-            event.client.getCommandByName(parts[0])!=null ->
+            event.client.commands[parts[0]]!=null ->
                 "**Illegal Tag Name!**\nTags may not have names that match standard command names!"
             parts.size==1 ->
                 "**You must specify content when creating a Tag!**\n${SEE_HELP.format(event.client.prefix, fullname)}"
