@@ -49,11 +49,10 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
         this.category = Category.NSFW
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
         this.helpBiConsumer = Command.standardSubHelp(
-                "Only up to 6 tags are allowed per request. The maximum number of posts " +
+                        "Only up to 6 tags are allowed per request. The maximum number of posts " +
                         "retrievable is 320 and the default 100.\n\n" +
 
-                        "**This command is only available in NSFW channels.**",
-                true
+                        "**This command is only available in NSFW channels.**",true
         )
     }
 
@@ -116,8 +115,7 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
         }.build().display(event.channel)
     }
 
-    @Suppress("UNCHECKED_CAST")
-    fun <T> JSONArray.toTypedList() : List<T> = this.map { it as T }
+    inline fun <reified T> JSONArray.toTypedList() : List<T> = map { it as T }
 
     @APICache
     @Suppress("unused")

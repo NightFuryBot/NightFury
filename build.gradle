@@ -23,7 +23,7 @@ class Version {
 }
 
 buildscript {
-    ext.kotlin_version = '1.1.4'
+    ext.kotlin_version = '1.1.4-2'
 
     repositories {
         mavenCentral()
@@ -43,7 +43,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 5, build: 6)
+def versionObj = new Version(major: 0, minor: 5, build: 7)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
@@ -77,9 +77,9 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     compile "net.dv8tion:JDA:$jdaVersion"
-    compile 'com.github.JDA-Applications:Kotlin-JDA:56a6c22'
+    compile 'com.github.JDA-Applications:Kotlin-JDA:master-SNAPSHOT'
     compile "com.jagrosh:JDA-Utilities:$jdaUtilsVersion"
-    compile 'com.github.TheMonitorLizard:KJDA-Utilities:6ae9f00'
+    compile 'com.github.TheMonitorLizard:KJDA-Utilities:master-SNAPSHOT'
 
     compile 'com.h2database:h2:1.4.196'
 

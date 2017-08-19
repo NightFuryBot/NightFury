@@ -214,7 +214,10 @@ class CommandEvent internal constructor(val event: MessageReceivedEvent, args: S
         } else message.addReaction(emote).queue()
     }
 
-    fun linkMessage(message: Message) = client.linkIds(messageIdLong, message)
+    fun linkMessage(message: Message) {
+        if(message.isFromType(ChannelType.TEXT))
+            client.linkIds(messageIdLong, message)
+    }
 
     companion object
     {

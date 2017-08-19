@@ -23,29 +23,33 @@ import me.kgustave.nightfury.Command
  */
 class CommandMap(private vararg val commands : Command) : Collection<Command>
 {
-    private val index = HashMap<String, Int>()
+    private val map = HashMap<String, Int>()
     override val size: Int = commands.size
 
     init {
         commands.forEachIndexed { index, command ->
-            this.index.put(command.name.toLowerCase(), index)
-            command.aliases.forEach { this.index.put(it.toLowerCase(), index) }
+            this.map.put(command.name.toLowerCase(), index)
+            command.aliases.forEach { this.map.put(it.toLowerCase(), index) }
         }
     }
 
     operator fun get(name: String) = getCommandByName(name)
     operator fun contains(name: String) = containsName(name)
 
-    fun containsName(name: String) = index.contains(name.toLowerCase())
-    fun containsAllNames(names: Collection<String>) = index.keys.containsAll(names.map { it.toLowerCase() })
+    fun containsName(name: String) = map.contains(name.toLowerCase())
 
-    fun getCommandByName(name: String) = if(containsName(name)) { commands[index[name.toLowerCase()]!!] } else null
+    fun containsAllNames(names: Collection<String>) = map.keys.containsAll(names.map { it.toLowerCase() })
+
+    fun getCommandByName(name: String) = if(containsName(name)) { commands[map[name.toLowerCase()]!!] } else null
 
     override fun contains(element: Command) = commands.contains(element)
+
     override fun containsAll(elements: Collection<Command>) : Boolean {
         elements.forEach { if(!commands.contains(it)) return false }
         return true
     }
-    override fun isEmpty() = commands.isEmpty() && index.isEmpty()
+
+    override fun isEmpty() = commands.isEmpty() && map.isEmpty()
+
     override fun iterator() = commands.iterator()
 }

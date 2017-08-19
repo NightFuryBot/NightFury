@@ -83,7 +83,7 @@ abstract class Command
         val TOO_FEW_ARGS_HELP = "**Too Few Arguments!**\n$SEE_HELP"
 
         private val defaultSubHelp = BiConsumer<CommandEvent, Command> {_,_ ->}
-        fun standardSubHelp(explanation: String?, helpInDM : Boolean) : BiConsumer<CommandEvent, Command>
+        fun standardSubHelp(explanation: String?, helpInDM : Boolean = true) : BiConsumer<CommandEvent, Command>
         {
             return BiConsumer {event, command ->
                 val b = StringBuilder()

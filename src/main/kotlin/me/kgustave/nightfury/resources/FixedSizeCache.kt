@@ -15,31 +15,67 @@
  */
 package me.kgustave.nightfury.resources
 
-class FixedSizeCache<in K : Any, V>(size: Int)
+import java.util.function.BiConsumer
+
+@Suppress("UNCHECKED_CAST")
+class FixedSizeCache<K : Any, V>(size: Int) : MutableMap<K, V>
 {
     private val map: HashMap<K, V> = HashMap()
-
-    @Suppress("UNCHECKED_CAST")
-    private val keys: Array<K?> =
-            if(size<1)
-                throw IllegalArgumentException("Cache size must be at least 1!")
-            else arrayOfNulls<Any>(size) as Array<K?>
-
-    val size : Int
-        get() = map.size
-
+    private val backingKeys: Array<K?>
     private var currIndex = 0
 
-    fun add(key: K, value: V)
-    {
-        if(keys[currIndex] != null)
-            map.remove(keys[currIndex])
-        map.put(key, value)
-        keys[currIndex] = key
-        currIndex = (currIndex + 1) % keys.size
+    init {
+        require(size>0) { "Cache size must be at least 1!" }
+        backingKeys = arrayOfNulls<Any>(size) as Array<K?>
     }
 
+    override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
+        get() = map.entries
+
+    override val keys: MutableSet<K>
+        get() = map.keys
+
+    override val values: MutableCollection<V>
+        get() = map.values
+
+    override val size : Int
+        get() = map.size
+
+    fun add(key: K, value: V) { put(key, value) }
     fun contains(key: K) : Boolean = map.containsKey(key)
 
-    fun get(key: K) : V? = map[key]
+    override fun clear()
+    {
+        map.clear()
+        for(i in 0 until backingKeys.size)
+            backingKeys[i] = null
+        currIndex = 0
+    }
+
+    override fun put(key: K, value: V): V?
+    {
+        val v = if(backingKeys[currIndex] != null)
+            map.remove(backingKeys[currIndex])
+        else map.put(key, value)
+
+        backingKeys[currIndex] = key
+        currIndex = (currIndex + 1) % backingKeys.size
+        return v
+    }
+
+    override fun putAll(from: Map<out K, V>) = from.forEach { k, v -> put(k,v) }
+
+    override fun remove(key: K): V? = map.remove(key)
+
+    override fun isEmpty() = size == 0
+
+    override fun get(key: K) : V? = map[key]
+
+    override fun getOrDefault(key: K, defaultValue: V): V = map[key]?:defaultValue
+
+    override fun containsKey(key: K) = map.containsKey(key)
+
+    override fun containsValue(value: V) = map.containsValue(value)
+
+    override fun forEach(action: BiConsumer<in K, in V>) = map.forEach(action)
 }

@@ -68,6 +68,9 @@ class Client internal constructor
     val messageCacheSize : Int
         get() = linkedCache.size
 
+    var totalGuilds : Int = 0
+        private set
+
     private val executor : ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val cooldowns : HashMap<String, OffsetDateTime> = HashMap()
     private val scheduled : HashMap<String, ScheduledFuture<*>> = HashMap()
@@ -80,9 +83,6 @@ class Client internal constructor
     )
 
     internal var listener : CommandListener
-
-    var totalGuilds : Int = 0
-        private set
 
     init {
         listener = listeners[0]
@@ -123,23 +123,24 @@ class Client internal constructor
         cooldowns.keys.stream().filter { cooldowns[it]!!.isBefore(now) }.toList().forEach { cooldowns.remove(it) }
     }
 
-    @Suppress("unused") fun hasFuture(key: String) : Boolean
-    {
-        synchronized(scheduled) { return scheduled.containsKey(key.toLowerCase()) }
-    }
+    @Suppress("unused")
+    fun hasFuture(key: String) = synchronized(scheduled) { scheduled.containsKey(key.toLowerCase()) }
 
-    @Suppress("unused") fun saveFuture(key: String, future: ScheduledFuture<*>)
+    @Suppress("unused")
+    fun saveFuture(key: String, future: ScheduledFuture<*>)
     {
         synchronized(scheduled) { scheduled.put(key.toLowerCase(),future) }
     }
 
-    @Suppress("unused") fun cancelFuture(key: String)
+    @Suppress("unused")
+    fun cancelFuture(key: String)
     {
-        synchronized(scheduled) { scheduled[key.toLowerCase()]!!.cancel(false) }
+        synchronized(scheduled) { scheduled[key.toLowerCase()]?.cancel(false) }
         removeFuture(key)
     }
 
-    @Suppress("unused") fun removeFuture(key: String)
+    @Suppress("unused")
+    fun removeFuture(key: String)
     {
         synchronized(scheduled) { scheduled.remove(key.toLowerCase()) }
     }
@@ -153,7 +154,8 @@ class Client internal constructor
         }
     }
 
-    @Suppress("unused") fun getUsesFor(command: Command) = synchronized(uses) { uses.getOrDefault(command.name, 0) }
+    @Suppress("unused")
+    fun getUsesFor(command: Command) = synchronized(uses) { uses.getOrDefault(command.name, 0) }
 
     fun incrementUses(command: Command) = synchronized(uses) { uses.put(command.name, uses.getOrDefault(command.name, 0)+1) }
 
@@ -172,7 +174,7 @@ class Client internal constructor
     {
         synchronized(linkedCache)
         {
-            val stored = linkedCache.get(id)
+            val stored = linkedCache[id]
             if(stored != null)
                 stored.add(message)
             else {
@@ -188,18 +190,24 @@ class Client internal constructor
         event.jda.addEventListener(waiter, DatabaseListener(manager, executor), AutoLoggingListener(manager, logger))
         event.jda.presence.status = OnlineStatus.ONLINE
         event.jda.presence.game = Game.of("Type ${prefix}help")
+
         LOG.info("NightFury is Online!")
+
         val toLeave = event.jda.guilds.stream().filter { !it.isGood }.toList()
-        if(toLeave.isNotEmpty()) {
+        if(toLeave.isNotEmpty())
+        {
             toLeave.forEach { it.leave().queue() }
+
             LOG.info("Left ${toLeave.size} bad guilds!")
         }
+
         // Clear API Caches every hour
         executor.scheduleAtFixedRate({
             clearAPICaches()
             cleanCooldowns()
             cleanSchedule()
         }, 0, 1, TimeUnit.HOURS)
+
         updateStats(event.jda)
     }
 
@@ -224,16 +232,16 @@ class Client internal constructor
         val rawContent = event.message.rawContent
         val parts: List<String>
         val prefixUsed: String
-        when {
-            // From Anywhere with default prefix
-            rawContent.startsWith(prefix, true) ->
+
+        when
+        {
+            rawContent.startsWith(prefix, true) -> // From Anywhere with default prefix
             {
                 prefixUsed = prefix
                 parts = rawContent.substring(prefix.length).trim().split(Regex("\\s+"), 2)
             }
 
-            // From Guild without default prefix
-            event.guild != null ->
+            event.guild != null -> // From Guild without default prefix
             {
                 val prefixes = manager.getPrefixes(event.guild)
                 if(!prefixes.isEmpty()) {
@@ -245,8 +253,7 @@ class Client internal constructor
                 } else return
             }
 
-            // No match, not a command call
-            else -> return
+            else -> return // No match, not a command call
         }
 
         val name : String = parts[0]
@@ -281,11 +288,11 @@ class Client internal constructor
         {
             if(linkedCache.contains(event.messageIdLong))
             {
-                val messages = linkedCache.get(event.messageIdLong)!!
+                val messages = linkedCache[event.messageIdLong]?:return
                 if(messages.size > 1 && event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_MANAGE))
                     event.textChannel.deleteMessages(messages).queue({},{})
                 else if(messages.size == 1)
-                    messages.forEach { m -> m.delete().queue({},{}) }
+                    messages.forEach { it.delete().queue({},{}) }
             }
         }
     }
@@ -348,7 +355,8 @@ class Client internal constructor
             }
         } catch (e: Exception) {
             log.fatal("Failed to retrieve bot shard information from bots.discord.pw")
-            log.log(e)
+            // Dbots is broken when I'm pushing this, hopefully next push it'll be fixed
+            // log.log(e)
         }
     }
 }

@@ -130,6 +130,7 @@ class NightFury(args: Array<String>)
                 PrefixCmd(),
                 WelcomeCmd(),
 
+                BashCmd(),
                 EvalCmd(),
                 MemoryCmd(),
                 ModeCmd(),
