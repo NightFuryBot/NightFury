@@ -19,13 +19,13 @@ import club.minnced.kjda.entities.isSelf
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.*
 
-fun Guild.refreshMutedRole(role: Role)
+infix fun Guild.refreshMutedRole(role: Role)
 {
-    textChannels.forEach    { it.muteRole(role) }
-    voiceChannels.forEach   { it.muteRole(role) }
+    textChannels.forEach  { it muteRole role }
+    voiceChannels.forEach { it muteRole role }
 }
 
-fun TextChannel.muteRole(role: Role)
+infix fun TextChannel.muteRole(role: Role)
 {
     if(!guild.selfMember.hasPermission(Permission.MANAGE_PERMISSIONS))
         return
@@ -48,7 +48,7 @@ fun TextChannel.muteRole(role: Role)
     else createPermissionOverride(role).setDeny(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION).queue()
 }
 
-fun VoiceChannel.muteRole(role: Role)
+infix fun VoiceChannel.muteRole(role: Role)
 {
     if(!guild.selfMember.hasPermission(Permission.MANAGE_PERMISSIONS))
         return

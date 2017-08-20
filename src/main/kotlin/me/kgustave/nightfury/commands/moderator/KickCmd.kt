@@ -15,7 +15,7 @@
  */
 package me.kgustave.nightfury.commands.moderator
 
-import club.minnced.kjda.promise
+import club.minnced.kjda.then
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
@@ -74,7 +74,7 @@ class KickCmd : Command() {
             target.kick(reason)
         } else {
             target.kick()
-        }.promise() then {
+        } then {
             if(reason != null) event.client.logger.newKick(event.member, target.user, reason)
             else               event.client.logger.newKick(event.member, target.user)
             event.replySuccess("${target.user.formattedName(true)} was kicked from the server.")

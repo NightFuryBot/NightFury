@@ -16,7 +16,7 @@
 package me.kgustave.nightfury.commands.moderator
 
 import club.minnced.kjda.entities.isSelf
-import club.minnced.kjda.promise
+import club.minnced.kjda.then
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
@@ -48,7 +48,7 @@ class ReasonCmd : Command()
         val number : Int
         val reason : String
         // Only one argument or first argument is not a number
-        if(parts.size==1 || !parts[0].matches(Regex("\\d{1,5}")))
+        if(parts.size==1 || !(parts[0] matches Regex("\\d{1,5}")))
         {
             case = event.client.manager.getFirstCaseMatching(event.guild, {
                 it.modId == event.author.idLong && it.reason == Case.default_case_reason
@@ -64,7 +64,7 @@ class ReasonCmd : Command()
                             "Specify a case number lower than the latest case number!")
                 else this
             }
-            case = event.client.manager.getCaseMatching(event.guild, { it.number == number})
+            case = event.client.manager.getCaseMatching(event.guild, { it.number == number })
             reason = parts[1].trim()
         }
 
@@ -78,11 +78,11 @@ class ReasonCmd : Command()
                     "This may be because the original case log message was deleted, or never sent at all!")
 
         case.reason = reason
-        modLog.getMessageById(case.messageId).promise() then {
-            if(it == null)
+        modLog.getMessageById(case.messageId) then {
+            if(this == null)
                 return@then event.replyError("An unexpected error occurred while updating the reason for case number `$number`!")
-            if(it.author.isSelf)
-                it.editMessage("${it.rawContent.split(Regex("\n"),2)[0]}\n`[ REASON ]` $reason").queue()
+            if(this.author.isSelf)
+                this.editMessage("${this.rawContent.split(Regex("\n"),2)[0]}\n`[ REASON ]` $reason").queue()
             event.client.manager.updateCase(case)
             event.replySuccess("Successfully updated reason for case number `$number`!")
         } catch {

@@ -73,9 +73,8 @@ enum class LogAction(val action: String, val act: String, val emoji: String)
 
 class ModLogger(val manager: DatabaseManager)
 {
-    fun newBan(mod: Member, target: User) = newBan(mod, target, null)
-    fun newBan(mod: Member, target: User, reason: String?) = newBan(mod.guild, mod.user, target, reason)
-    fun newBan(guild: Guild, mod: User, target: User, reason: String?) {
+    fun newBan(mod: Member, target: User, reason: String? = null) = newBan(mod.guild, mod.user, target, reason)
+    fun newBan(guild: Guild, mod: User, target: User, reason: String? = null) {
         val case = Case()
         case.number = manager.getCases(guild).size+1
         case.guildId = guild.idLong
@@ -106,9 +105,8 @@ class ModLogger(val manager: DatabaseManager)
     }
 
     @Suppress("unused")
-    fun newUnban(mod: Member, target: User) = newUnban(mod, target, null)
-    fun newUnban(mod: Member, target: User, reason: String?) = newUnban(mod.guild, mod.user, target, reason)
-    fun newUnban(guild: Guild, mod: User, target: User, reason: String?) {
+    fun newUnban(mod: Member, target: User, reason: String? = null) = newUnban(mod.guild, mod.user, target, reason)
+    fun newUnban(guild: Guild, mod: User, target: User, reason: String? = null) {
         val case = Case()
         case.number = manager.getCases(guild).size+1
         case.guildId = guild.idLong
@@ -138,9 +136,8 @@ class ModLogger(val manager: DatabaseManager)
         }
     }
 
-    fun newKick(mod: Member, target: User) = newKick(mod, target, null)
-    fun newKick(mod: Member, target: User, reason: String?) = newKick(mod.guild, mod.user, target, reason)
-    fun newKick(guild: Guild, mod: User, target: User, reason: String?) {
+    fun newKick(mod: Member, target: User, reason: String? = null) = newKick(mod.guild, mod.user, target, reason)
+    fun newKick(guild: Guild, mod: User, target: User, reason: String? = null) {
         val case = Case()
         case.number = manager.getCases(guild).size+1
         case.guildId = guild.idLong
@@ -170,9 +167,8 @@ class ModLogger(val manager: DatabaseManager)
         }
     }
 
-    fun newMute(mod: Member, target: User) = newMute(mod, target, null)
-    fun newMute(mod: Member, target: User, reason: String?) = newMute(mod.guild, mod.user, target, reason)
-    fun newMute(guild: Guild, mod: User, target: User, reason: String?) {
+    fun newMute(mod: Member, target: User, reason: String? = null) = newMute(mod.guild, mod.user, target, reason)
+    fun newMute(guild: Guild, mod: User, target: User, reason: String? = null) {
         val case = Case()
         case.number = manager.getCases(guild).size+1
         case.guildId = guild.idLong
@@ -202,9 +198,8 @@ class ModLogger(val manager: DatabaseManager)
         }
     }
 
-    fun newUnmute(mod: Member, target: User) = newUnmute(mod, target, null)
-    fun newUnmute(mod: Member, target: User, reason: String?) = newUnmute(mod.guild, mod.user, target, reason)
-    fun newUnmute(guild: Guild, mod: User, target: User, reason: String?) {
+    fun newUnmute(mod: Member, target: User, reason: String? = null) = newUnmute(mod.guild, mod.user, target, reason)
+    fun newUnmute(guild: Guild, mod: User, target: User, reason: String? = null) {
         val case = Case()
         case.number = manager.getCases(guild).size+1
         case.guildId = guild.idLong
@@ -234,9 +229,8 @@ class ModLogger(val manager: DatabaseManager)
         }
     }
 
-    fun newClean(mod: Member, target: TextChannel, number: Int) = newClean(mod, target, number, null)
-    fun newClean(mod: Member, target: TextChannel, number: Int, reason: String?) = newClean(mod.guild, mod.user, target, number, reason)
-    fun newClean(guild: Guild, mod: User, target: TextChannel, number: Int, reason: String?) {
+    fun newClean(mod: Member, target: TextChannel, number: Int, reason: String? = null) = newClean(mod.guild, mod.user, target, number, reason)
+    fun newClean(guild: Guild, mod: User, target: TextChannel, number: Int, reason: String? = null) {
         val case = Case()
         case.number = manager.getCases(guild).size+1
         case.guildId = guild.idLong

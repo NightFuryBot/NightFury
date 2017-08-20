@@ -17,7 +17,7 @@ package me.kgustave.nightfury.commands.admin
 
 import club.minnced.kjda.builders.colorAwt
 import club.minnced.kjda.builders.embed
-import club.minnced.kjda.promise
+import club.minnced.kjda.then
 import me.kgustave.kjdautils.utils.findRoles
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.MustHaveArguments
@@ -41,9 +41,10 @@ class ModeratorCmd : NoBaseExecutionCommand()
         this.guildOnly = true
         this.category = Category.ADMIN
         this.children = arrayOf(
-                ModeratorAddCmd(),
                 ModeratorListBaseCmd.ModeratorListCmd(),
                 ModeratorOnlineCmd(),
+
+                ModeratorAddCmd(),
                 ModeratorRemoveCmd(),
                 ModeratorSetCmd()
         )
@@ -87,7 +88,7 @@ private class ModeratorAddCmd : Command()
         }
         if(error!=null) return event.replyError(error)
 
-        target.giveRole(modRole).apply { if(reason!=null) reason(reason) }.promise() then {
+        target.giveRole(modRole).apply { if(reason!=null) reason(reason) } then {
             event.replySuccess("${target.user.formattedName(true)} was added as a Moderator!")
         } catch {
             event.replyError("Adding ${target.user.formattedName(true)} as a Moderator failed for an unexpected reason!")
@@ -132,7 +133,7 @@ private class ModeratorRemoveCmd : Command()
         }
         if(error!=null) return event.replyError(error)
 
-        target.removeRole(modRole).apply { if(reason!=null) reason(reason) }.promise() then {
+        target.removeRole(modRole).apply { if(reason!=null) reason(reason) } then {
             event.replySuccess("The moderator role was removed from ${target.user.formattedName(true)}!")
         } catch {
             event.replyError("Removing ${target.user.formattedName(true)} as a Moderator failed for an unexpected reason!")

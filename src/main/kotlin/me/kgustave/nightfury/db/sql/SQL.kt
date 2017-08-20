@@ -16,12 +16,31 @@
 package me.kgustave.nightfury.db.sql
 
 import net.dv8tion.jda.core.utils.SimpleLog
+import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 
 /**
  * @author Kaidan Gustave
  */
-class SQL {
-    companion object {
-        val LOG : SimpleLog = SimpleLog.getLog("SQL")
-    }
+object SQL {
+    val LOG : SimpleLog = SimpleLog.getLog("SQL")
 }
+
+infix fun Connection.prepare(sql: String) : PreparedStatement = prepareStatement(sql)
+
+fun PreparedStatement.insert(vararg args: Any) : PreparedStatement {
+    args.forEachIndexed { index: Int, any: Any ->
+        when (any) {
+            is String -> setString(index + 1, any)
+            is Long -> setLong(index + 1, any)
+            is Int -> setInt(index + 1, any)
+            is Boolean -> setBoolean(index + 1, any)
+        }
+    }
+    return this
+}
+
+infix inline fun <R> PreparedStatement.closeAfter(lazy: PreparedStatement.() -> R) = use(lazy)
+
+infix inline fun <R> PreparedStatement.executeQuery(lazy: (ResultSet) -> R) = executeQuery().use(lazy)

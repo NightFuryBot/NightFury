@@ -56,14 +56,17 @@ class SQLCases(connection: Connection) : SQLCollection<Guild, Case>(connection) 
     fun updateCase(case: Case)
     {
         try {
-            connection.prepareStatement(
+            connection prepare "UPDATE $CASES SET $REASON = ? WHERE $GUILD_ID = ? AND $NUMBER = ?" closeAfter {
+                insert(case.reason, case.guildId, case.number).execute()
+            }
+            /*connection.prepareStatement(
                     "UPDATE $CASES SET $REASON = ? WHERE $GUILD_ID = ? AND $NUMBER = ?")
             .use {
                 it.setString(1, case.reason)
                 it.setLong(2, case.guildId)
                 it.setInt(3, case.number)
                 it.execute()
-            }
+            }*/
         } catch (e : SQLException) { SQL.LOG.warn(e) }
     }
 }

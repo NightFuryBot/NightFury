@@ -54,12 +54,9 @@ abstract class SQLChannel(connection: Connection, type: String) : SQLSingleton<G
         resetStatement = "DELETE FROM $CHANNELS WHERE $GUILD_ID = ? AND $TYPE = '$type'"
     }
 
-    override fun get(results: ResultSet, env: Guild): TextChannel?
-    {
-        if(results.next())
-            return env.getTextChannelById(results.getLong(CHANNEL_ID))
-        return null
-    }
+    override fun get(results: ResultSet, env: Guild): TextChannel? =  if(results.next())
+        env.getTextChannelById(results.getLong(CHANNEL_ID))
+    else null
 }
 
 class SQLIgnoredChannels(connection: Connection) : SQLChannels(connection, "ignored")

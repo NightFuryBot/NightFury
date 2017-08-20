@@ -83,6 +83,77 @@ abstract class Command
         val TOO_FEW_ARGS_HELP = "**Too Few Arguments!**\n$SEE_HELP"
 
         private val defaultSubHelp = BiConsumer<CommandEvent, Command> {_,_ ->}
+
+        infix fun standardSubHelp(explanation: String?) : BiConsumer<CommandEvent, Command>
+        {
+            return BiConsumer {event, command ->
+                val b = StringBuilder()
+                val aliases = command.aliases
+                val help = command.help
+                val arguments = command.arguments
+                val children = command.children
+                val ownerId = event.client.devId
+                val serverInvite = event.client.server
+                b.append("Available help for **${command.name} command** in " +
+                        "${if(event.isFromType(ChannelType.PRIVATE)) "DM" else "<#" + event.channel.id + ">"}\n")
+
+                b.append("\n**Usage:** `")
+                        .append(event.client.prefix)
+                        .append((if(command.fullname!="null") command.fullname else command.name).toLowerCase())
+                        .append(if(arguments.isNotEmpty()) " $arguments`" else "`")
+                        .append("\n")
+
+                if(aliases.isNotEmpty())
+                {
+                    b.append("\n**Alias${if(aliases.size>1) "es" else ""}:** `")
+                    for(i in aliases.indices) {
+                        b.append("${aliases[i]}`")
+                        if(i != aliases.size - 1)
+                            b.append(", `")
+                    }
+                    b.append("\n")
+                }
+
+                if(help != "no help available")
+                    b.append("\n$help\n")
+                if(explanation != null)
+                    b.append("\n$explanation\n")
+
+                if(children.isNotEmpty())
+                {
+                    b.append("\n**Sub-Commands:**\n\n")
+                    var cat : Category? = null
+                    for(c in children) {
+                        if(cat!=c.category) {
+                            if(!c.category!!.test(event))
+                                continue
+                            cat = c.category
+                            if(cat!=null)
+                                b.append("\n__${cat.title}__\n\n")
+                        }
+                        b.append("`").append(event.client.prefix).append(c.fullname.toLowerCase())
+                                .append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
+                                .append("` - ").append(c.help).append("\n")
+                    }
+                }
+
+                val owner = event.jda.getUserById(ownerId)
+                if(owner != null)
+                    b.append("\n\nFor additional help, contact **")
+                            .append(owner.name)
+                            .append("**#")
+                            .append(owner.discriminator)
+                            .append(" or join his support server ")
+                            .append(serverInvite)
+                else
+                    b.append("\n\nFor additional help, join my support server ")
+                            .append(serverInvite)
+                if(event.isFromType(ChannelType.TEXT))
+                    event.reactSuccess()
+                event.replyInDm(b.toString())
+            }
+        }
+
         fun standardSubHelp(explanation: String?, helpInDM : Boolean = true) : BiConsumer<CommandEvent, Command>
         {
             return BiConsumer {event, command ->
@@ -182,7 +253,7 @@ abstract class Command
                 return helpBiConsumer.accept(event, this)
 
         if(guildOnly && !event.isFromType(ChannelType.TEXT))
-            return terminate(event,"${event.client.error} This command cannot be used in Direct messages")
+            return event terminate "${event.client.error} This command cannot be used in Direct messages"
 
         if(event.channelType == ChannelType.TEXT)
         {
@@ -194,39 +265,35 @@ abstract class Command
                     {
                         val vc = event.member.voiceState.channel
                         if(vc == null)
-                            return terminate(event, "${event.client.error} You must be in a voice channel to use that!")
+                            return event terminate "${event.client.error} You must be in a voice channel to use that!"
                         else if(!event.selfMember.hasPermission(vc, p))
-                            return terminate(event, BOT_PERM.format(event.client.error, p.name, "Voice Channel"))
+                            return event terminate BOT_PERM.format(event.client.error, p.name, "Voice Channel")
                     }
                     else if(!event.selfMember.hasPermission(event.textChannel, p))
-                        return terminate(event, BOT_PERM.format(event.client.error, p.name, "Channel"))
+                        return event terminate(BOT_PERM.format(event.client.error, p.name, "Channel"))
                 }
                 else if(!event.selfMember.hasPermission(event.textChannel, p))
-                    return terminate(event, BOT_PERM.format(event.client.error, p.name, "Guild"))
+                    return event terminate BOT_PERM.format(event.client.error, p.name, "Guild")
             }
 
             for(p in userPermissions)
             {
                 if(p.isChannel && !event.member.hasPermission(event.textChannel, p))
-                    return terminate(event, USER_PERM.format(event.client.error, p.name, "Channel"))
+                    return event terminate USER_PERM.format(event.client.error, p.name, "Channel")
                 else if(!event.member.hasPermission(event.textChannel, p))
-                    return terminate(event, USER_PERM.format(event.client.error, p.name, "Guild"))
+                    return event terminate USER_PERM.format(event.client.error, p.name, "Guild")
             }
         }
 
-        val key = if(cooldown > 0) getCooldownKey(event) else null
+        val key = if(cooldown > 0) event.cooldownKey else null
         if(key!=null)
         {
             val remaining = event.client.getRemainingCooldown(key)
             if(remaining > 0)
             {
-                val error = getCooldownError(event)
-                return terminate(event,
-                        "${event.client.warning} That command is on cooldown for $remaining more seconds${
-                        if (error.isEmpty()) "!"
-                        else " $error"
-                        }!"
-                )
+                val error = event.cooldownError
+                return event terminate "${event.client.warning} That command is on cooldown for $remaining more seconds${
+                                        if (error.isEmpty()) "!" else " $error"}!"
             }
         }
 
@@ -237,9 +304,7 @@ abstract class Command
                 return if(it.error.isNotEmpty())
                     event.replyError(TOO_FEW_ARGS_ERROR.format(it.error))
                 else
-                    event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix,
-                            (if(fullname!="null") fullname else name).toLowerCase())
-                    )
+                    event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix, (if(fullname!="null") fullname else name).toLowerCase()))
             }
         }
 
@@ -277,72 +342,57 @@ abstract class Command
 
     fun CommandEvent.invokeCooldown()
     {
-        val key = getCooldownKey(this)
-        if(key != null) this.client.applyCooldown(key, cooldown)
+        val key = cooldownKey
+        this.client.applyCooldown(key, cooldown)
     }
 
-    fun getCooldownKey(event: CommandEvent): String?
-    {
-        when (cooldownScope) {
-            CooldownScope.USER ->
-                return cooldownScope.genKey(name, event.author.idLong)
+    internal val CommandEvent.cooldownKey
+        get() = when (cooldownScope) {
+            CooldownScope.USER -> cooldownScope.genKey(name, author.idLong)
             CooldownScope.USER_GUILD ->
-                return if(event.guild != null)
-                    cooldownScope.genKey(name, event.author.idLong, event.guild.idLong)
-                else
-                    CooldownScope.USER_CHANNEL.genKey(name, event.author.idLong, event.channel.idLong)
-            CooldownScope.USER_CHANNEL ->
-                return cooldownScope.genKey(name, event.author.idLong, event.channel.idLong)
+                if(event.guild != null) cooldownScope.genKey(name, author.idLong, guild.idLong)
+                else CooldownScope.USER_CHANNEL.genKey(name, author.idLong, channel.idLong)
+            CooldownScope.USER_CHANNEL -> cooldownScope.genKey(name, author.idLong, channel.idLong)
             CooldownScope.GUILD ->
-                return if(event.guild != null)
-                    cooldownScope.genKey(name, event.guild.idLong)
-                else
-                    CooldownScope.CHANNEL.genKey(name, event.channel.idLong)
-            CooldownScope.CHANNEL ->
-                return cooldownScope.genKey(name, event.channel.idLong)
-            CooldownScope.GLOBAL ->
-                return cooldownScope.genKey(name, 0L)
-            else -> return null
+                if(event.guild != null) cooldownScope.genKey(name, guild.idLong)
+                else CooldownScope.CHANNEL.genKey(name, channel.idLong)
+            CooldownScope.CHANNEL -> cooldownScope.genKey(name, channel.idLong)
+            CooldownScope.GLOBAL -> cooldownScope.genKey(name, 0L)
         }
-    }
 
-    fun getCooldownError(event: CommandEvent): String
+    internal val CommandEvent.cooldownError
+        get() = if((cooldownScope == CooldownScope.USER_GUILD || cooldownScope == CooldownScope.GUILD) && event.guild == null)
+            CooldownScope.CHANNEL.errSuffix
+        else cooldownScope.errSuffix
+
+    private infix fun CommandEvent.terminate(msg: String)
     {
-        return if((cooldownScope == CooldownScope.USER_GUILD || cooldownScope == CooldownScope.GUILD) && event.guild == null)
-            CooldownScope.CHANNEL.errorFlair
-        else
-            cooldownScope.errorFlair
+        client.listener.onCommandTerminated(this, this@Command, msg)
+        client.incrementUses(this@Command)
     }
-
-    private fun terminate(event: CommandEvent, msg: String)
-    {
-        event.client.listener.onCommandTerminated(event, this, msg)
-        event.client.incrementUses(this)
-    }
-
 }
 
 enum class Category(val title: String, private val predicate: (CommandEvent) -> Boolean)
 {
     // Primary Hierarchy
     MONITOR("Developer", { it.isDev }),
-    SERVER_OWNER("Server Owner", { MONITOR.test(it) || it.member.isOwner }),
+    SERVER_OWNER("Server Owner", { MONITOR test it || it.member.isOwner }),
     ADMIN("Administrator", {
-        SERVER_OWNER.test(it) || (it.isFromType(ChannelType.TEXT) && it.member.hasPermission(Permission.ADMINISTRATOR))
+        SERVER_OWNER test it || (it.isFromType(ChannelType.TEXT) && it.member.hasPermission(Permission.ADMINISTRATOR))
     }),
     MODERATOR("Moderator", {
-        ADMIN.test(it) || (it.isFromType(ChannelType.TEXT) && with(it.manager.getModRole(it.guild)) {
+        ADMIN test it || (it.isFromType(ChannelType.TEXT) && with(it.manager.getModRole(it.guild)) {
             this!=null && it.member.roles.contains(this)
         })
     }),
 
     // Other Categories
-    NSFW("NSFW", { Category.MONITOR.test(it) || (it.isFromType(ChannelType.TEXT) && it.textChannel.isNSFW) });
+    NSFW("NSFW", { MONITOR test it || (it.isFromType(ChannelType.TEXT) && it.textChannel.isNSFW) });
 
-    fun test(event: CommandEvent) = predicate.invoke(event)
+    infix fun test(event: CommandEvent) = predicate.invoke(event)
 }
 
-enum class CooldownScope constructor(private val format: String, internal val errorFlair: String)
+enum class CooldownScope constructor(private val format: String, internal val errSuffix: String)
 {
     /** `U:(UserID)` */
     USER("U:%d", ""),
@@ -365,27 +415,19 @@ enum class CooldownScope constructor(private val format: String, internal val er
     /** `globally` */
     GLOBAL("Global", "globally");
 
-    internal fun genKey(name: String, id: Long): String {
-        return genKey(name, id, -1)
-    }
+    internal fun genKey(name: String, id: Long) = genKey(name, id, -1)
 
-    internal fun genKey(name: String, idOne: Long, idTwo: Long): String {
-        return "$name|${when {
-                this == GLOBAL -> format
-                idTwo == -1L   -> format.format(idOne)
-                else           -> format.format(idOne, idTwo)
-            }
-        }"
-    }
+    internal fun genKey(name: String, idOne: Long, idTwo: Long) = "$name|${when {
+        this == GLOBAL -> format
+        idTwo == -1L   -> format.format(idOne)
+        else           -> format.format(idOne, idTwo)
+    }}"
 }
 
 abstract class NoBaseExecutionCommand : Command()
 {
-    override fun execute(event: CommandEvent)
-    {
-        if(event.args.isEmpty())
-            event.replyError(Command.TOO_FEW_ARGS_HELP.format(event.client.prefix, this.name))
-        else
-            event.replyError(Command.INVALID_ARGS_HELP.format(event.client.prefix, this.name))
-    }
+    override fun execute(event: CommandEvent)= if(event.args.isEmpty())
+        event.replyError(Command.TOO_FEW_ARGS_HELP.format(event.client.prefix, this.name))
+    else
+        event.replyError(Command.INVALID_ARGS_HELP.format(event.client.prefix, this.name))
 }

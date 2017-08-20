@@ -43,14 +43,16 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 5, build: 7)
+def versionObj = new Version(major: 0, minor: 5, build: 8)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
 def dirChar = File.separatorChar
 def jdaVersion = '3.2.0_242'
-def jdaUtilsVersion = '1.5'
+def kjdaVersion = 'master-SNAPSHOT'
+def jdaUtilsVersion = '1.6'
+def kjdaUtilsVersion = '0.4'
 def localLibDir = "${System.getProperty('user.home')}${dirChar}Desktop${dirChar}"
 
 sourceCompatibility = 1.8
@@ -68,7 +70,9 @@ repositories {
     jcenter()
     mavenCentral()
     maven { url 'https://jitpack.io/'}
-    flatDir { dir("${localLibDir}JagTag0.5") }
+    flatDir { dir "${localLibDir}KJDA-Utilities${dirChar}build${dirChar}libs${dirChar}" }
+    flatDir { dir "${localLibDir}JDA-Utilities${dirChar}build${dirChar}libs${dirChar}" }
+    flatDir { dir "${localLibDir}JagTag0.5" }
 }
 
 dependencies {
@@ -77,9 +81,10 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     compile "net.dv8tion:JDA:$jdaVersion"
-    compile 'com.github.JDA-Applications:Kotlin-JDA:master-SNAPSHOT'
+    compile "com.github.JDA-Applications:Kotlin-JDA:$kjdaVersion"
     compile "com.jagrosh:JDA-Utilities:$jdaUtilsVersion"
-    compile 'com.github.TheMonitorLizard:KJDA-Utilities:master-SNAPSHOT'
+    compile "me.kgustave:KJDA-Utilities:$kjdaUtilsVersion"
+    //compile 'com.github.TheMonitorLizard:KJDA-Utilities:master-SNAPSHOT'
 
     compile 'com.h2database:h2:1.4.196'
 

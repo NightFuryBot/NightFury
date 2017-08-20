@@ -15,7 +15,7 @@
  */
 package me.kgustave.nightfury.commands.moderator
 
-import club.minnced.kjda.promise
+import club.minnced.kjda.then
 import me.kgustave.kjdautils.utils.findRoles
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
@@ -53,7 +53,8 @@ class MuteCmd : Command() {
         val id = parsed.first
         val reason = parsed.second
 
-        val target = event.guild.getMemberById(id)?:return event.replyError("Could not find a member matching \"${event.args}\"!")
+        val target = event.guild.getMemberById(id)
+                ?:return event.replyError("Could not find a member matching \"${event.args}\"!")
 
         // Error Responses
         val error = when
@@ -73,7 +74,7 @@ class MuteCmd : Command() {
         }
         if(error!=null) return event.replyError(error)
 
-        target.giveRole(mutedRole).apply { if(reason!=null) reason(reason) }.promise() then {
+        target.giveRole(mutedRole).apply { if(reason!=null) reason(reason) } then {
             if(reason != null) event.client.logger.newMute(event.member, target.user, reason)
             else               event.client.logger.newMute(event.member, target.user)
             event.replySuccess("${target.user.formattedName(true)} was muted!")
@@ -86,7 +87,7 @@ class MuteCmd : Command() {
 private class SetupMuteCmd : Command()
 {
     init {
-        this.name = "setup"
+        this.name = "Setup"
         this.fullname = "Mute Setup"
         this.arguments = "<Name of Muted Role>"
         this.help = "Creates a muted role for this server."
@@ -128,11 +129,11 @@ private class SetMutedRoleCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        val found = event.guild.findRoles(query)
+        val found = event.guild findRoles query
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
-            return event.replyError(found.multipleRoles(query))
+            return event.replyError(found multipleRoles query)
         val requested = found[0]
         val muted = event.client.manager.getMutedRole(event.guild)
         if(muted!=null && muted == requested)

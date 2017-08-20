@@ -70,7 +70,7 @@ class DatabaseListener(private val manager: DatabaseManager, private val executo
     {
         val muted = manager.getMutedRole(event.guild)
         if(muted!=null)
-            event.channel.muteRole(muted)
+            event.channel muteRole muted
     }
 
     override fun onTextChannelDelete(event: TextChannelDeleteEvent)
@@ -106,7 +106,7 @@ class DatabaseListener(private val manager: DatabaseManager, private val executo
     {
         val muted = manager.getMutedRole(event.guild)
         if(muted!=null)
-            event.channel.muteRole(muted)
+            event.channel muteRole muted
     }
 
     override fun onGuildJoin(event: GuildJoinEvent)

@@ -20,10 +20,10 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.extensions.ArgumentPatterns
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Message
 import java.util.*
-import java.util.regex.Pattern
 import kotlin.collections.HashSet
 
 /**
@@ -33,9 +33,6 @@ import kotlin.collections.HashSet
 class CleanCmd : Command()
 {
     companion object {
-        private val reasonPattern = Regex("(^.+)\\s(?:for\\s+)([\\s\\S]+)$", RegexOption.DOT_MATCHES_ALL).toPattern()
-        private val userID: Pattern = Regex("(\\d{17,20})").toPattern()
-        private val userMention: Pattern = Regex("<@!?(\\d{17,20})>").toPattern()
         private val numberPattern = Regex("(\\d{1,4})").toPattern()
 
         private val linkPattern = Regex("https?:\\/\\/\\S+").toPattern()
@@ -89,13 +86,12 @@ class CleanCmd : Command()
     {
         var args = event.args
 
-        val reasonMatcher = reasonPattern.matcher(args)
-
+        // Reason
+        val reasonMatcher = ArgumentPatterns.reasonPattern.matcher(args)
         val reason : String? = if(reasonMatcher.matches()) {
             args = reasonMatcher.group(1)
             reasonMatcher.group(2)?:null
         } else null
-
 
         val quotes : MutableSet<String> = HashSet()
 
@@ -109,13 +105,13 @@ class CleanCmd : Command()
 
         // Mentions
         event.message.mentionedUsers.forEach { ids.add(it.idLong) }
-        args = args.replace(userMention.toRegex(), "").trim()
+        args = args.replace(ArgumentPatterns.userMention.toRegex(), "").trim()
 
         // Raw ID's
-        val idsMatcher = userID.matcher(args)
+        val idsMatcher = ArgumentPatterns.discordID.matcher(args)
         while(idsMatcher.find())
             ids.add(idsMatcher.group(1).trim().toLong())
-        args = args.replace(userID.toRegex(), "").trim()
+        args = args.replace(ArgumentPatterns.discordID.toRegex(), "").trim()
 
         // Bots Flag
         val bots = if(args.contains("bots", true)) {

@@ -55,7 +55,7 @@ class EvalCmd : Command()
             args == "require(\"discord.js\");"
             -> event.reply("```java\n$args```Evaluated:\n```\nNo```")
 
-            args matches Regex("System\\.exit\\(\\d+\\)")
+            args matches Regex("System\\.exit\\(\\d+\\);?")
             -> {
                 event.replyWarning("Shutting down...")
                 Thread.sleep(4000)

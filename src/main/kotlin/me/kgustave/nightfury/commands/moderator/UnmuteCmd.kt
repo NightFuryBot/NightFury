@@ -15,7 +15,7 @@
  */
 package me.kgustave.nightfury.commands.moderator
 
-import club.minnced.kjda.promise
+import club.minnced.kjda.then
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
@@ -65,7 +65,7 @@ class UnmuteCmd : Command()
         }
         if(error!=null) return event.replyError(error)
 
-        target.removeRole(mutedRole).apply { if(reason!=null) reason(reason) }.promise() then {
+        target.removeRole(mutedRole).apply { if(reason!=null) reason(reason) } then {
             if(reason != null) event.client.logger.newUnmute(event.member, target.user, reason)
             else               event.client.logger.newUnmute(event.member, target.user)
             event.replySuccess("${target.user.formattedName(true)} was unmuted!")

@@ -35,11 +35,14 @@ class SQLLimits(val connection: Connection)
     fun getLimit(guild: Guild, command: String) : Int
     {
         return try {
-            connection.prepareStatement(getCommandLimit).use {
+            connection prepare getCommandLimit closeAfter {
+                insert(guild.idLong, command) executeQuery { if(it.next()) it.getInt("limit_number") else 0 }
+            }
+            /*connection.prepareStatement(getCommandLimit).use {
                 it.setLong(1, guild.idLong)
                 it.setString(2, command)
                 it.executeQuery().use { if(it.next()) it.getInt("limit_number") else 0 }
-            }
+            }*/
         } catch (e: SQLException) {
             SQL.LOG.warn(e)
             0
@@ -49,12 +52,13 @@ class SQLLimits(val connection: Connection)
     fun addLimit(guild: Guild, command: String, limit: Int)
     {
         try {
-            connection.prepareStatement(addCommandLimit).use {
+            connection prepare addCommandLimit closeAfter { insert(guild.idLong, command, limit).execute() }
+            /*connection.prepareStatement(addCommandLimit).use {
                 it.setLong(1, guild.idLong)
                 it.setString(2, command)
                 it.setInt(3, limit)
                 it.execute()
-            }
+            }*/
         } catch (e: SQLException) {
             SQL.LOG.warn(e)
         }
@@ -63,12 +67,13 @@ class SQLLimits(val connection: Connection)
     fun setLimit(guild: Guild, command: String, limit: Int)
     {
         try {
-            connection.prepareStatement(setCommandLimit).use {
+            connection prepare setCommandLimit closeAfter { insert(limit, guild.idLong, command).execute() }
+            /*connection.prepareStatement(setCommandLimit).use {
                 it.setInt(1, limit)
                 it.setLong(2, guild.idLong)
                 it.setString(3, command)
                 it.execute()
-            }
+            }*/
         } catch (e: SQLException) {
             SQL.LOG.warn(e)
         }
@@ -77,11 +82,12 @@ class SQLLimits(val connection: Connection)
     fun removeLimit(guild: Guild, command: String)
     {
         try {
-            connection.prepareStatement(removeCommandLimit).use {
+            connection prepare removeCommandLimit closeAfter { insert(guild.idLong, command).execute() }
+            /*connection.prepareStatement(removeCommandLimit).use {
                 it.setLong(1, guild.idLong)
                 it.setString(2, command)
                 it.execute()
-            }
+            }*/
         } catch (e: SQLException) {
             SQL.LOG.warn(e)
         }
@@ -90,10 +96,11 @@ class SQLLimits(val connection: Connection)
     fun removeAllLimits(guild: Guild)
     {
         try {
-            connection.prepareStatement(removeAllCommandLimits).use {
+            connection prepare removeAllCommandLimits closeAfter { insert(guild.idLong).execute() }
+            /*connection.prepareStatement(removeAllCommandLimits).use {
                 it.setLong(1, guild.idLong)
                 it.execute()
-            }
+            }*/
         } catch (e: SQLException) {
             SQL.LOG.warn(e)
         }

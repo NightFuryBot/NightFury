@@ -62,12 +62,12 @@ private class WelcomeSetCmd : Command()
         if(args[1].length>1900)
             return event.replyError("**Welcome message content cannot exceed 1900 characters in length!**\n" +
                     SEE_HELP.format(event.prefixUsed, fullname))
-        val channel = with(event.guild.findTextChannels(args[0]))
+        val channel = with(event.guild findTextChannels args[0])
         {
             if(isEmpty())
                 return event.replyError(noMatch("text channels", args[0]))
             if(size > 1)
-                return event.replyError(this.multipleTextChannels(args[0]))
+                return event.replyError(this multipleTextChannels args[0])
             return@with this[0]
         }
 

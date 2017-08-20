@@ -15,7 +15,7 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import club.minnced.kjda.promise
+import club.minnced.kjda.then
 import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.kjdautils.utils.findRoles
@@ -40,8 +40,8 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
         this.name = "RoleMe"
         this.arguments = "[Role]"
         this.help = "Give yourself or remove a RoleMe role."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "RoleMe roles are self-give/remove roles for normal members of a server.\n" +
+        this.helpBiConsumer = Command standardSubHelp
+                        "RoleMe roles are self-give/remove roles for normal members of a server.\n" +
                         "Simply using `RoleMe [Role]` will give the user the `[Role]` requested or remove " +
                         "it if they already possess the `[Role]`, so long as it is a registered RoleMe role.\n\n" +
 
@@ -49,9 +49,7 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
                         "Conversely, registered RoleMe roles can be unregistered by an Administrator using " +
                         "the `Remove` sub-command.\n" +
                         "For those looking to limit the number of RoleMe roles a user can have, the `Limit` " +
-                        "sub-command provides a means of doing this.",
-                true
-        )
+                        "sub-command provides a means of doing this."
         this.cooldown = 10
         this.guildOnly = true
         this.cooldownScope = CooldownScope.USER_GUILD
@@ -72,7 +70,7 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
         if(allRoleMes.isEmpty())
             return event.replyError("**No RoleMe roles on this server!**\n" +
                     SEE_HELP.format(event.client.prefix, name))
-        val roles = event.guild.findRoles(query)
+        val roles = event.guild findRoles query
         if(roles.isEmpty())
             return event.replyError(noMatch("roles", query))
         val roleMes = roles.stream().filter { event.manager.isRoleMe(it) }.toList()
@@ -80,24 +78,24 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
             return event.replyError("**${roles[0].name} is not a RoleMe role!**\n" +
                     SEE_HELP.format(event.client.prefix, name))
         if(roleMes.size>1)
-            return event.replyError(roleMes.multipleRoles(query))
+            return event.replyError(roleMes multipleRoles query)
         val requested = roleMes[0]
         if(!event.selfMember.canInteract(requested))
             event.replyError("**Cannot interact with requested role!**\n" +
                     SEE_HELP.format(event.client.prefix, name))
         else if(!event.member.roles.contains(requested)) {
-            if(event.hasRoleMeLimit()) {
-                if(event.getRoleMeLimit()<=event.member.roles.filter { event.manager.isRoleMe(it) }.size)
+            if(event.hasRoleMeLimit) {
+                if(event.roleMeLimit<=event.member.roles.filter { event.manager.isRoleMe(it) }.size)
                     return event.replyError("More RoleMe roles cannot be added because you are at the limit set by the server!")
             }
-            event.member.giveRole(requested).promise() then {
+            event.member giveRole requested then {
                 event.replySuccess("Successfully gave the role **${requested.name}**!")
                 event.invokeCooldown()
             } catch {
                 event.replyError("An error occurred while giving the role **${requested.name}**!")
             }
         } else {
-            event.member.removeRole(requested).promise() then {
+            event.member removeRole requested then {
                 event.replySuccess("Successfully removed the role **${requested.name}**!")
                 event.invokeCooldown()
             } catch {
@@ -105,10 +103,6 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
             }
         }
     }
-
-    fun CommandEvent.hasRoleMeLimit() : Boolean = this.manager.hasLimit(this.guild, this@RoleMeCmd.name)
-
-    fun CommandEvent.getRoleMeLimit() : Int = this.manager.getLimit(this.guild, this@RoleMeCmd.name)
 }
 
 @MustHaveArguments
@@ -119,15 +113,14 @@ private class RoleMeAddCmd : Command()
         this.fullname = "RoleMe Add"
         this.arguments = "[Role]"
         this.help = "Adds a RoleMe role for the server."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "Roles added will be available to all members on the server via the `RoleMe` " +
+        this.helpBiConsumer = Command standardSubHelp
+                        "Roles added will be available to all members on the server via the `RoleMe` " +
                         "command, except in cases that NightFury cannot give roles to or remove roles from " +
                         "the member using the command!\n\n" +
 
                         "**NightFury is not responsible for any dangerous permissions given with these," +
-                        "nor the consequences of the aforementioned!**",
-                true
-        )
+                        "nor the consequences of the aforementioned!**"
+
         this.cooldown = 30
         this.cooldownScope = CooldownScope.GUILD
         this.guildOnly = true
@@ -138,11 +131,11 @@ private class RoleMeAddCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        val found = event.guild.findRoles(query)
+        val found = event.guild findRoles query
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
-            return event.replyError(found.multipleRoles(query))
+            return event.replyError(found multipleRoles query)
         val requested = found[0]
         if(event.manager.isRoleMe(requested))
             return event.replyError("The role **${requested.name}** is already a RoleMe role!")
@@ -166,10 +159,8 @@ private class RoleMeRemoveCmd : Command()
         this.fullname = "RoleMe Remove"
         this.arguments = "[Role]"
         this.help = "Removes a RoleMe role for the server."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "**Using this will not remove the RoleMe role from members who previously had it!**",
-                true
-        )
+        this.helpBiConsumer = Command standardSubHelp
+                "**Using this will not remove the RoleMe role from members who previously had it!**"
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
         this.category = Category.ADMIN
@@ -183,7 +174,7 @@ private class RoleMeRemoveCmd : Command()
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
-            return event.replyError(found.multipleRoles(query))
+            return event.replyError(found multipleRoles query)
         event.manager.removeRoleMe(found[0])
         event.replySuccess("The role **${found[0].name}** was removed from RoleMe!")
     }
@@ -233,10 +224,8 @@ private class RoleMeLimitCmd : Command()
         this.fullname = "RoleMe Limit"
         this.arguments = "[Number]"
         this.help = "Sets the limit of RoleMe roles a user can have on the server."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "Note that providing `0` as the limit will set no limit for the server.",
-                true
-        )
+        this.helpBiConsumer = Command standardSubHelp
+                "Note that providing `0` as the limit will set no limit for the server."
         this.cooldown = 20
         this.cooldownScope = CooldownScope.USER_GUILD
         this.category = Category.ADMIN
@@ -245,19 +234,18 @@ private class RoleMeLimitCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        if(!event.args.matches(Regex("\\d+")))
+        if(!(event.args matches Regex("\\d+")))
             return event.replyError(INVALID_ARGS_ERROR.format("Try specifying a limit in the form of a number."))
         val limit = event.args.toInt()
-        if(limit==0) {
-            event.removeRoleMeLimit()
-            event.replySuccess("RoleMe limit was removed!")
-        } else {
-            event.setRoleMeLimit(limit)
-            event.replySuccess("RoleMe limit was set to `$limit`!")
-        }
+        event.roleMeLimit = limit
+        if(limit==0) event.replySuccess("RoleMe limit was removed!")
+        else         event.replySuccess("RoleMe limit was set to `$limit`!")
     }
-
-    fun CommandEvent.setRoleMeLimit(limit: Int) = this.manager.setLimit(this.guild, "RoleMe", limit)
-
-    fun CommandEvent.removeRoleMeLimit() = this.manager.removeLimit(this.guild, "RoleMe")
 }
+
+var CommandEvent.roleMeLimit : Int
+    set(value) = if(value == 0) manager.removeLimit(guild, "RoleMe") else manager.setLimit(guild, "RoleMe", value)
+    get() = manager.getLimit(guild, "RoleMe")
+
+val CommandEvent.hasRoleMeLimit : Boolean
+    get() = manager.hasLimit(guild, "RoleMe")

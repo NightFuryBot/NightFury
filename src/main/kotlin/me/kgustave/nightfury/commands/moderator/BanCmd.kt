@@ -16,6 +16,7 @@
 package me.kgustave.nightfury.commands.moderator
 
 import club.minnced.kjda.promise
+import club.minnced.kjda.then
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
@@ -46,42 +47,42 @@ class BanCmd : Command()
         val id = parsed.first
         val reason = parsed.second
 
-        event.jda.retrieveUserById(id).promise() then { target ->
+        event.jda.retrieveUserById(id) then {
             // If no user is found we just respond and end.
-            if(target == null) return@then event.replyError("Could not find a user matching \"${event.args}\"!")
+            if(this == null) return@then event.replyError("Could not find a user matching \"${event.args}\"!")
 
             // Error Responses
             val error = when
             {
-                event.selfUser == target
+                event.selfUser == this
                         -> "I cannot ban myself from the server!"
 
-                event.author == target
+                event.author == this
                         -> "You cannot ban yourself from the server!"
 
-                event.guild.owner.user == target
-                        -> "You cannot ban ${target.formattedName(true)} because they are the owner of the server!"
+                event.guild.owner.user == this
+                        -> "You cannot ban ${this.formattedName(true)} because they are the owner of the server!"
 
-                event.guild.isMember(target) && !event.selfMember.canInteract(event.guild.getMember(target))
-                        -> "I cannot ban ${target.formattedName(true)}!"
+                event.guild.isMember(this) && !event.selfMember.canInteract(event.guild.getMember(this))
+                        -> "I cannot ban ${this.formattedName(true)}!"
 
-                event.guild.isMember(target) && !event.member.canInteract(event.guild.getMember(target))
-                        -> "You cannot ban ${target.formattedName(true)}!"
+                event.guild.isMember(this) && !event.member.canInteract(event.guild.getMember(this))
+                        -> "You cannot ban ${this.formattedName(true)}!"
 
                 else    -> null
             }
             if(error!=null) return@then event.replyError(error)
 
             if(reason != null) {
-                target.banFrom(event.guild, 1, reason)
+                this.banFrom(event.guild, 1, reason)
             } else {
-                target.banFrom(event.guild, 1)
+                this.banFrom(event.guild, 1)
             }.promise() then {
-                if(reason != null) event.client.logger.newBan(event.member, target, reason)
-                else               event.client.logger.newBan(event.member, target)
-                event.replySuccess("${target.formattedName(true)} was banned from the server.")
+                if(reason != null) event.client.logger.newBan(event.member, this, reason)
+                else               event.client.logger.newBan(event.member, this)
+                event.replySuccess("${this.formattedName(true)} was banned from the server.")
             } catch {
-                event.replyError("Banning ${target.formattedName(true)} failed for an unexpected reason!")
+                event.replyError("Banning ${this.formattedName(true)} failed for an unexpected reason!")
             }
         } catch { event.replyError("An unexpected error occurred when finding a user with ID: $id!") }
     }

@@ -47,9 +47,10 @@ class CustomCommandCmd(waiter: EventWaiter) : NoBaseExecutionCommand()
         this.guildOnly = true
         this.category = Category.ADMIN
         this.children = arrayOf(
+                CustomCommandListCmd(waiter),
+
                 CustomCommandAddCmd(),
                 CustomCommandImportCmd(),
-                CustomCommandListCmd(waiter),
                 CustomCommandRemoveCmd()
         )
     }

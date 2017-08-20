@@ -122,6 +122,7 @@ class NightFury(args: Array<String>)
                 MuteCmd(),
                 ReasonCmd(),
                 SettingsCmd(),
+                UnbanCmd(),
                 UnmuteCmd(),
 
                 CustomCommandCmd(waiter),

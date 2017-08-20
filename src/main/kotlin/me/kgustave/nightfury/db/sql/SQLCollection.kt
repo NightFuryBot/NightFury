@@ -16,7 +16,6 @@
 package me.kgustave.nightfury.db.sql
 
 import java.sql.Connection
-import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 
@@ -25,7 +24,7 @@ import java.sql.SQLException
  */
 abstract class SQLCollection<in E, out T>(val connection: Connection) {
 
-    companion object
+    /*companion object
     {
         private fun insertArgs(statement: PreparedStatement, vararg args: Any) : PreparedStatement
         {
@@ -39,14 +38,17 @@ abstract class SQLCollection<in E, out T>(val connection: Connection) {
             }
             return statement
         }
-    }
+    }*/
 
     var getStatement : String = ""
     var addStatement : String = ""
     var removeStatement : String = ""
     var removeAllStatement : String = ""
 
-    fun get(env: E, vararg args: Any) : Set<T>
+    fun get(env: E, vararg args: Any) : Set<T> = try {
+        connection prepare getStatement closeAfter { insert(*args) executeQuery { get(it, env) } }
+    } catch (e: SQLException) { SQL.LOG.warn(e); emptySet() }
+    /*fun get(env: E, vararg args: Any) : Set<T>
     {
         return try {
             insertArgs(connection.prepareStatement(getStatement), *args).use {
@@ -54,34 +56,37 @@ abstract class SQLCollection<in E, out T>(val connection: Connection) {
                 returns
             }
         } catch (e: SQLException) { SQL.LOG.warn(e); emptySet() }
-    }
+    }*/
 
     abstract fun get(results: ResultSet, env: E) : Set<T>
 
     fun add(vararg args: Any)
     {
         try {
-            insertArgs(connection.prepareStatement(
+            connection prepare addStatement closeAfter { insert(*args).execute() }
+            /*insertArgs(connection.prepareStatement(
                     addStatement, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE
-            ), *args).use { it.execute() }
+            ), *args).use { it.execute() }*/
         } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 
     fun remove(vararg args: Any)
     {
         try {
-            insertArgs(connection.prepareStatement(
+            connection prepare removeStatement closeAfter { insert(*args).execute() }
+            /*insertArgs(connection.prepareStatement(
                     removeStatement, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE
-            ), *args).use { it.execute() }
+            ), *args).use { it.execute() }*/
         } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 
     fun removeAll(vararg args: Any)
     {
         try {
-            insertArgs(connection.prepareStatement(
+            connection prepare removeAllStatement closeAfter { insert(*args).execute() }
+            /*insertArgs(connection.prepareStatement(
                     removeAllStatement, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE
-            ), *args).use { it.execute() }
+            ), *args).use { it.execute() }*/
         } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 }

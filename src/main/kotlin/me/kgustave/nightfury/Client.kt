@@ -343,6 +343,12 @@ class Client internal constructor
             }
         })
 
+        if(jda.shardInfo == null)
+        {
+            totalGuilds = jda.guilds.size
+            return
+        }
+
         try {
             client.newCall(Request.Builder().get()
                     .url("https://bots.discord.pw/api/bots/" + jda.getSelfUser().id + "/stats")
@@ -355,8 +361,7 @@ class Client internal constructor
             }
         } catch (e: Exception) {
             log.fatal("Failed to retrieve bot shard information from bots.discord.pw")
-            // Dbots is broken when I'm pushing this, hopefully next push it'll be fixed
-            // log.log(e)
+            log.log(e)
         }
     }
 }

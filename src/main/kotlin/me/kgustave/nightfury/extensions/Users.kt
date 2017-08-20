@@ -28,10 +28,10 @@ val Member.isAdmin: Boolean
     get() = permissions.contains(Permission.ADMINISTRATOR) || this.isOwner
 
 fun Member.kick() = guild.controller.kick(this)!!
-fun Member.kick(reason: String) = guild.controller.kick(this, reason)!!
+infix fun Member.kick(reason: String) = guild.controller.kick(this, reason)!!
 
-fun Member.giveRole(role: Role) = guild.controller.addRolesToMember(this, role)!!
-fun Member.removeRole(role: Role) = guild.controller.removeRolesFromMember(this, role)!!
+infix fun Member.giveRole(role: Role) = guild.controller.addRolesToMember(this, role)!!
+infix fun Member.removeRole(role: Role) = guild.controller.removeRolesFromMember(this, role)!!
 
 fun User.banFrom(guild: Guild, delDays: Int) = guild.controller.ban(this, delDays)!!
 fun User.banFrom(guild: Guild, delDays: Int, reason: String) = guild.controller.ban(this, delDays, reason)!!

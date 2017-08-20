@@ -59,7 +59,7 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
     override fun execute(event: CommandEvent)
     {
         val args = event.args.split(Regex("\\s+"))
-        if(args[0].matches(Regex("\\d+"))) {
+        if(args[0] matches Regex("\\d+")) {
             val limit = args[0].toInt()
             val tags = args.subList(1, args.size)
             if(tags.isEmpty())

@@ -33,8 +33,10 @@ class PrefixCmd : NoBaseExecutionCommand() {
         this.guildOnly = true
         this.category = Category.ADMIN
         this.children = arrayOf(
-                PrefixAddCmd(),
+
                 PrefixListCmd(),
+
+                PrefixAddCmd(),
                 PrefixRemoveCmd()
         )
     }

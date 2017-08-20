@@ -16,7 +16,6 @@
 package me.kgustave.nightfury.db.sql
 
 import java.sql.Connection
-import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 
@@ -25,7 +24,7 @@ import java.sql.SQLException
  */
 abstract class SQLSingleton<in E, out T>(val connection: Connection) {
 
-    companion object
+    /*companion object
     {
         private fun insertArgs(statement: PreparedStatement, vararg args: Any) : PreparedStatement
         {
@@ -39,7 +38,7 @@ abstract class SQLSingleton<in E, out T>(val connection: Connection) {
             }
             return statement
         }
-    }
+    }*/
 
     var getStatement : String = ""
     var setStatement : String = ""
@@ -49,14 +48,16 @@ abstract class SQLSingleton<in E, out T>(val connection: Connection) {
     fun has(vararg  args : Any) : Boolean
     {
         return try {
-            insertArgs(connection.prepareStatement(getStatement), *args).use { it.executeQuery().use { it.next() } }
+            connection prepare getStatement closeAfter { insert(*args) executeQuery { it.next() } }
+            // insertArgs(connection.prepareStatement(getStatement), *args).use { it.executeQuery().use { it.next() } }
         } catch (e: SQLException) { SQL.LOG.warn(e); false }
     }
 
     fun get(env: E, vararg args: Any) : T?
     {
         return try {
-            insertArgs(connection.prepareStatement(getStatement), *args).use { it.executeQuery().use { get(it, env) } }
+            connection prepare getStatement closeAfter { insert(*args) executeQuery { get(it, env) } }
+            //insertArgs(connection.prepareStatement(getStatement), *args).use { it.executeQuery().use { get(it, env) } }
         } catch (e: SQLException) { SQL.LOG.warn(e); null }
     }
 
@@ -65,24 +66,27 @@ abstract class SQLSingleton<in E, out T>(val connection: Connection) {
     fun set(vararg args: Any)
     {
         try {
-            insertArgs(connection.prepareStatement(setStatement,
-                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args).use { it.execute() }
+            connection prepare setStatement closeAfter { insert(*args).execute() }
+            /*insertArgs(connection.prepareStatement(setStatement,
+                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args).use { it.execute() }*/
         } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 
     fun update(vararg args: Any)
     {
         try {
-            insertArgs(connection.prepareStatement(updateStatement,
-                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args).use { it.execute() }
+            connection prepare updateStatement closeAfter { insert(*args).execute() }
+            /*insertArgs(connection.prepareStatement(updateStatement,
+                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args).use { it.execute() }*/
         } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 
     fun reset(vararg args: Any)
     {
         try {
-            insertArgs(connection.prepareStatement(resetStatement,
-                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args).use { it.execute() }
+            connection prepare resetStatement closeAfter { insert(*args).execute() }
+            /*insertArgs(connection.prepareStatement(resetStatement,
+                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args).use { it.execute() }*/
         } catch (e: SQLException) { SQL.LOG.warn(e) }
     }
 }
