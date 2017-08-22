@@ -20,8 +20,6 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.youtube.YouTube
 import net.dv8tion.jda.core.utils.SimpleLog
 import java.io.IOException
-import java.time.OffsetDateTime
-import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
@@ -36,6 +34,8 @@ class YouTubeAPI(apiKey : String) : AbstractAPICache<List<String>>()
 
     private val youtube = YouTube.Builder(NetHttpTransport(),JacksonFactory(),{}).setApplicationName("NightFury").build()
     private val search : YouTube.Search.List?
+
+    override val hoursToDecay: Long = 1
 
     init {
         search = try {
@@ -75,15 +75,5 @@ class YouTubeAPI(apiKey : String) : AbstractAPICache<List<String>>()
         response.items.stream().forEach { results.add(it.id.videoId) }
         addToCache(query,results)
         return results
-    }
-
-
-    override fun clearCache() {
-        synchronized(cache) {
-            val now = OffsetDateTime.now()
-            cache.keys.stream()
-                    .filter { key -> now.isAfter(cache[key]!!.second.plusHours(1)) }
-                    .toList().forEach { toRemove -> cache.remove(toRemove) }
-        }
     }
 }

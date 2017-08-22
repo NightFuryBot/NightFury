@@ -140,7 +140,7 @@ private class SetMutedRoleCmd : Command()
             return event.replyError("**${requested.name}** is already the muted role for this server!")
         event.client.manager.setMutedRole(requested)
         if(event.selfMember.canInteract(requested)) {
-            event.guild.refreshMutedRole(requested)
+            event.guild refreshMutedRole requested
             event.replySuccess("**${requested.name}** was set as the muted role for this server!")
         } else
             event.replyWarning("**${requested.name}** was set as the muted role for this server!\n" +

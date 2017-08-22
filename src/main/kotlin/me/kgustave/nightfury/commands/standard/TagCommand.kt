@@ -416,7 +416,9 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
         }
         val member : Member? = if(temp == null && event.isFromType(ChannelType.TEXT)) event.guild.getMember(user) else temp
 
-        val localTags = (if(member!=null) event.localTags.getAllTags(member.user.idLong,event.guild) else emptySet()).map { "$it (Local)" }
+        val localTags = if(member!=null)
+            event.localTags.getAllTags(member.user.idLong,event.guild).map { "$it (Local)" }
+        else emptyList()
         val globalTags = event.globalTags.getAllTags(user.idLong).map { "$it (Global)" }
 
         if(localTags.isEmpty() && globalTags.isEmpty())

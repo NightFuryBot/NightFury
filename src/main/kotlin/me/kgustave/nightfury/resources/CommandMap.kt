@@ -38,9 +38,14 @@ class CommandMap(private vararg val commands : Command) : Collection<Command>
 
     fun containsName(name: String) = map.contains(name.toLowerCase())
 
-    fun containsAllNames(names: Collection<String>) = map.keys.containsAll(names.map { it.toLowerCase() })
+    fun containsAllNames(names: Collection<String>) : Boolean {
+        names.forEach { if(!map.contains(it)) return false }
+        return true
+    }
 
-    fun getCommandByName(name: String) = if(containsName(name)) { commands[map[name.toLowerCase()]!!] } else null
+    fun getCommandByName(name: String) = if(containsName(name)) {
+        commands.getOrNull(map.getOrDefault(name.toLowerCase(), -1))
+    } else null
 
     override fun contains(element: Command) = commands.contains(element)
 

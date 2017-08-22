@@ -29,6 +29,7 @@ import org.json.JSONObject
 import java.awt.Color
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
@@ -48,12 +49,11 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
         this.guildOnly = true
         this.category = Category.NSFW
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
-        this.helpBiConsumer = Command.standardSubHelp(
+        this.helpBiConsumer = Command standardSubHelp
                         "Only up to 6 tags are allowed per request. The maximum number of posts " +
                         "retrievable is 320 and the default 100.\n\n" +
 
-                        "**This command is only available in NSFW channels.**",true
-        )
+                        "**This command is only available in NSFW channels.**"
     }
 
     override fun execute(event: CommandEvent)
@@ -89,7 +89,7 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
         val list = array.toTypedList<JSONObject>()
         with(SlideshowBuilder())
         {
-            setUrls(*list.map { it.getString("file_url") }.toTypedArray())
+            setUrls(*list.stream().map { it.getString("file_url") }.toList().toTypedArray())
             setText("Showing results for ${event.args}")
             setColor { _,_ -> Color(random.nextInt(256),random.nextInt(256),random.nextInt(256)) }
             setDescription { x, _ -> "[Link](https://e621.net/post/show/${list[x]["id"]}/)"}

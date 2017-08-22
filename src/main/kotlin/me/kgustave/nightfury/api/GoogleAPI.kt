@@ -20,7 +20,6 @@ import org.jsoup.Jsoup
 import java.io.IOException
 import java.net.URLDecoder
 import java.net.URLEncoder
-import java.time.OffsetDateTime
 import kotlin.streams.toList
 
 /**
@@ -36,6 +35,8 @@ class GoogleAPI : AbstractAPICache<List<String>>()
         private val USER_AGENT : String = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
     }
 
+    override val hoursToDecay: Long = 5
+
     fun search(query: String) : List<String>?
     {
         val cached = getFromCache(query)
@@ -48,16 +49,16 @@ class GoogleAPI : AbstractAPICache<List<String>>()
             return@search null
         }
         val result : List<String> = try {
-            Jsoup.connect(request).userAgent(USER_AGENT).timeout(7500)
-                    .get().select("a[href]").stream()
-                    .map { link -> link.attr("href") }
-                    .filter { temp -> temp.startsWith("/url?q=") }
-                    .map { temp ->
+            Jsoup.connect(request).userAgent(USER_AGENT).timeout(7500).get()
+                    .select("a[href]").stream()
+                    .map { it.attr("href") }
+                    .filter { it.startsWith("/url?q=") }
+                    .map {
                         try {
-                            URLDecoder.decode(temp.substring(7, temp.indexOf("&sa=")), ENCODING)
+                            URLDecoder.decode(it.substring(7, it.indexOf("&sa=")), ENCODING)
                         } catch (e: UnsupportedOperationException) { "" }
                     }
-                    .filter { result -> result != "/settings/ads/preferences?hl=en" }
+                    .filter { it.isNotEmpty() || it != "/settings/ads/preferences?hl=en" }
                     .toList()
         } catch (e: IOException) {
             LOG.fatal(e)
@@ -65,16 +66,5 @@ class GoogleAPI : AbstractAPICache<List<String>>()
         }
         addToCache(query, result)
         return result
-    }
-
-    override fun clearCache()
-    {
-        synchronized(cache)
-        {
-            val now = OffsetDateTime.now()
-            cache.keys.stream()
-                    .filter { key -> now.isAfter(cache[key]!!.second.plusHours(5)) }
-                    .toList().forEach { toRemove -> cache.remove(toRemove) }
-        }
     }
 }

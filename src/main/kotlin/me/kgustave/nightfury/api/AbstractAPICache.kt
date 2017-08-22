@@ -16,17 +16,28 @@
 package me.kgustave.nightfury.api
 
 import java.time.OffsetDateTime
+import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
  */
 abstract class AbstractAPICache<T>
 {
-    protected val cache : HashMap<String, Pair<T, OffsetDateTime>> = HashMap()
+    private val cache : HashMap<String, Pair<T, OffsetDateTime>> = HashMap()
+
+    abstract val hoursToDecay : Long
 
     fun addToCache(query : String, item : T) = synchronized(cache) { cache.put(query.toLowerCase(), Pair(item, OffsetDateTime.now())) }
 
     fun getFromCache(query: String) : T? = synchronized(cache) { cache[query.toLowerCase()]?.first }
 
-    abstract fun clearCache()
+    fun clearCache()
+    {
+        synchronized(cache) {
+            val now = OffsetDateTime.now()
+            cache.keys.stream()
+                    .filter { now.isAfter(cache[it]!!.second.plusHours(hoursToDecay)) }
+                    .toList().forEach { cache.remove(it) }
+        }
+    }
 }

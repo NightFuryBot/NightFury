@@ -15,6 +15,7 @@
  */
 package me.kgustave.nightfury
 
+import club.minnced.kjda.*
 import club.minnced.kjda.events.AsyncEventManager
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Parser
@@ -30,7 +31,6 @@ import me.kgustave.nightfury.commands.standard.*
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.jagtag.getMethods
 import net.dv8tion.jda.core.*
-import net.dv8tion.jda.core.entities.Game
 import net.dv8tion.jda.core.utils.SimpleLog
 import java.io.File
 import java.io.IOException
@@ -41,10 +41,14 @@ import java.util.logging.Logger
 
 fun main(args: Array<String>?)
 {
-    val arguments = args?:emptyArray()
     NightFury.LOG.info("Starting NightFury...")
-    NightFury(arguments)
+
     Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
+
+    try { NightFury(args ?: emptyArray()) } catch(e : IOException) {
+        NightFury.LOG.fatal("Failed to get configurations!")
+        NightFury.LOG.log(e)
+    }
 }
 
 /**
@@ -52,23 +56,25 @@ fun main(args: Array<String>?)
  */
 class NightFury(args: Array<String>)
 {
-    companion object {
+    companion object
+    {
+        val version : String = this::class.java.`package`.implementationVersion
+        val github : String = "https://github.com/TheMonitorLizard/NightFury/"
         val LOG: SimpleLog = SimpleLog.getLog("NightFury")
+
         fun shutdown(exit: Int)
         {
             LOG.info("Shutdown Complete! "+if(exit == 0)"Restarting..." else "Exiting...")
             System.exit(exit)
         }
 
-        @JvmStatic val version : String = this::class.java.`package`.implementationVersion
-        @JvmStatic val github : String = "https://github.com/TheMonitorLizard/NightFury/"
     }
 
-    init {
-        val jda : JDABuilder = JDABuilder(AccountType.BOT).setEventManager(AsyncEventManager())
-
+    init
+    {
         val config = Config(Paths.get(System.getProperty("user.dir"), "config.txt").toFile())
         val manager = DatabaseManager(config.dbURL, config.dbUser, config.dbPass)
+
         if(args.isNotEmpty())
         {
             args.forEach {
@@ -88,11 +94,11 @@ class NightFury(args: Array<String>)
             }
         }
 
-        val waiter = EventWaiter()
-
         val google = GoogleAPI()
         val e621 = E621API()
         val yt = YouTubeAPI(config.ytApiKey)
+
+        val waiter = EventWaiter()
 
         val parser : Parser = JagTag.newDefaultBuilder().addMethods(getMethods()).build()
 
@@ -139,35 +145,41 @@ class NightFury(args: Array<String>)
                 ShutdownCmd()
         )
 
-        jda.addEventListener(client)
-                .setToken(config.token)
-                .setStatus(OnlineStatus.DO_NOT_DISTURB)
-                .setGame(Game.of("Starting Up..."))
-                .buildAsync()
+        JDABuilder(AccountType.BOT) buildAsync
+        {
+            manager  { AsyncEventManager() }
+            listener { client }
+            token    { config.token }
+            status   { OnlineStatus.DO_NOT_DISTURB }
+            game     { "Starting Up..." }
+        }
+    }
+
+    private infix inline fun <reified T: JDABuilder> T.buildAsync(lazy: JDABuilder.() -> Unit)
+    {
+        lazy()
+        buildAsync()
     }
 }
 
 internal class Config(key: File)
 {
-    private val tokens : List<String> = try {
-        key.readLines()
-    } catch (e: IOException) {
-        throw ConfigException(e)
-    }
+    private val tokens = try { key.readLines() } catch (e: IOException) { throw e }
 
-    internal val token : String = tokens[0]
-    internal val devId: Long = tokens[1].toLong()
-    internal val dbotskey: String = tokens[2]
-    internal val dbURL: String = tokens[3]
-    internal val dbUser: String = tokens[4]
-    internal val dbPass: String = tokens[5]
-    internal val ytApiKey: String = tokens[6]
-    internal val prefix: String = "|"
-    internal val success: String = "\uD83D\uDC32"
-    internal val warning: String = "\uD83D\uDC22"
-    internal val error: String = "\uD83D\uDD25"
-    internal val server: String = "https://discord.gg/xkkw54u"
-    internal val permissions: Array<Permission> = arrayOf(
+    internal val token       : String            = tokens[0]
+    internal val devId       : Long              = tokens[1].toLong()
+    internal val dbotskey    : String            = tokens[2]
+    internal val dbURL       : String            = tokens[3]
+    internal val dbUser      : String            = tokens[4]
+    internal val dbPass      : String            = tokens[5]
+    internal val ytApiKey    : String            = tokens[6]
+    internal val prefix      : String            = "|"
+    internal val success     : String            = "\uD83D\uDC32"
+    internal val warning     : String            = "\uD83D\uDC22"
+    internal val error       : String            = "\uD83D\uDD25"
+    internal val server      : String            = "https://discord.gg/xkkw54u"
+    internal val permissions : Array<Permission> = arrayOf(
+
             Permission.MESSAGE_HISTORY,
             Permission.MESSAGE_EMBED_LINKS,
             Permission.MESSAGE_ATTACH_FILES,
@@ -183,7 +195,6 @@ internal class Config(key: File)
             Permission.BAN_MEMBERS,
 
             Permission.VIEW_AUDIT_LOGS
+
     )
 }
-
-internal class ConfigException(ioe: IOException) : Exception(ioe)

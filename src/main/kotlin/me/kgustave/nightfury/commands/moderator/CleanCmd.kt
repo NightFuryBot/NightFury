@@ -44,7 +44,7 @@ class CleanCmd : Command()
         this.aliases = arrayOf("clear", "prune")
         this.arguments = "[Number of Messages]"
         this.help = "Deletes a specified number of messages from the channel this is called in."
-        this.helpBiConsumer = standardSubHelp(
+        this.helpBiConsumer = Command standardSubHelp
                         "This cleans the channel it is called in of up to 1000 messages that are less than " +
                         "two weeks old.\n\n" +
 
@@ -67,7 +67,7 @@ class CleanCmd : Command()
                         "As a final note, discord prevents the bulk deletion of messages older than 2 weeks by " +
                         "bots. As a result, NightFury, nor any other bot, is able to bulk clean a channel of " +
                         "messages that were sent two weeks prior to the command being used."
-        )
+
         this.cooldown = 15
         this.cooldownScope = CooldownScope.CHANNEL
         this.category = Category.MODERATOR

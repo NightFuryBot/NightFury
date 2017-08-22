@@ -46,7 +46,7 @@ class EvalCmd : Command()
     {
         val args = event.args
 
-        engine.load(event)
+        engine load event
 
         when {
             args matches Regex("9\\s*\\+\\s*10")
@@ -63,7 +63,10 @@ class EvalCmd : Command()
             }
 
             else -> try {
-                event.reply("```java\n$args```Evaluated:\n```\n${engine.eval(args)}```")
+
+                val output = engine load event eval args
+
+                event.reply("```java\n$args```Evaluated:\n```\n$output```")
             } catch (e: ScriptException) {
                 event.reply("```java\n$args```A ScriptException was thrown:\n```\n${e.message}```")
             } catch (e: Exception) {
@@ -72,7 +75,7 @@ class EvalCmd : Command()
         }
     }
 
-    private fun ScriptEngine.load(event: CommandEvent) : ScriptEngine
+    private infix inline fun <reified T : ScriptEngine> T.load(event: CommandEvent) : T
     {
         // STANDARD
         put("event", event)
@@ -106,4 +109,6 @@ class EvalCmd : Command()
 
         return this
     }
+
+    private infix inline fun <reified T : ScriptEngine> T.eval(script: String) = this.eval(script)
 }

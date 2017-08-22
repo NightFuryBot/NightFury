@@ -10,8 +10,9 @@
 # Data Files
 config.txt
 SQLSetup.json
+Launch.sh
 
 # Misc Files
-/bash/
 /wiki/
 /Extensions/
+/scripts/

@@ -60,12 +60,15 @@ private class PrefixAddCmd : Command() {
     {
         val args = event.args
         when {
-            args.equals(event.client.prefix, true) ->
+            args.equals(event.client.prefix, true) -> // Default Prefix
                 event.replyError("`$args` cannot be added as a prefix because it is the default prefix!")
-            event.manager.isPrefixFor(event.guild, args) ->
+
+            event.manager.isPrefixFor(event.guild, args) -> // Already a prefix
                 event.replyError("`$args` cannot be added as a prefix because it is already a prefix!")
-            args.length>50 ->
+
+            args.length>50 -> // Longer than allowed
                 event.replyError("`$args` cannot be added as a prefix because it's longer than 50 characters!")
+
             else -> {
                 event.manager.addPrefix(event.guild, args)
                 event.replySuccess("`$args` was added as a prefix!")
@@ -90,14 +93,18 @@ private class PrefixRemoveCmd : Command() {
     override fun execute(event: CommandEvent)
     {
         val args = event.args
-        if(args.equals(event.client.prefix, true))
-            return event.replyError("`$args` cannot be removed as a prefix because it is the default prefix!")
-        else if(!event.manager.isPrefixFor(event.guild, args))
-            return event.replyError("`$args` cannot be removed as a prefix because it is not a prefix!")
-        else
+        when
         {
-            event.manager.removePrefix(event.guild, args)
-            event.replySuccess("`$args` was removed as a prefix!")
+            args.equals(event.client.prefix, true) -> // Default prefix
+                event.replyError("`$args` cannot be removed as a prefix because it is the default prefix!")
+
+            !event.manager.isPrefixFor(event.guild, args) -> // Not a prefix
+                event.replyError("`$args` cannot be removed as a prefix because it is not a prefix!")
+
+            else -> {
+                event.manager.removePrefix(event.guild, args)
+                event.replySuccess("`$args` was removed as a prefix!")
+            }
         }
     }
 }
@@ -119,14 +126,12 @@ private class PrefixListCmd : Command() {
     {
         val prefixes = event.client.manager.getPrefixes(event.guild)
         if(prefixes.isEmpty())
-            return event.replyError("There are no custom prefixes available for this server!")
-        else {
-            event.reply(embed {
-                title = "Custom prefixes for **${event.guild.name}**"
-                prefixes.forEach { prefix -> append("`$prefix`\n") }
-                colorAwt = event.selfMember.color
-                footer { value = "Total ${prefixes.size}"}
-            })
-        }
+            event.replyError("There are no custom prefixes available for this server!")
+        else event.reply(embed {
+            title = "Custom prefixes for **${event.guild.name}**"
+            prefixes.forEach { prefix -> append("`$prefix`\n") }
+            colorAwt = event.selfMember.color
+            footer { value = "Total ${prefixes.size}"}
+        })
     }
 }

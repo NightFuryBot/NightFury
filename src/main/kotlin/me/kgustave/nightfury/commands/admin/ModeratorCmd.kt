@@ -156,11 +156,11 @@ private class ModeratorSetCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        val found = event.guild.findRoles(query)
+        val found = event.guild findRoles query
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
-            return event.replyError(found.multipleRoles(query))
+            return event.replyError(found multipleRoles query)
         val requested = found[0]
         val mod = event.manager.getModRole(event.guild)
         if(mod!=null && mod == requested)

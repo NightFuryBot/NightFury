@@ -71,7 +71,7 @@ class KickCmd : Command() {
 
         if(error!=null) return event.replyError(error)
         if(reason != null) {
-            target.kick(reason)
+            target kick reason
         } else {
             target.kick()
         } then {

@@ -85,7 +85,7 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
                     SEE_HELP.format(event.client.prefix, name))
         else if(!event.member.roles.contains(requested)) {
             if(event.hasRoleMeLimit) {
-                if(event.roleMeLimit<=event.member.roles.filter { event.manager.isRoleMe(it) }.size)
+                if(event.roleMeLimit<=event.member.roles.stream().filter { event.manager.isRoleMe(it) }.count())
                     return event.replyError("More RoleMe roles cannot be added because you are at the limit set by the server!")
             }
             event.member giveRole requested then {

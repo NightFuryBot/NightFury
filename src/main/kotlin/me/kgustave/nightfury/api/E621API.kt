@@ -20,8 +20,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONTokener
-import java.time.OffsetDateTime
-import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
@@ -33,6 +31,8 @@ class E621API : AbstractAPICache<JSONArray>()
         private val BASE_URL = "https://e621.net/post/index.json?"
         private val LOG = SimpleLog.getLog("E621")
     }
+
+    override val hoursToDecay : Long = 1
 
     private val client = OkHttpClient()
 
@@ -63,16 +63,6 @@ class E621API : AbstractAPICache<JSONArray>()
             LOG.warn("Failed to retrieve from e621.net!")
             LOG.log(e)
             return null
-        }
-    }
-
-    override fun clearCache()
-    {
-        synchronized(cache) {
-            val now = OffsetDateTime.now()
-            cache.keys.stream()
-                    .filter { key -> now.isAfter(cache[key]!!.second.plusHours(1)) }
-                    .toList().forEach { toRemove -> cache.remove(toRemove) }
         }
     }
 }

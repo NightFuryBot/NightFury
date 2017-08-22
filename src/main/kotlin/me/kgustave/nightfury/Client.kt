@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("unused")
 package me.kgustave.nightfury
 
 import com.jagrosh.jagtag.Parser
@@ -62,40 +63,42 @@ class Client internal constructor
  val server: String, val dBotsKey : String, val waiter: EventWaiter,
  val parser: Parser, vararg commands: Command) : ListenerAdapter()
 {
-    val commands: CommandMap = CommandMap(*commands)
+    //////////////////////
+    // PRE-INIT MEMBERS //
+    //////////////////////
+
+    val commands : CommandMap = CommandMap(*commands)
     val startTime : OffsetDateTime = OffsetDateTime.now()
     val logger : ModLogger = ModLogger(manager)
     val messageCacheSize : Int
-        get() = linkedCache.size
+        get() = callCache.size
 
     var totalGuilds : Int = 0
         private set
+
+    internal var listener : CommandListener
 
     private val executor : ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val cooldowns : HashMap<String, OffsetDateTime> = HashMap()
     private val scheduled : HashMap<String, ScheduledFuture<*>> = HashMap()
     private val uses : HashMap<String, Int> = HashMap()
-    private val linkedCache : FixedSizeCache<Long, HashSet<Message>> = FixedSizeCache(300)
-    private val listeners : Array<CommandListener> = arrayOf(
-            StandardListener(),
-            IdleListener(),
-            DebugListener()
-    )
+    private val callCache: FixedSizeCache<Long, HashSet<Message>> = FixedSizeCache(300)
+    private val listeners : Array<CommandListener> = arrayOf(StandardListener(), IdleListener(), DebugListener())
 
-    internal var listener : CommandListener
-
-    init {
+    init
+    {
         listener = listeners[0]
     }
 
     companion object
     {
-        private val LOG = SimpleLog.getLog("Client")
+        private val log = SimpleLog.getLog("Client")
+        private infix fun log(e : Exception) = log.log(e)
     }
 
     fun targetListener(name: String)
     {
-        val l = listeners.toList().filter { it.name == name.toLowerCase() }
+        val l = listeners.filter { it.name == name.toLowerCase() }
         if(l.isNotEmpty()) listener = l[0]
     }
 
@@ -123,67 +126,40 @@ class Client internal constructor
         cooldowns.keys.stream().filter { cooldowns[it]!!.isBefore(now) }.toList().forEach { cooldowns.remove(it) }
     }
 
-    @Suppress("unused")
-    fun hasFuture(key: String) = synchronized(scheduled) { scheduled.containsKey(key.toLowerCase()) }
+    fun hasFuture(key: String) : Boolean
+    {
+        synchronized(scheduled) { return scheduled.containsKey(key.toLowerCase()) }
+    }
 
-    @Suppress("unused")
     fun saveFuture(key: String, future: ScheduledFuture<*>)
     {
         synchronized(scheduled) { scheduled.put(key.toLowerCase(),future) }
     }
 
-    @Suppress("unused")
     fun cancelFuture(key: String)
     {
         synchronized(scheduled) { scheduled[key.toLowerCase()]?.cancel(false) }
         removeFuture(key)
     }
 
-    @Suppress("unused")
     fun removeFuture(key: String)
     {
         synchronized(scheduled) { scheduled.remove(key.toLowerCase()) }
     }
 
-    private fun cleanSchedule()
+    fun getUsesFor(command: Command) : Int
     {
-        synchronized(scheduled)
-        {
-            scheduled.keys.stream().filter { scheduled[it]!!.isDone || scheduled[it]!!.isCancelled }
-                    .toList().forEach { scheduled.remove(it) }
-        }
+        synchronized(uses) { return uses.getOrDefault(command.name, 0) }
     }
 
-    @Suppress("unused")
-    fun getUsesFor(command: Command) = synchronized(uses) { uses.getOrDefault(command.name, 0) }
-
-    fun incrementUses(command: Command) = synchronized(uses) { uses.put(command.name, uses.getOrDefault(command.name, 0)+1) }
-
-    private fun clearAPICaches()
+    fun incrementUses(command: Command)
     {
-        commands.stream().filter {
-            it::class.annotations.filterIsInstance<APICache>().isNotEmpty()
-        }.forEach { cmd ->
-            cmd::class.functions.filter {
-                it.annotations.filterIsInstance<APICache>().isNotEmpty()
-            }.forEach { it.call(cmd) }
-        }
+        synchronized(uses) { uses.put(command.name, uses.getOrDefault(command.name, 0)+1) }
     }
 
-    internal fun linkIds(id: Long, message: Message)
-    {
-        synchronized(linkedCache)
-        {
-            val stored = linkedCache[id]
-            if(stored != null)
-                stored.add(message)
-            else {
-                val toStore = HashSet<Message>()
-                toStore.add(message)
-                linkedCache.add(id, toStore)
-            }
-        }
-    }
+    //////////////////////
+    // OVERRIDE MEMBERS //
+    //////////////////////
 
     override fun onReady(event: ReadyEvent)
     {
@@ -191,21 +167,26 @@ class Client internal constructor
         event.jda.presence.status = OnlineStatus.ONLINE
         event.jda.presence.game = Game.of("Type ${prefix}help")
 
-        LOG.info("NightFury is Online!")
+        Client.log.info("NightFury is Online!")
 
         val toLeave = event.jda.guilds.stream().filter { !it.isGood }.toList()
         if(toLeave.isNotEmpty())
         {
             toLeave.forEach { it.leave().queue() }
 
-            LOG.info("Left ${toLeave.size} bad guilds!")
+            Client.log.info("Left ${toLeave.size} bad guilds!")
         }
 
-        // Clear API Caches every hour
+        // Clear Caches every hour
         executor.scheduleAtFixedRate({
-            clearAPICaches()
-            cleanCooldowns()
-            cleanSchedule()
+            try {
+                clearAPICaches()
+                cleanCooldowns()
+                cleanSchedule()
+            } catch(e : Exception) {
+                Client.log.info("Failed to clear caches!")
+                Client log e
+            }
         }, 0, 1, TimeUnit.HOURS)
 
         updateStats(event.jda)
@@ -284,11 +265,11 @@ class Client internal constructor
     {
         if(!event.isFromType(ChannelType.TEXT))
             return
-        synchronized(linkedCache)
+        synchronized(callCache)
         {
-            if(linkedCache.contains(event.messageIdLong))
+            if(callCache.contains(event.messageIdLong))
             {
-                val messages = linkedCache[event.messageIdLong]?:return
+                val messages = callCache[event.messageIdLong]?:return
                 if(messages.size > 1 && event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_MANAGE))
                     event.textChannel.deleteMessages(messages).queue({},{})
                 else if(messages.size == 1)
@@ -297,7 +278,6 @@ class Client internal constructor
         }
     }
 
-    // Shutdown
     override fun onShutdown(event: ShutdownEvent)
     {
         executor.shutdown()
@@ -315,22 +295,66 @@ class Client internal constructor
         welcomeChannel.sendMessage(message).queue()
     }
 
-    private val Guild.isGood : Boolean
-        get() {
-            val bots = this.members.stream().filter { it.user.isBot }.count()
-            return bots<=30 || this.getMemberById(devId)!=null
+    //////////////////////
+    // INTERNAL MEMBERS //
+    //////////////////////
+
+    internal fun linkIds(id: Long, message: Message)
+    {
+        synchronized(callCache)
+        {
+            val stored = callCache[id]
+            if(stored != null)
+                stored.add(message)
+            else {
+                val toStore = HashSet<Message>()
+                toStore.add(message)
+                callCache.add(id, toStore)
+            }
         }
+    }
+
+    /////////////////////
+    // PRIVATE MEMBERS //
+    /////////////////////
+
+    private inline val Guild.isGood : Boolean
+        inline get() = members.stream().filter { it.user.isBot }.count()<=30 || getMemberById(devId)!=null
+
+    private inline fun <reified I> Iterable<*>.containsInstance() : Boolean
+    {
+        this.forEach { if (it is I) return true }
+        return false
+    }
+
+    private fun cleanSchedule()
+    {
+        synchronized(scheduled)
+        {
+            scheduled.keys.stream().filter { scheduled[it]!!.isDone || scheduled[it]!!.isCancelled }
+                    .toList().forEach { scheduled.remove(it) }
+        }
+    }
+
+    private fun clearAPICaches()
+    {
+        commands.stream().filter {
+            it::class.annotations.containsInstance<APICache>()
+        }.forEach { cmd ->
+            cmd::class.functions.stream().filter { it.annotations.containsInstance<APICache>() }.forEach { it.call(cmd) }
+        }
+    }
 
     private fun updateStats(jda: JDA)
     {
-        val log = SimpleLog.getLog("BotList")
         val client = (jda as JDAImpl).httpClientBuilder.build()
-        val body = JSONObject().put("server_count", jda.getGuilds().size)
+        val body = JSONObject().put("server_count", jda.guilds.size)
 
-        if (jda.getShardInfo() != null) body.put("shard_id", jda.getShardInfo().shardId).put("shard_count", jda.getShardInfo().shardTotal)
+        if(jda.shardInfo != null)
+            body.put("shard_id", jda.shardInfo.shardId).put("shard_count", jda.shardInfo.shardTotal)
 
         val builder = Request.Builder().post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
-                .url("https://bots.discord.pw/api/bots/" + jda.getSelfUser().id + "/stats")
+                .url("https://bots.discord.pw/api/bots/" + jda.selfUser.id + "/stats")
                 .header("Authorization", dBotsKey)
                 .header("Content-Type", "application/json")
 
@@ -338,8 +362,8 @@ class Client internal constructor
             override fun onResponse(call: Call, response: Response) = response.close()
 
             override fun onFailure(call: Call, e: IOException) {
-                log.fatal("Failed to send information to bots.discord.pw")
-                log.log(e)
+                Client.log.fatal("Failed to send information to bots.discord.pw")
+                Client log e
             }
         })
 
@@ -351,7 +375,7 @@ class Client internal constructor
 
         try {
             client.newCall(Request.Builder().get()
-                    .url("https://bots.discord.pw/api/bots/" + jda.getSelfUser().id + "/stats")
+                    .url("https://bots.discord.pw/api/bots/" + jda.selfUser.id + "/stats")
                     .header("Authorization", dBotsKey).header("Content-Type", "application/json").build())
                     .execute().body()!!.charStream().use {
                 val array = JSONObject(JSONTokener(it)).getJSONArray("stats")
@@ -360,8 +384,8 @@ class Client internal constructor
                 this.totalGuilds = total
             }
         } catch (e: Exception) {
-            log.fatal("Failed to retrieve bot shard information from bots.discord.pw")
-            log.log(e)
+            Client.log.fatal("Failed to retrieve bot shard information from bots.discord.pw")
+            Client log e
         }
     }
 }
