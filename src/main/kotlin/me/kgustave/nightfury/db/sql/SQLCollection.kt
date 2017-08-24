@@ -22,71 +22,29 @@ import java.sql.SQLException
 /**
  * @author Kaidan Gustave
  */
-abstract class SQLCollection<in E, out T>(val connection: Connection) {
+@Suppress("RedundantUnitReturnType")
+abstract class SQLCollection<in E, out T>(val connection: Connection)
+{
+    abstract val getStatement : String
+    abstract val addStatement : String
+    abstract val removeStatement : String
+    abstract val removeAllStatement : String
 
-    /*companion object
-    {
-        private fun insertArgs(statement: PreparedStatement, vararg args: Any) : PreparedStatement
-        {
-            args.forEachIndexed { index: Int, any: Any ->
-                when (any) {
-                    is String -> statement.setString(index + 1, any)
-                    is Long -> statement.setLong(index + 1, any)
-                    is Int -> statement.setInt(index + 1, any)
-                    is Boolean -> statement.setBoolean(index + 1, any)
-                }
-            }
-            return statement
-        }
-    }*/
-
-    var getStatement : String = ""
-    var addStatement : String = ""
-    var removeStatement : String = ""
-    var removeAllStatement : String = ""
+    abstract fun get(results: ResultSet, env: E) : Set<T>
 
     fun get(env: E, vararg args: Any) : Set<T> = try {
         connection prepare getStatement closeAfter { insert(*args) executeQuery { get(it, env) } }
     } catch (e: SQLException) { SQL.LOG.warn(e); emptySet() }
-    /*fun get(env: E, vararg args: Any) : Set<T>
-    {
-        return try {
-            insertArgs(connection.prepareStatement(getStatement), *args).use {
-                val returns = it.executeQuery().use { get(it, env) }
-                returns
-            }
-        } catch (e: SQLException) { SQL.LOG.warn(e); emptySet() }
-    }*/
 
-    abstract fun get(results: ResultSet, env: E) : Set<T>
+    fun add(vararg args: Any) : Unit = try {
+        connection prepare addStatement closeAfter { insert(*args).execute() }
+    } catch (e: SQLException) { SQL.LOG.warn(e) }
 
-    fun add(vararg args: Any)
-    {
-        try {
-            connection prepare addStatement closeAfter { insert(*args).execute() }
-            /*insertArgs(connection.prepareStatement(
-                    addStatement, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE
-            ), *args).use { it.execute() }*/
-        } catch (e: SQLException) { SQL.LOG.warn(e) }
-    }
+    fun remove(vararg args: Any) : Unit  = try {
+        connection prepare removeStatement closeAfter { insert(*args).execute() }
+    } catch (e: SQLException) { SQL.LOG.warn(e) }
 
-    fun remove(vararg args: Any)
-    {
-        try {
-            connection prepare removeStatement closeAfter { insert(*args).execute() }
-            /*insertArgs(connection.prepareStatement(
-                    removeStatement, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE
-            ), *args).use { it.execute() }*/
-        } catch (e: SQLException) { SQL.LOG.warn(e) }
-    }
-
-    fun removeAll(vararg args: Any)
-    {
-        try {
-            connection prepare removeAllStatement closeAfter { insert(*args).execute() }
-            /*insertArgs(connection.prepareStatement(
-                    removeAllStatement, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE
-            ), *args).use { it.execute() }*/
-        } catch (e: SQLException) { SQL.LOG.warn(e) }
-    }
+    fun removeAll(vararg args: Any) : Unit = try {
+        connection prepare removeAllStatement closeAfter { insert(*args).execute() }
+    } catch (e: SQLException) { SQL.LOG.warn(e) }
 }

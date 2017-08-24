@@ -45,12 +45,10 @@ class ServerCmd(waiter: EventWaiter) : Command()
         this.aliases = arrayOf("guild")
         this.arguments = "<Info Category>"
         this.help = "Gets info on the server."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "What the command outputs is based on one of the sub-commands listed " +
+        this.helpBiConsumer = Command standardSubHelp
+                        "What the command outputs is based on one of the sub-commands listed " +
                         "below. If no sub-command is specified, this will generate a menu where you can select which " +
-                        "category to get info from.",
-                true
-        )
+                        "category to get info from."
         this.guildOnly = true
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER_GUILD

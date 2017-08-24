@@ -40,12 +40,11 @@ class ColorMeCmd : Command()
         this.name = "ColorMe"
         this.arguments = "[Color or Hex Code]"
         this.help = "Set the color of your highest ColorMe role."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "Anyone with a ColorMe role can modify it's color using this command.\n" +
+        this.helpBiConsumer = Command standardSubHelp
+                        "Anyone with a ColorMe role can modify it's color using this command.\n" +
                         "This is recommended for personal roles given to staff members in order to " +
                         "avoid giving them the manage roles permission, not for a public, default, or " +
-                        "other role possessed by many members.",
-                true)
+                        "other role possessed by many members."
         this.cooldown = 20
         this.guildOnly = true
         this.cooldownScope = CooldownScope.USER_GUILD

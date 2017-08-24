@@ -33,7 +33,7 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
-@MustHaveArguments
+@MustHaveArguments("Specify a RoleMe role to give or remove!")
 class RoleMeCmd(waiter: EventWaiter) : Command()
 {
     init {
@@ -105,7 +105,7 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
     }
 }
 
-@MustHaveArguments
+@MustHaveArguments("Specify a role to add to RoleMe!")
 private class RoleMeAddCmd : Command()
 {
     init {

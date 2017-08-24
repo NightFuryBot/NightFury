@@ -17,13 +17,14 @@ package me.kgustave.nightfury.listeners
 
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.extensions.muteRole
+import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.channel.text.TextChannelCreateEvent
 import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent
 import net.dv8tion.jda.core.events.channel.voice.VoiceChannelCreateEvent
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent
 import net.dv8tion.jda.core.events.role.RoleDeleteEvent
-import net.dv8tion.jda.core.hooks.ListenerAdapter
+import net.dv8tion.jda.core.hooks.EventListener
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -31,11 +32,23 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Kaidan Gustave
  */
-class DatabaseListener(private val manager: DatabaseManager, private val executor: ScheduledExecutorService) : ListenerAdapter()
+class DatabaseListener(private val manager: DatabaseManager, private val executor: ScheduledExecutorService) : EventListener
 {
     private val leaving = HashMap<Long, ScheduledFuture<*>>()
 
-    override fun onRoleDelete(event: RoleDeleteEvent)
+    override fun onEvent(event: Event?) = when(event)
+    {
+        is RoleDeleteEvent -> onRoleDelete(event)
+        is TextChannelCreateEvent -> onTextChannelCreate(event)
+        is TextChannelDeleteEvent -> onTextChannelDelete(event)
+        is VoiceChannelCreateEvent -> onVoiceChannelCreate(event)
+        is GuildJoinEvent -> onGuildJoin(event)
+        is GuildLeaveEvent -> onGuildLeave(event)
+
+        else -> Unit
+    }
+
+    fun onRoleDelete(event: RoleDeleteEvent)
     {
         // RoleMe Deleted
         if(manager.isRoleMe(event.role))
@@ -66,14 +79,14 @@ class DatabaseListener(private val manager: DatabaseManager, private val executo
         }
     }
 
-    override fun onTextChannelCreate(event: TextChannelCreateEvent)
+    fun onTextChannelCreate(event: TextChannelCreateEvent)
     {
         val muted = manager.getMutedRole(event.guild)
         if(muted!=null)
             event.channel muteRole muted
     }
 
-    override fun onTextChannelDelete(event: TextChannelDeleteEvent)
+    fun onTextChannelDelete(event: TextChannelDeleteEvent)
     {
         // ModLog Deleted
         val modLog = manager.getModLog(event.guild)
@@ -102,14 +115,14 @@ class DatabaseListener(private val manager: DatabaseManager, private val executo
         }
     }
 
-    override fun onVoiceChannelCreate(event: VoiceChannelCreateEvent)
+    fun onVoiceChannelCreate(event: VoiceChannelCreateEvent)
     {
         val muted = manager.getMutedRole(event.guild)
         if(muted!=null)
             event.channel muteRole muted
     }
 
-    override fun onGuildJoin(event: GuildJoinEvent)
+    fun onGuildJoin(event: GuildJoinEvent)
     {
         synchronized(leaving)
         {
@@ -118,7 +131,7 @@ class DatabaseListener(private val manager: DatabaseManager, private val executo
         }
     }
 
-    override fun onGuildLeave(event: GuildLeaveEvent)
+    fun onGuildLeave(event: GuildLeaveEvent)
     {
         // Soft 5 Minute
         synchronized(leaving) {
@@ -127,5 +140,4 @@ class DatabaseListener(private val manager: DatabaseManager, private val executo
             }, 5, TimeUnit.MINUTES))
         }
     }
-
 }

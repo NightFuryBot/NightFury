@@ -27,8 +27,6 @@ object SQL {
     val LOG : SimpleLog = SimpleLog.getLog("SQL")
 }
 
-infix fun Connection.prepare(sql: String) : PreparedStatement = prepareStatement(sql)
-
 fun PreparedStatement.insert(vararg args: Any) : PreparedStatement {
     args.forEachIndexed { index: Int, any: Any ->
         when (any) {
@@ -40,6 +38,8 @@ fun PreparedStatement.insert(vararg args: Any) : PreparedStatement {
     }
     return this
 }
+
+infix fun Connection.prepare(sql: String) : PreparedStatement = prepareStatement(sql)
 
 infix inline fun <R> PreparedStatement.closeAfter(lazy: PreparedStatement.() -> R) = use(lazy)
 

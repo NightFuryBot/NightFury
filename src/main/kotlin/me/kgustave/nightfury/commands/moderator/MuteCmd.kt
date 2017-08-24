@@ -101,14 +101,15 @@ private class SetupMuteCmd : Command()
         if(event.client.manager.getMutedRole(event.guild)!=null)
             return event.replyError("**Muted role already exists on this server!**\n" +
                     "To change it, use `${event.client.prefix}mute set`!")
-        else {
-            event.guild.controller.createRole() promise {
-                name  { if(event.args.isEmpty()) "Muted" else event.args }
-                color { Color.BLACK }
-            } then {
-                if(it != null)
-                event.replySuccess("Successfully created muted role: **${it.name}**!")
-            } catch { event.replyError("An error occurred while creating the role!") }
+        else event.guild.controller.promiseRole {
+            name  { if(event.args.isEmpty()) "Muted" else event.args }
+            color { Color.BLACK }
+        } then {
+            if(it == null)
+                throw NullPointerException("RestPromise Callback provided a null Role!")
+            event.replySuccess("Successfully created muted role: **${it.name}**!")
+        } catch {
+            event.replyError("An error occurred while creating the role!")
         }
     }
 }

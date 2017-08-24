@@ -29,6 +29,7 @@ import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.entities.impl.JDAImpl
+import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.ReadyEvent
 import net.dv8tion.jda.core.events.ShutdownEvent
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent
@@ -36,7 +37,7 @@ import net.dv8tion.jda.core.events.guild.GuildLeaveEvent
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.core.events.message.MessageDeleteEvent
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
-import net.dv8tion.jda.core.hooks.ListenerAdapter
+import net.dv8tion.jda.core.hooks.EventListener
 import net.dv8tion.jda.core.requests.Requester
 import net.dv8tion.jda.core.utils.SimpleLog
 import okhttp3.*
@@ -61,28 +62,29 @@ class Client internal constructor
 (val prefix: String, val devId: Long, val manager: DatabaseManager,
  val success: String, val warning: String, val error: String,
  val server: String, val dBotsKey : String, val waiter: EventWaiter,
- val parser: Parser, vararg commands: Command) : ListenerAdapter()
+ val parser: Parser, vararg commands: Command) : EventListener
 {
     //////////////////////
     // PRE-INIT MEMBERS //
     //////////////////////
 
-    val commands : CommandMap = CommandMap(*commands)
-    val startTime : OffsetDateTime = OffsetDateTime.now()
-    val logger : ModLogger = ModLogger(manager)
-    val messageCacheSize : Int
-        get() = callCache.size
-
     var totalGuilds : Int = 0
         private set
 
+    val commands         : CommandMap = CommandMap(*commands)
+    val startTime        : OffsetDateTime = OffsetDateTime.now()
+    val logger           : ModLogger = ModLogger(manager)
+    val messageCacheSize : Int
+        get() = callCache.size
+
     internal var listener : CommandListener
 
-    private val executor : ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
-    private val cooldowns : HashMap<String, OffsetDateTime> = HashMap()
-    private val scheduled : HashMap<String, ScheduledFuture<*>> = HashMap()
-    private val uses : HashMap<String, Int> = HashMap()
-    private val callCache: FixedSizeCache<Long, HashSet<Message>> = FixedSizeCache(300)
+    private val executor  : ScheduledExecutorService               = Executors.newSingleThreadScheduledExecutor()
+    private val cooldowns : HashMap<String, OffsetDateTime>        = HashMap()
+    private val scheduled : HashMap<String, ScheduledFuture<*>>    = HashMap()
+    private val uses      : HashMap<String, Int>                   = HashMap()
+    private val callCache : FixedSizeCache<Long, HashSet<Message>> = FixedSizeCache(300)
+
     private val listeners : Array<CommandListener> = arrayOf(StandardListener(), IdleListener(), DebugListener())
 
     init
@@ -104,15 +106,12 @@ class Client internal constructor
 
     fun getRemainingCooldown(name: String): Int
     {
-        if(cooldowns.containsKey(name)) {
+        return if(cooldowns.containsKey(name)) {
             val time = OffsetDateTime.now().until(cooldowns[name], ChronoUnit.SECONDS).toInt()
             if(time <= 0) {
-                cooldowns.remove(name)
-                return 0
-            }
-            return time
-        }
-        return 0
+                cooldowns.remove(name); 0
+            } else time
+        } else 0
     }
 
     fun applyCooldown(name: String, seconds: Int)
@@ -158,10 +157,23 @@ class Client internal constructor
     }
 
     //////////////////////
-    // OVERRIDE MEMBERS //
+    //      EVENTS      //
     //////////////////////
 
-    override fun onReady(event: ReadyEvent)
+    override fun onEvent(event: Event?) = when(event)
+    {
+        is ReadyEvent           -> onReady(event)
+        is GuildJoinEvent       -> onGuildJoin(event)
+        is GuildLeaveEvent      -> onGuildLeave(event)
+        is MessageReceivedEvent -> onMessageReceived(event)
+        is MessageDeleteEvent   -> onMessageDelete(event)
+        is ShutdownEvent        -> onShutdown(event)
+        is GuildMemberJoinEvent -> onGuildMemberJoin(event)
+
+        else -> Unit
+    }
+
+    fun onReady(event: ReadyEvent)
     {
         event.jda.addEventListener(waiter, DatabaseListener(manager, executor), AutoLoggingListener(manager, logger))
         event.jda.presence.status = OnlineStatus.ONLINE
@@ -192,7 +204,7 @@ class Client internal constructor
         updateStats(event.jda)
     }
 
-    override fun onGuildJoin(event: GuildJoinEvent)
+    fun onGuildJoin(event: GuildJoinEvent)
     {
         if(event.guild.selfMember.joinDate.plusMinutes(5).isAfter(OffsetDateTime.now()))
         {
@@ -201,16 +213,16 @@ class Client internal constructor
         }
     }
 
-    override fun onGuildLeave(event: GuildLeaveEvent)
+    fun onGuildLeave(event: GuildLeaveEvent)
     {
         updateStats(event.jda)
     }
 
-    override fun onMessageReceived(event: MessageReceivedEvent)
+    fun onMessageReceived(event: MessageReceivedEvent)
     {
         if(event.author.isBot)
             return
-        val rawContent = event.message.rawContent
+        val rawContent = event.message.rawContent.trim()
         val parts: List<String>
         val prefixUsed: String
 
@@ -219,13 +231,13 @@ class Client internal constructor
             rawContent.startsWith(prefix, true) -> // From Anywhere with default prefix
             {
                 prefixUsed = prefix
-                parts = rawContent.substring(prefix.length).trim().split(Regex("\\s+"), 2)
+                parts = rawContent.substring(prefixUsed.length).trim().split(Regex("\\s+"), 2)
             }
 
             event.guild != null -> // From Guild without default prefix
             {
                 val prefixes = manager.getPrefixes(event.guild)
-                if(!prefixes.isEmpty()) {
+                if(prefixes.isNotEmpty()) {
                     val prefix = prefixes.stream().filter { rawContent.startsWith(it, true) }?.findFirst()
                     if(prefix!=null && prefix.isPresent) {
                         prefixUsed = prefix.get()
@@ -251,17 +263,16 @@ class Client internal constructor
             val customCommandContent = manager.customCommands.getContentFor(name,event.guild)
             if(event.isFromType(ChannelType.TEXT) && customCommandContent.isNotEmpty())
             {
-                commandEvent.reply(parser.put("user", event.author)
+                return commandEvent.reply(parser.clear().put("user", event.author)
                         .put("guild", event.guild)
                         .put("channel", event.textChannel)
                         .put("args", args)
                         .parse(customCommandContent))
-                parser.clear()
             }
         }
     }
 
-    override fun onMessageDelete(event: MessageDeleteEvent)
+    fun onMessageDelete(event: MessageDeleteEvent)
     {
         if(!event.isFromType(ChannelType.TEXT))
             return
@@ -278,21 +289,43 @@ class Client internal constructor
         }
     }
 
-    override fun onShutdown(event: ShutdownEvent)
+    fun onShutdown(event: ShutdownEvent)
     {
+        val identifier = if(event.jda.shardInfo != null) "Shard: ${event.jda.shardInfo.shardString}" else "JDA"
+        log.info("$identifier has shutdown.")
         executor.shutdown()
         manager.shutdown()
     }
 
-    override fun onGuildMemberJoin(event: GuildMemberJoinEvent)
+    fun onGuildMemberJoin(event: GuildMemberJoinEvent)
     {
-        val welcomeChannel = manager.getWelcomeChannel(event.guild)?:return
+        // If there's no welcome channel then we just return.
+        val welcomeChannel = manager getWelcomeChannel event.guild ?:return
+
+        // We can't even send messages to the channel so we return
+        if(!welcomeChannel.canTalk()) return
+
+        // We prevent possible spam by creating a cooldown key 'welcomes|U:<User ID>|G:<Guild ID>'
+        val cooldownKey = "welcomes|U:${event.user.idLong}|G:${event.guild.idLong}"
+        val remaining = getRemainingCooldown(cooldownKey)
+
+        // Still on cooldown - we're done here
+        if(remaining>0) return
+
         val message = parser.clear()
                 .put("guild", event.guild)
                 .put("channel", welcomeChannel)
                 .put("user", event.user)
-                .parse(manager.getWelcomeMessage(event.guild))
+                .parse(manager getWelcomeMessage event.guild)
+
+        // Too long or empty means we can't send, so we just return because it'll break otherwise
+        if(message.isEmpty() || message.length>2000) return
+
+        // Send Message
         welcomeChannel.sendMessage(message).queue()
+
+        // Apply cooldown
+        applyCooldown(cooldownKey, 100)
     }
 
     //////////////////////

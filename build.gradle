@@ -43,7 +43,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 5, build: 9)
+def versionObj = new Version(major: 0, minor: 6, build: 0)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
@@ -70,7 +70,6 @@ repositories {
     jcenter()
     mavenCentral()
     maven { url 'https://jitpack.io/' }
-    maven { url 'C:\\Users\\Kaidan\\AppData\\Local\\Android\\sdk\\extras\\android\\m2repository' }
     flatDir { dir "${localLibDir}KJDA-Utilities${dirChar}build${dirChar}libs${dirChar}" }
     flatDir { dir "${localLibDir}JDA-Utilities${dirChar}build${dirChar}libs${dirChar}" }
     flatDir { dir "${localLibDir}JagTag0.5" }
@@ -91,7 +90,6 @@ dependencies {
 
     compile 'org.jsoup:jsoup:1.10.2'
     compile 'com.google.apis:google-api-services-youtube:v3-rev183-1.22.0'
-    compile 'com.android.support:support-annotations:24.2.0'
 
     compile group: 'com.jagrosh', name: 'JagTag', version: '0.5'
 

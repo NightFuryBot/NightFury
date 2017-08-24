@@ -22,71 +22,33 @@ import java.sql.SQLException
 /**
  * @author Kaidan Gustave
  */
-abstract class SQLSingleton<in E, out T>(val connection: Connection) {
-
-    /*companion object
-    {
-        private fun insertArgs(statement: PreparedStatement, vararg args: Any) : PreparedStatement
-        {
-            args.forEachIndexed { index, any ->
-                when (any) {
-                    is String -> statement.setString(index+1, any)
-                    is Long -> statement.setLong(index+1, any)
-                    is Int -> statement.setInt(index+1, any)
-                    is Boolean -> statement.setBoolean(index+1, any)
-                }
-            }
-            return statement
-        }
-    }*/
-
-    var getStatement : String = ""
-    var setStatement : String = ""
-    var updateStatement : String = ""
-    var resetStatement : String = ""
-
-    fun has(vararg  args : Any) : Boolean
-    {
-        return try {
-            connection prepare getStatement closeAfter { insert(*args) executeQuery { it.next() } }
-            // insertArgs(connection.prepareStatement(getStatement), *args).use { it.executeQuery().use { it.next() } }
-        } catch (e: SQLException) { SQL.LOG.warn(e); false }
-    }
-
-    fun get(env: E, vararg args: Any) : T?
-    {
-        return try {
-            connection prepare getStatement closeAfter { insert(*args) executeQuery { get(it, env) } }
-            //insertArgs(connection.prepareStatement(getStatement), *args).use { it.executeQuery().use { get(it, env) } }
-        } catch (e: SQLException) { SQL.LOG.warn(e); null }
-    }
+@Suppress("RedundantUnitReturnType")
+abstract class SQLSingleton<in E, out T>(val connection: Connection)
+{
+    abstract val getStatement : String
+    abstract val setStatement : String
+    abstract val updateStatement : String
+    abstract val resetStatement : String
 
     abstract fun get(results: ResultSet, env: E) : T?
 
-    fun set(vararg args: Any)
-    {
-        try {
-            connection prepare setStatement closeAfter { insert(*args).execute() }
-            /*insertArgs(connection.prepareStatement(setStatement,
-                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args).use { it.execute() }*/
-        } catch (e: SQLException) { SQL.LOG.warn(e) }
-    }
+    fun has(vararg  args : Any) = try {
+        connection prepare getStatement closeAfter { insert(*args) executeQuery { it.next() } }
+    } catch (e: SQLException) { SQL.LOG.warn(e); false }
 
-    fun update(vararg args: Any)
-    {
-        try {
-            connection prepare updateStatement closeAfter { insert(*args).execute() }
-            /*insertArgs(connection.prepareStatement(updateStatement,
-                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args).use { it.execute() }*/
-        } catch (e: SQLException) { SQL.LOG.warn(e) }
-    }
+    fun get(env: E, vararg args: Any) = try {
+        connection prepare getStatement closeAfter { insert(*args) executeQuery { get(it, env) } }
+    } catch (e: SQLException) { SQL.LOG.warn(e); null }
 
-    fun reset(vararg args: Any)
-    {
-        try {
-            connection prepare resetStatement closeAfter { insert(*args).execute() }
-            /*insertArgs(connection.prepareStatement(resetStatement,
-                    ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE), *args).use { it.execute() }*/
-        } catch (e: SQLException) { SQL.LOG.warn(e) }
-    }
+    fun set(vararg args: Any) : Unit = try {
+        connection prepare setStatement closeAfter { insert(*args).execute() }
+    } catch (e: SQLException) { SQL.LOG.warn(e) }
+
+    fun update(vararg args: Any) : Unit = try {
+        connection prepare updateStatement closeAfter { insert(*args).execute() }
+    } catch (e: SQLException) { SQL.LOG.warn(e) }
+
+    fun reset(vararg args: Any) : Unit = try {
+        connection prepare resetStatement closeAfter { insert(*args).execute() }
+    } catch (e: SQLException) { SQL.LOG.warn(e) }
 }

@@ -23,14 +23,12 @@ import java.sql.ResultSet
 /**
  * @author Kaidan Gustave
  */
-abstract class SQLRoles(connection: Connection, type: String) : SQLCollection<Guild, Role>(connection) {
-
-    init {
-        getStatement = "SELECT $ROLE_ID FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
-        addStatement = "INSERT INTO $ROLES ($GUILD_ID, $ROLE_ID, $TYPE) VALUES (?, ?, '$type')"
-        removeStatement = "DELETE FROM $ROLES WHERE $GUILD_ID = ? AND $ROLE_ID = ? AND $TYPE = '$type'"
-        removeAllStatement = "DELETE FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
-    }
+abstract class SQLRoles(connection: Connection, type: String) : SQLCollection<Guild, Role>(connection)
+{
+    override val getStatement = "SELECT $ROLE_ID FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
+    override val addStatement = "INSERT INTO $ROLES ($GUILD_ID, $ROLE_ID, $TYPE) VALUES (?, ?, '$type')"
+    override val removeStatement = "DELETE FROM $ROLES WHERE $GUILD_ID = ? AND $ROLE_ID = ? AND $TYPE = '$type'"
+    override val removeAllStatement = "DELETE FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
 
     override fun get(results: ResultSet, env: Guild) : Set<Role>
     {
@@ -45,21 +43,14 @@ abstract class SQLRoles(connection: Connection, type: String) : SQLCollection<Gu
     }
 }
 
-abstract class SQLRole(connection: Connection, type: String) : SQLSingleton<Guild, Role>(connection) {
+abstract class SQLRole(connection: Connection, type: String) : SQLSingleton<Guild, Role>(connection)
+{
+    override val getStatement = "SELECT $ROLE_ID FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
+    override val setStatement = "INSERT INTO $ROLES ($GUILD_ID, $ROLE_ID, $TYPE) VALUES (?, ?, '$type')"
+    override val updateStatement = "UPDATE $ROLES SET $ROLE_ID = ? WHERE $GUILD_ID = ? AND $TYPE = '$type'"
+    override val resetStatement = "DELETE FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
 
-    init {
-        getStatement = "SELECT $ROLE_ID FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
-        setStatement = "INSERT INTO $ROLES ($GUILD_ID, $ROLE_ID, $TYPE) VALUES (?, ?, '$type')"
-        updateStatement = "UPDATE $ROLES SET $ROLE_ID = ? WHERE $GUILD_ID = ? AND $TYPE = '$type'"
-        resetStatement = "DELETE FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
-    }
-
-    override fun get(results: ResultSet, env: Guild) : Role?
-    {
-        if(results.next())
-            return env.getRoleById(results.getLong(ROLE_ID))
-        return null
-    }
+    override fun get(results: ResultSet, env: Guild) = if(results.next()) env.getRoleById(results.getLong(ROLE_ID)) else null
 }
 
 class SQLRoleMe(connection: Connection) : SQLRoles(connection,"roleme")

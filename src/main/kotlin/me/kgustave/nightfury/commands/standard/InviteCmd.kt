@@ -30,7 +30,7 @@ class InviteCmd(vararg requestedPerms : Permission) : Command()
         private var id : Long = 0
         private val inviteFormat: String = "https://discordapp.com/oauth2/authorize?client_id=%d&permissions=%d&scope=bot"
         val invite : String
-            get() { return inviteFormat.format(id, perms) }
+            get() = inviteFormat.format(id, perms)
     }
 
     init {
@@ -47,7 +47,7 @@ class InviteCmd(vararg requestedPerms : Permission) : Command()
     {
         if(id == 0L)
             id = event.selfUser.idLong
-        event.reply(with(StringBuilder())
+        event.reply(buildString
         {
             appendln("NightFury is a general discord bot for moderation, utility, and larger communities!")
             appendln("To add me to your server, click the link below:")
@@ -60,7 +60,6 @@ class InviteCmd(vararg requestedPerms : Permission) : Command()
             if(owner != null)
                 append("contact ${owner.formattedName(true)} or ")
             append("join my support server **<${event.client.server}>**")
-            return@with toString()
         })
     }
 }

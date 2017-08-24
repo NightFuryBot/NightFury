@@ -49,14 +49,11 @@ class EvalCmd : Command()
         engine load event
 
         when {
-            args matches Regex("9\\s*\\+\\s*10")
-            -> event.reply("```java\n$args```Evaluated:\n```\n21```")
+            args matches Regex("9\\s*\\+\\s*10") -> event.reply("```java\n$args```Evaluated:\n```\n21```")
 
-            args == "require(\"discord.js\");"
-            -> event.reply("```java\n$args```Evaluated:\n```\nNo```")
+            args matches Regex("requires\\(\"discord\\.js\"\\);?") -> event.reply("```java\n$args```Evaluated:\n```\nNo```")
 
-            args matches Regex("System\\.exit\\(\\d+\\);?")
-            -> {
+            args matches Regex("System\\.exit\\(\\d+\\);?") -> {
                 event.replyWarning("Shutting down...")
                 Thread.sleep(4000)
                 event.reply("Naaaah, just kidding!")

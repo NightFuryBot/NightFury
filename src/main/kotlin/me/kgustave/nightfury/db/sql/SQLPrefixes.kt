@@ -22,26 +22,19 @@ import java.sql.ResultSet
 /**
  * @author Kaidan Gustave
  */
-class SQLPrefixes(connection: Connection) : SQLCollection<Guild, String>(connection) {
+class SQLPrefixes(connection: Connection) : SQLCollection<Guild, String>(connection)
+{
+    override val getStatement = "SELECT prefix FROM prefixes WHERE guild_id = ?"
+    override val addStatement = "INSERT INTO prefixes (guild_id, prefix) VALUES (?, ?)"
+    override val removeStatement = "DELETE FROM prefixes WHERE guild_id = ? AND LOWER(prefix) = LOWER(?)"
+    override val removeAllStatement = "DELETE FROM prefixes WHERE guild_id = ?"
 
-    init {
-        getStatement = "SELECT $PREFIX FROM $PREFIXES WHERE $GUILD_ID = ?"
-        addStatement = "INSERT INTO $PREFIXES ($GUILD_ID, $PREFIX) VALUES (?, ?)"
-        removeStatement = "DELETE FROM $PREFIXES WHERE $GUILD_ID = ? AND $PREFIX = ?"
-        removeAllStatement = "DELETE FROM $PREFIXES WHERE $GUILD_ID = ?"
-    }
-
-    override fun get(results: ResultSet, env: Guild): Set<String>
-    {
+    override fun get(results: ResultSet, env: Guild): Set<String> {
         val prefixes = HashSet<String>()
         while (results.next())
         {
-            prefixes.add(results.getString(PREFIX))
+            prefixes.add(results.getString("prefix"))
         }
         return prefixes
     }
 }
-
-private val PREFIXES = "prefixes"
-private val GUILD_ID = "guild_id"
-private val PREFIX = "prefix"

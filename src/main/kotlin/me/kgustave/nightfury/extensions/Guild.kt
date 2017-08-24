@@ -67,8 +67,8 @@ fun Message.removeMenuReactions()
 {
     if(!author.isSelf) return
     if(isFromType(ChannelType.TEXT) && member.hasPermission(textChannel,Permission.MESSAGE_MANAGE))
-        clearReactions()
+        clearReactions().queue()
     else reactions.forEach {
-        if(it.isSelf) it.removeReaction()
+        if(it.isSelf) it.removeReaction(this.author).queue()
     }
 }

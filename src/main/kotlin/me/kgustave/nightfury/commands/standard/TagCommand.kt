@@ -42,14 +42,12 @@ class TagCommand(waiter: EventWaiter) : Command()
         this.aliases = arrayOf("t")
         this.arguments = "[Tag Name] <Tag Args>"
         this.help = "Calls a tag."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "Tags are a way to store text in a easy-to-call way.\n" +
+        this.helpBiConsumer = Command standardSubHelp
+                        "Tags are a way to store text in a easy-to-call way.\n" +
                         "In addition to this, tags use JagTag syntax in order to " +
                         "process syntax structures such as `{@user}` into a user " +
                         "mention. Listings and descriptions for all structures is " +
-                        "available at ${NightFury.github}wiki",
-                true
-        )
+                        "available at ${NightFury.github}wiki"
         this.guildOnly = false
         this.children = arrayOf(
                 TagCreateGlobalCmd(),
@@ -126,8 +124,8 @@ private class TagCreateCmd : Command()
         this.fullname = "Tag Create"
         this.arguments = "[Tag Name] [Tag Content]"
         this.help = "Creates a new local Tag."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "Local tags are only available to the server they are created on.\n" +
+        this.helpBiConsumer = Command standardSubHelp
+                        "Local tags are only available to the server they are created on.\n" +
                         "If there is already a global tag with the name specified when using this " +
                         "command, a local tag cannot be created, however a moderator or administrator " +
                         "may use the `Override` sub-command to create a local version as a replacement.\n\n" +
@@ -136,9 +134,7 @@ private class TagCreateCmd : Command()
                         "Tag content cannot exceed 1900 characters.\n\n" +
 
                         "*If you discover any NSFW, racist, or in any other way 'harmful' tags, please report " +
-                        "them immediately!*",
-                true
-        )
+                        "them immediately!*"
         this.cooldown = 150
         this.cooldownScope = CooldownScope.USER_GUILD
         this.guildOnly = true
@@ -184,8 +180,8 @@ private class TagCreateGlobalCmd : Command()
         this.fullname = "Tag CreateGlobal"
         this.arguments = "[Tag Name] [Tag Content]"
         this.help = "Creates a new global tag."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "Global tags are available to all servers.\n" +
+        this.helpBiConsumer = Command standardSubHelp
+                        "Global tags are available to all servers.\n" +
                         "If there is already a global tag with the name specified when using this " +
                         "command, a global tag cannot be created, however a local override can be made " +
                         "on any server by a moderator or administrator using the `Override` sub-command.\n\n" +
@@ -194,9 +190,7 @@ private class TagCreateGlobalCmd : Command()
                         "Tag content cannot exceed 1900 characters.\n\n" +
 
                         "*If you discover any NSFW, racist, or in any other way 'harmful' tags, please report " +
-                        "them immediately!*",
-                true
-        )
+                        "them immediately!*"
         this.cooldown = 240
         this.cooldownScope = CooldownScope.USER
         this.guildOnly = false
@@ -242,12 +236,10 @@ private class TagDeleteCmd : Command()
         this.fullname = "Tag Delete"
         this.arguments = "[Tag Name]"
         this.help = "Deletes a tag you own."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "It's worth noting that if a user owns both the local and global version " +
+        this.helpBiConsumer = Command standardSubHelp
+                        "It's worth noting that if a user owns both the local and global version " +
                         "of a tag when using this command on a server, the priority when deleting goes " +
-                        "to the *local* version, not the global one.",
-                true
-        )
+                        "to the *local* version, not the global one."
         this.guildOnly = true
     }
 
@@ -294,12 +286,10 @@ private class TagEditCmd : Command()
         this.fullname = "Tag Edit"
         this.arguments = "[Tag Name] [New Tag Content]"
         this.help = "Edits a tag you own."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "It's worth noting that if a user owns both the local and global version " +
+        this.helpBiConsumer = Command standardSubHelp
+                        "It's worth noting that if a user owns both the local and global version " +
                         "of a tag when using this command on a server, the priority when editing goes " +
-                        "to the *local* version, not the global one.",
-                true
-        )
+                        "to the *local* version, not the global one."
         this.cooldown = 180
         this.cooldownScope = CooldownScope.USER
         this.guildOnly = false
@@ -377,10 +367,8 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
         this.fullname = "Tag List"
         this.arguments = "<User>"
         this.help = "Gets all the tags owned by a user."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "Not specifying a user will get a list of tags owned by the person using the command.",
-                true
-        )
+        this.helpBiConsumer = Command standardSubHelp
+                        "Not specifying a user will get a list of tags owned by the person using the command."
         this.guildOnly = false
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER
@@ -447,12 +435,10 @@ private class TagOwnerCmd : Command()
         this.aliases = arrayOf("creator")
         this.arguments = "[Tag Name]"
         this.help = "Gets the owner of a tag."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "There are several cases where this command **will not work**.\n" +
+        this.helpBiConsumer = Command standardSubHelp
+                        "There are several cases where this command **will not work**.\n" +
                         "It is a semi-reliable way to get the owner of a command, but there is " +
-                        "no guarantee that an owner name (or even ID) will be returned.",
-                true
-        )
+                        "no guarantee that an owner name (or even ID) will be returned."
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER
         this.guildOnly = false
@@ -512,12 +498,10 @@ private class TagRawCmd : Command()
         this.fullname = "Tag Raw"
         this.arguments = "[Tag Name]"
         this.help = "Gets the raw, non-parsed form of a tag."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "It's worth noting that if a user owns both the local and global version " +
+        this.helpBiConsumer = Command standardSubHelp
+                        "It's worth noting that if a user owns both the local and global version " +
                         "of a tag when using this command on a server, the priority when getting content goes " +
-                        "to the *local* version, not the global one.",
-                true
-        )
+                        "to the *local* version, not the global one."
         this.guildOnly = false
     }
 
@@ -557,12 +541,10 @@ private class TagOverrideCmd : Command()
         this.fullname = "Tag Override"
         this.arguments = "[Tag Name] [Tag Content]"
         this.help = "Overrides a local or global tag."
-        this.helpBiConsumer = Command.standardSubHelp(
-                "It's worth noting that if a user owns both the local and global version " +
+        this.helpBiConsumer = Command standardSubHelp
+                        "It's worth noting that if a user owns both the local and global version " +
                         "of a tag when using this command on a server, the priority when overriding goes " +
-                        "to the *local* version, not the global one.",
-                true
-        )
+                        "to the *local* version, not the global one."
         this.category = Category.MODERATOR
         this.guildOnly = true
     }

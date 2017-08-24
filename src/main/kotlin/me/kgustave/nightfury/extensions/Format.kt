@@ -34,7 +34,7 @@ infix fun List<TextChannel>.multipleTextChannels(argument: String) = listOut("te
 infix fun List<VoiceChannel>.multipleVoiceChannels(argument: String) = listOut("voice channel", argument) { it.name }
 infix fun List<Role>.multipleRoles(argument: String) = listOut("role", argument) { it.name }
 
-private fun <T> List<T>.listOut(kind: String, argument: String, conversion: (T) -> String) = with(StringBuilder()) {
+private inline fun <T> List<T>.listOut(kind: String, argument: String, conversion: (T) -> String) = with(StringBuilder()) {
     append("Multiple ${kind}s found matching \"$argument\":\n")
     for(i in 0..3)
     {
@@ -49,4 +49,4 @@ private fun <T> List<T>.listOut(kind: String, argument: String, conversion: (T) 
 
 fun noMatch(lookedFor: String, query: String) = "Could not find any $lookedFor matching \"$query\"!"
 
-fun User.formattedName(boldName: Boolean) = "${if(boldName) "**${this.name}**" else this.name}#${this.discriminator}"
+infix fun User.formattedName(boldName: Boolean) = "${if(boldName) "**$name**" else name}#$discriminator"

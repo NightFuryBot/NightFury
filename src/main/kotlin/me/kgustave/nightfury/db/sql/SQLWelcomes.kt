@@ -24,13 +24,10 @@ import java.sql.ResultSet
  */
 class SQLWelcomeMessage(connection: Connection) : SQLSingleton<Guild, String>(connection)
 {
-    init
-    {
-        this.getStatement = "SELECT welcome FROM welcomes WHERE guild_id = ?"
-        this.setStatement = "INSERT INTO welcomes (guild_id, welcome) VALUES (?, ?)"
-        this.updateStatement = "UPDATE welcomes SET welcome = ? WHERE guild_id = ?"
-        this.resetStatement = "DELETE FROM welcomes WHERE guild_id = ?"
-    }
+    override val getStatement = "SELECT welcome FROM welcomes WHERE guild_id = ?"
+    override val setStatement = "INSERT INTO welcomes (guild_id, welcome) VALUES (?, ?)"
+    override val updateStatement = "UPDATE welcomes SET welcome = ? WHERE guild_id = ?"
+    override val resetStatement = "DELETE FROM welcomes WHERE guild_id = ?"
 
     override fun get(results: ResultSet, env: Guild): String? = if(results.next()) results.getString("welcome") else null
 }

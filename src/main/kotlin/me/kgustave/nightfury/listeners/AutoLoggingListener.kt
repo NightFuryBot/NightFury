@@ -23,21 +23,33 @@ import me.kgustave.nightfury.extensions.action
 import me.kgustave.nightfury.extensions.limit
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.audit.ActionType
+import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.guild.GenericGuildEvent
 import net.dv8tion.jda.core.events.guild.GuildBanEvent
 import net.dv8tion.jda.core.events.guild.GuildUnbanEvent
 import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent
 import net.dv8tion.jda.core.events.guild.member.GuildMemberRoleAddEvent
 import net.dv8tion.jda.core.events.guild.member.GuildMemberRoleRemoveEvent
-import net.dv8tion.jda.core.hooks.ListenerAdapter
+import net.dv8tion.jda.core.hooks.EventListener
 
 /**
  * @author Kaidan Gustave
  */
-class AutoLoggingListener(private val manager: DatabaseManager, private val logger: ModLogger) : ListenerAdapter()
+class AutoLoggingListener(private val manager: DatabaseManager, private val logger: ModLogger) : EventListener
 {
+    override fun onEvent(event: Event?) = when(event)
+    {
+        is GuildBanEvent -> onGuildBan(event)
+        is GuildUnbanEvent -> onGuildUnban(event)
+        is GuildMemberLeaveEvent -> onGuildMemberLeave(event)
+        is GuildMemberRoleAddEvent -> onGuildMemberRoleAdd(event)
+        is GuildMemberRoleRemoveEvent -> onGuildMemberRoleRemove(event)
+
+        else -> Unit
+    }
+
     // Handle Bans
-    override fun onGuildBan(event: GuildBanEvent)
+    fun onGuildBan(event: GuildBanEvent)
     {
         if(!event.shouldLog()) return
 
@@ -55,7 +67,7 @@ class AutoLoggingListener(private val manager: DatabaseManager, private val logg
     }
 
     // Handle Unbans
-    override fun onGuildUnban(event: GuildUnbanEvent)
+    fun onGuildUnban(event: GuildUnbanEvent)
     {
         if(!event.shouldLog()) return
 
@@ -73,7 +85,7 @@ class AutoLoggingListener(private val manager: DatabaseManager, private val logg
     }
 
     // Handle Kicks
-    override fun onGuildMemberLeave(event: GuildMemberLeaveEvent)
+    fun onGuildMemberLeave(event: GuildMemberLeaveEvent)
     {
         if(!event.shouldLog()) return
 
@@ -91,7 +103,7 @@ class AutoLoggingListener(private val manager: DatabaseManager, private val logg
     }
 
     // Handle Mutes
-    override fun onGuildMemberRoleAdd(event: GuildMemberRoleAddEvent)
+    fun onGuildMemberRoleAdd(event: GuildMemberRoleAddEvent)
     {
         if(!event.shouldLog()) return
         val mutedRole = manager.getMutedRole(event.guild) ?: return
@@ -112,7 +124,7 @@ class AutoLoggingListener(private val manager: DatabaseManager, private val logg
     }
 
     // Handle Unmutes
-    override fun onGuildMemberRoleRemove(event: GuildMemberRoleRemoveEvent)
+    fun onGuildMemberRoleRemove(event: GuildMemberRoleRemoveEvent)
     {
         if(!event.shouldLog()) return
         val mutedRole = manager.getMutedRole(event.guild) ?: return
@@ -132,7 +144,6 @@ class AutoLoggingListener(private val manager: DatabaseManager, private val logg
         }
     }
 
-    private fun GenericGuildEvent.shouldLog() : Boolean {
-        return manager.getModLog(guild)!=null && guild.selfMember.hasPermission(Permission.VIEW_AUDIT_LOGS)
-    }
+    private inline fun <reified T : GenericGuildEvent> T.shouldLog() =
+            manager.getModLog(guild)!=null && guild.selfMember.hasPermission(Permission.VIEW_AUDIT_LOGS)
 }

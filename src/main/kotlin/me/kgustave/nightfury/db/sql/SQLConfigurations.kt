@@ -22,87 +22,36 @@ import java.sql.SQLException
 /**
  * @author Kaidan Gustave
  */
+@Suppress("RedundantUnitReturnType")
 class SQLLimits(val connection: Connection)
 {
-    private val getCommandLimit = "SELECT limit_number FROM command_limits WHERE guild_id = ? AND command_name = ?"
+    private val getCommandLimit = "SELECT limit_number FROM command_limits WHERE guild_id = ? AND LOWER(command_name) = LOWER(?)"
     private val addCommandLimit = "INSERT INTO command_limits (guild_id, command_name, limit_number) VALUES (?, ?, ?)"
-    private val setCommandLimit = "UPDATE command_limits SET limit_number = ? WHERE guild_id = ? AND command_name = ?"
-    private val removeCommandLimit = "DELETE FROM command_limits WHERE guild_id = ? AND command_name = ?"
+    private val setCommandLimit = "UPDATE command_limits SET limit_number = ? WHERE guild_id = ? AND LOWER(command_name) = LOWER(?)"
+    private val removeCommandLimit = "DELETE FROM command_limits WHERE guild_id = ? AND LOWER(command_name) = LOWER(?)"
     private val removeAllCommandLimits = "DELETE FROM command_limits WHERE guild_id = ?"
 
-    fun hasLimit(guild: Guild, command: String) : Boolean = getLimit(guild, command) != 0
+    fun hasLimit(guild: Guild, command: String) = getLimit(guild, command) != 0
 
-    fun getLimit(guild: Guild, command: String) : Int
-    {
-        return try {
-            connection prepare getCommandLimit closeAfter {
-                insert(guild.idLong, command) executeQuery { if(it.next()) it.getInt("limit_number") else 0 }
-            }
-            /*connection.prepareStatement(getCommandLimit).use {
-                it.setLong(1, guild.idLong)
-                it.setString(2, command)
-                it.executeQuery().use { if(it.next()) it.getInt("limit_number") else 0 }
-            }*/
-        } catch (e: SQLException) {
-            SQL.LOG.warn(e)
-            0
+    fun getLimit(guild: Guild, command: String) = try {
+        connection prepare getCommandLimit closeAfter {
+            insert(guild.idLong, command) executeQuery { if(it.next()) it.getInt("limit_number") else 0 }
         }
-    }
+    } catch (e: SQLException) { SQL.LOG.warn(e); 0 }
 
-    fun addLimit(guild: Guild, command: String, limit: Int)
-    {
-        try {
-            connection prepare addCommandLimit closeAfter { insert(guild.idLong, command, limit).execute() }
-            /*connection.prepareStatement(addCommandLimit).use {
-                it.setLong(1, guild.idLong)
-                it.setString(2, command)
-                it.setInt(3, limit)
-                it.execute()
-            }*/
-        } catch (e: SQLException) {
-            SQL.LOG.warn(e)
-        }
-    }
+    fun addLimit(guild: Guild, command: String, limit: Int) : Unit = try {
+        connection prepare addCommandLimit closeAfter { insert(guild.idLong, command, limit).execute() }
+    } catch (e: SQLException) { SQL.LOG.warn(e) }
 
-    fun setLimit(guild: Guild, command: String, limit: Int)
-    {
-        try {
-            connection prepare setCommandLimit closeAfter { insert(limit, guild.idLong, command).execute() }
-            /*connection.prepareStatement(setCommandLimit).use {
-                it.setInt(1, limit)
-                it.setLong(2, guild.idLong)
-                it.setString(3, command)
-                it.execute()
-            }*/
-        } catch (e: SQLException) {
-            SQL.LOG.warn(e)
-        }
-    }
+    fun setLimit(guild: Guild, command: String, limit: Int) : Unit = try {
+        connection prepare setCommandLimit closeAfter { insert(limit, guild.idLong, command).execute() }
+    } catch (e: SQLException) { SQL.LOG.warn(e) }
 
-    fun removeLimit(guild: Guild, command: String)
-    {
-        try {
-            connection prepare removeCommandLimit closeAfter { insert(guild.idLong, command).execute() }
-            /*connection.prepareStatement(removeCommandLimit).use {
-                it.setLong(1, guild.idLong)
-                it.setString(2, command)
-                it.execute()
-            }*/
-        } catch (e: SQLException) {
-            SQL.LOG.warn(e)
-        }
-    }
+    fun removeLimit(guild: Guild, command: String) : Unit = try {
+        connection prepare removeCommandLimit closeAfter { insert(guild.idLong, command).execute() }
+    } catch (e: SQLException) { SQL.LOG.warn(e) }
 
-    fun removeAllLimits(guild: Guild)
-    {
-        try {
-            connection prepare removeAllCommandLimits closeAfter { insert(guild.idLong).execute() }
-            /*connection.prepareStatement(removeAllCommandLimits).use {
-                it.setLong(1, guild.idLong)
-                it.execute()
-            }*/
-        } catch (e: SQLException) {
-            SQL.LOG.warn(e)
-        }
-    }
+    fun removeAllLimits(guild: Guild) : Unit = try {
+        connection prepare removeAllCommandLimits closeAfter { insert(guild.idLong).execute() }
+    } catch (e: SQLException) { SQL.LOG.warn(e) }
 }

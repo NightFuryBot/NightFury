@@ -121,32 +121,26 @@ class DatabaseManager(url: String, user: String, pass: String)
 
     infix fun hasModRole(guild: Guild) = modRole.has(guild.idLong)
     infix fun getModRole(guild: Guild) = modRole.get(guild, guild.idLong)
-    infix fun setModRole(role: Role) {
-        if(getModRole(role.guild)!=null)
-            modRole.update(role.idLong, role.guild.idLong)
-        else
-            modRole.set(role.guild.idLong, role.idLong)
-    }
+    infix fun setModRole(role: Role) = if(getModRole(role.guild)!=null)
+        modRole.update(role.idLong, role.guild.idLong)
+    else
+        modRole.set(role.guild.idLong, role.idLong)
     infix fun resetModRole(guild: Guild) = modRole.reset(guild.idLong)
 
     infix fun hasMutedRole(guild: Guild) = mutedRole.has(guild.idLong)
     infix fun getMutedRole(guild: Guild) = mutedRole.get(guild, guild.idLong)
-    infix fun setMutedRole(role: Role) {
-        if(getMutedRole(role.guild)!=null)
-            mutedRole.update(role.idLong, role.guild.idLong)
-        else
-            mutedRole.set(role.guild.idLong, role.idLong)
-    }
+    infix fun setMutedRole(role: Role) = if(getMutedRole(role.guild)!=null)
+        mutedRole.update(role.idLong, role.guild.idLong)
+    else
+        mutedRole.set(role.guild.idLong, role.idLong)
     infix fun resetMutedRole(guild: Guild) = mutedRole.reset(guild.idLong)
 
     infix fun hasModLog(guild: Guild) = modLog.has(guild.idLong)
     infix fun getModLog(guild: Guild) = modLog.get(guild, guild.idLong)
-    infix fun setModLog(channel: TextChannel) {
-        if(getModLog(channel.guild)!=null)
-            modLog.update(channel.idLong, channel.guild.idLong)
-        else
-            modLog.set(channel.guild.idLong, channel.idLong)
-    }
+    infix fun setModLog(channel: TextChannel) = if(getModLog(channel.guild)!=null)
+        modLog.update(channel.idLong, channel.guild.idLong)
+    else
+        modLog.set(channel.guild.idLong, channel.idLong)
     infix fun resetModLog(guild: Guild) = modLog.reset(guild.idLong)
 
     infix fun isIgnoredChannel(channel: TextChannel) : Boolean {
@@ -199,20 +193,17 @@ class DatabaseManager(url: String, user: String, pass: String)
 
     fun hasLimit(guild: Guild, command: String) = commandLimits.hasLimit(guild, command.toLowerCase())
     fun getLimit(guild: Guild, command: String) = commandLimits.getLimit(guild, command.toLowerCase())
-    fun setLimit(guild: Guild, command: String, limit: Int) {
-        if(hasLimit(guild, command))
-            commandLimits.setLimit(guild, command.toLowerCase(), limit)
-        else
-            commandLimits.addLimit(guild, command.toLowerCase(), limit)
-    }
+    fun setLimit(guild: Guild, command: String, limit: Int) = if(hasLimit(guild, command))
+        commandLimits.setLimit(guild, command.toLowerCase(), limit)
+    else
+        commandLimits.addLimit(guild, command.toLowerCase(), limit)
     fun removeLimit(guild: Guild, command: String) = commandLimits.removeLimit(guild, command.toLowerCase())
 
     infix fun evaluate(string: String) =  try {
         connection prepare string closeAfter { execute() }
     } catch (e: SQLException) { throw e }
 
-    infix fun leaveGuild(guild: Guild)
-    {
+    infix fun leaveGuild(guild: Guild) {
         roleMe.removeAll(guild.idLong)
         colorMe.removeAll(guild.idLong)
         modRole.reset(guild.idLong)

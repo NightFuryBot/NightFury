@@ -22,7 +22,7 @@ import net.dv8tion.jda.core.managers.GuildController
 import net.dv8tion.jda.core.requests.restaction.RoleAction
 import java.awt.Color
 
-infix inline fun GuildController.createRole(init: RoleAction.() -> Unit) = createRole() promise(init)
+infix inline fun GuildController.promiseRole(init: RoleAction.() -> Unit) = createRole() promise(init)
 
 infix inline fun RoleAction.promise(init: RoleAction.() -> Unit) = with(this) { init(); promise() }
 

@@ -29,46 +29,46 @@ import java.util.function.BiConsumer
 abstract class Command
 {
     var name: String = "null"
-        protected set(value) {field = value}
+        protected set
 
     var aliases: Array<String> = emptyArray()
-        protected set(value) {field = value}
+        protected set
 
     var arguments: String = ""
-        protected set(value) {field = value}
+        protected set
 
     var help: String = "no help available"
-        protected set(value) {field = value}
+        protected set
 
     var devOnly: Boolean = false
-        protected set(value) {field = value}
+        protected set
 
     var guildOnly: Boolean = true
-        protected set(value) {field = value}
+        protected set
 
     var category: Category? = null
-        protected set(value) {field = value}
+        protected set
 
     var helpBiConsumer: BiConsumer<CommandEvent, Command> = defaultSubHelp
-        protected set(value) {field = value}
+        protected set
 
     var botPermissions: Array<Permission> = emptyArray()
-        protected set(value) {field = value}
+        protected set
 
     var userPermissions: Array<Permission> = emptyArray()
-        protected set(value) {field = value}
+        protected set
 
     var cooldown: Int = 0
-        protected set(value) {field = value}
+        protected set
 
     var cooldownScope: CooldownScope = CooldownScope.USER_GUILD
-        protected set(value) {field = value}
+        protected set
 
     var children: Array<Command> = emptyArray()
-        protected set(value) {field = value}
+        protected set
 
     var fullname: String = "null"
-        protected set(value) {field = value}
+        protected set
 
     companion object
     {
@@ -151,80 +151,6 @@ abstract class Command
                 if(event.isFromType(ChannelType.TEXT))
                     event.reactSuccess()
                 event.replyInDm(b.toString())
-            }
-        }
-
-        fun standardSubHelp(explanation: String?, helpInDM : Boolean = true) : BiConsumer<CommandEvent, Command>
-        {
-            return BiConsumer {event, command ->
-                val b = StringBuilder()
-                val aliases = command.aliases
-                val help = command.help
-                val arguments = command.arguments
-                val children = command.children
-                val ownerId = event.client.devId
-                val serverInvite = event.client.server
-                b.append("Available help for **${command.name} command** in " +
-                        "${if(event.isFromType(ChannelType.PRIVATE)) "DM" else "<#" + event.channel.id + ">"}\n")
-
-                b.append("\n**Usage:** `")
-                        .append(event.client.prefix)
-                        .append((if(command.fullname!="null") command.fullname else command.name).toLowerCase())
-                        .append(if(arguments.isNotEmpty()) " $arguments`" else "`")
-                        .append("\n")
-
-                if(aliases.isNotEmpty())
-                {
-                    b.append("\n**Alias${if(aliases.size>1) "es" else ""}:** `")
-                    for(i in aliases.indices) {
-                        b.append("${aliases[i]}`")
-                        if(i != aliases.size - 1)
-                            b.append(", `")
-                    }
-                    b.append("\n")
-                }
-
-                if(help != "no help available")
-                    b.append("\n$help\n")
-                if(explanation != null)
-                    b.append("\n$explanation\n")
-
-                if(children.isNotEmpty())
-                {
-                    b.append("\n**Sub-Commands:**\n\n")
-                    var cat : Category? = null
-                    for(c in children) {
-                        if(cat!=c.category) {
-                            if(!c.category!!.test(event))
-                                continue
-                            cat = c.category
-                            if(cat!=null)
-                                b.append("\n__${cat.title}__\n\n")
-                        }
-                        b.append("`").append(event.client.prefix).append(c.fullname.toLowerCase())
-                                .append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
-                                .append("` - ").append(c.help).append("\n")
-                    }
-                }
-
-                val owner = event.jda.getUserById(ownerId)
-                if(owner != null)
-                    b.append("\n\nFor additional help, contact **")
-                            .append(owner.name)
-                            .append("**#")
-                            .append(owner.discriminator)
-                            .append(" or join his support server ")
-                            .append(serverInvite)
-                else
-                    b.append("\n\nFor additional help, join my support server ")
-                            .append(serverInvite)
-                if(helpInDM) {
-                    if(event.isFromType(ChannelType.TEXT))
-                        event.reactSuccess()
-                    event.replyInDm(b.toString())
-                } else {
-                    event.reply(b.toString())
-                }
             }
         }
     }
