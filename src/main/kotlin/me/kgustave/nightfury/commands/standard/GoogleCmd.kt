@@ -26,7 +26,7 @@ import me.kgustave.nightfury.api.GoogleAPI
  * @author Kaidan Gustave
  */
 @APICache
-@MustHaveArguments("Specify what to search google for.")
+@MustHaveArguments("Specify what to search Google for.")
 class GoogleCmd(private val api: GoogleAPI) : Command()
 {
     init {

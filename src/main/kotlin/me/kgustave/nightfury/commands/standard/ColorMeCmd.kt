@@ -97,6 +97,7 @@ class ColorMeCmd : Command()
 
             else                       -> return event.replyError("${event.args} is not a valid color!")
         }
+
         val requested = colormes[0]
 
         if(!event.selfMember.canInteract(requested))

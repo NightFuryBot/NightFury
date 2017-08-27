@@ -27,8 +27,7 @@ import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.commands.admin.ModeratorListBaseCmd
-import me.kgustave.nightfury.extensions.emoteId
-import me.kgustave.nightfury.extensions.formattedName
+import me.kgustave.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.User
@@ -78,13 +77,11 @@ class ServerCmd(waiter: EventWaiter) : Command()
         {
             choices {
                 choice    { name { "Joins" }      action { children[0].run(event) } }
-
                 choice    { name { "Moderators" } action { children[1].run(event) } }
-
-                if(Category.MODERATOR.test(event))
                 choice    { name { "Owner" }      action { children[2].run(event) } }
-
+                if(Category.MODERATOR.test(event))
                 choice    { name { "Settings" }   action { children[3].run(event) } }
+
 
             }
             user      { event.author }
@@ -285,4 +282,73 @@ private class ServerSettingsCmd : Command()
             }
         })
     }
+}
+
+class ServerStatsCmd : Command()
+{
+    init {
+        this.name = "Stats"
+        this.fullname = "Server Stats"
+        this.help = "Gets server statistics and information."
+    }
+
+    override fun execute(event: CommandEvent)
+    {
+        val m = event.guild.members
+        val members = m.size
+        val admins = m.filter { it.isAdmin }.size
+
+        // Terminology:
+        // 'visible' implies the Member can join or read the channel.
+        // 'default' implies the Public Role (@everyone) can view this channel.
+
+        // Text Channels
+        val tc = event.guild.textChannels
+        val textChannels        = tc.size
+        val visibleTextChannels = tc.filter { event.member canView it }.size
+        val defaultTextChannels = tc.filter { it.guild.publicRole canView it }.size
+
+        // Voice Channels
+        val vc = event.guild.voiceChannels
+        val voiceChannels        = vc.size
+        val visibleVoiceChannels = vc.filter { event.member canJoin it }.size
+        val defaultVoiceChannels = vc.filter { it.guild.publicRole canJoin it }.size
+
+
+        val creationTime = event.guild.creationTime
+        val serverIcon = event.guild.iconUrl
+
+        val tags = event.localTags.getAllTags(event.guild).size
+        event.reply(embed {
+            title { "Stats for ${event.guild.name}" }
+            url   { serverIcon }
+
+            field {
+                name = "Members"
+                appendln("Total: $members")
+                appendln("Administrators: $admins")
+            }
+
+            field {
+                name = "Text Channels"
+                appendln("Total: $textChannels")
+                appendln("Visible: $visibleTextChannels")
+                appendln("Hidden: $defaultTextChannels")
+            }
+
+            field {
+                name = "Voice Channels"
+                appendln("Total: $voiceChannels")
+                appendln("Joinable: $visibleVoiceChannels")
+                appendln("Default: $defaultVoiceChannels")
+            }
+
+            footer {
+                value = "Created "
+            }
+
+            time { creationTime }
+        })
+    }
+
 }

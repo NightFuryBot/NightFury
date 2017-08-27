@@ -31,6 +31,8 @@ import javax.script.ScriptException
 @MustHaveArguments("Specify script to evaluate.")
 class EvalCmd : Command()
 {
+    val engine : ScriptEngine = ScriptEngineManager().getEngineByName("nashorn")
+
     init {
         this.name = "Eval"
         this.help = "Evaluates using Nashorn."
@@ -40,13 +42,9 @@ class EvalCmd : Command()
         this.guildOnly = false
     }
 
-    val engine : ScriptEngine = ScriptEngineManager().getEngineByName("nashorn")
-
     override fun execute(event: CommandEvent)
     {
         val args = event.args
-
-        engine load event
 
         when {
             args matches Regex("9\\s*\\+\\s*10") -> event.reply("```java\n$args```Evaluated:\n```\n21```")
@@ -67,6 +65,7 @@ class EvalCmd : Command()
             } catch (e: ScriptException) {
                 event.reply("```java\n$args```A ScriptException was thrown:\n```\n${e.message}```")
             } catch (e: Exception) {
+                e.printStackTrace()
                 event.reply("```java\n$args```An exception was thrown:\n```\n$e```")
             }
         }
@@ -107,5 +106,5 @@ class EvalCmd : Command()
         return this
     }
 
-    private infix inline fun <reified T : ScriptEngine> T.eval(script: String) = this.eval(script)
+    private infix inline fun <reified T : ScriptEngine> T.eval(script: String) = eval(script)
 }

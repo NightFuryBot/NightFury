@@ -169,10 +169,11 @@ internal class Config(key: File)
     internal val token       : String            = tokens[0]
     internal val devId       : Long              = tokens[1].toLong()
     internal val dbotskey    : String            = tokens[2]
-    internal val dbURL       : String            = tokens[3]
-    internal val dbUser      : String            = tokens[4]
-    internal val dbPass      : String            = tokens[5]
-    internal val ytApiKey    : String            = tokens[6]
+    internal val dborgkey    : String            = tokens[3]
+    internal val dbURL       : String            = tokens[4]
+    internal val dbUser      : String            = tokens[5]
+    internal val dbPass      : String            = tokens[6]
+    internal val ytApiKey    : String            = tokens[7]
     internal val prefix      : String            = "|"
     internal val success     : String            = "\uD83D\uDC32"
     internal val warning     : String            = "\uD83D\uDC22"

@@ -49,31 +49,34 @@ class AvatarCmd : Command()
     {
         val user = if(event.isFromType(ChannelType.TEXT)) {
             if(event.args.isNotEmpty()) {
-                event.guild.findMembers(event.args).apply {
-                    if(this.isEmpty())
-                        return event.replyError(noMatch("members", event.args))
-                    if(this.size > 1)
-                        return event.replyError(this.multipleMembers(event.args))
-                }[0].user
-            } else { event.author }
+                val members = event.guild findMembers event.args
+                if(members.isEmpty())
+                    return event.replyError(noMatch("members", event.args))
+                if(members.size > 1)
+                    return event.replyError(members multipleMembers event.args)
+                members[0].user
+            } else event.author
         } else {
             if(event.args.isNotEmpty()) {
-                event.jda.findUsers(event.args).apply {
-                    if(this.isEmpty())
-                        return event.replyError(noMatch("users", event.args))
-                    if(this.size > 1)
-                        return event.replyError(this.multipleUsers(event.args))
-                }[0]
-            } else { event.author }
+                val users = event.jda findUsers event.args
+                if(users.isEmpty()) // None found
+                    return event.replyError(noMatch("users", event.args))
+                if(users.size > 1) // More than one found
+                    return event.replyError(users multipleUsers event.args)
+                users[0] // Back up to if
+            } else event.author
         }
 
         event.reply(embed {
             title { "Avatar For ${user.formattedName(true)}" }
-            if(event.isFromType(ChannelType.TEXT)) {
+
+            if(event.isFromType(ChannelType.TEXT))
+            {
                 val member = event.guild.getMember(user)
                 colorAwt = if(member!=null) member.color else event.selfMember.color
             }
-            ("${user.effectiveAvatarUrl}?size=1024").apply { url { this } image { this } }
+
+            "${user.effectiveAvatarUrl}?size=1024".apply { url { this } image { this } }
         })
     }
 }

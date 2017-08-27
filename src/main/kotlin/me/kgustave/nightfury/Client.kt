@@ -52,6 +52,7 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
+import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.functions
 import kotlin.streams.toList
 
@@ -354,12 +355,6 @@ class Client internal constructor
     private inline val Guild.isGood : Boolean
         inline get() = members.stream().filter { it.user.isBot }.count()<=30 || getMemberById(devId)!=null
 
-    private inline fun <reified I> Iterable<*>.containsInstance() : Boolean
-    {
-        this.forEach { if (it is I) return true }
-        return false
-    }
-
     private fun cleanSchedule()
     {
         synchronized(scheduled)
@@ -372,9 +367,10 @@ class Client internal constructor
     private fun clearAPICaches()
     {
         commands.stream().filter {
-            it::class.annotations.containsInstance<APICache>()
-        }.forEach { cmd ->
-            cmd::class.functions.stream().filter { it.annotations.containsInstance<APICache>() }.forEach { it.call(cmd) }
+            it::class.findAnnotation<APICache>() != null
+        }.forEach { cmd -> cmd::class.functions.stream()
+                .filter { it.findAnnotation<APICache>() != null }
+                .findFirst().ifPresent { it.call(cmd) }
         }
     }
 

@@ -47,8 +47,8 @@ class CommandMap(private vararg val commands : Command) : Collection<Command>
 
     init {
         commands.forEachIndexed { index, command ->
-            this.map.put(command.name.toLowerCase(), index)
-            command.aliases.forEach { this.map.put(it.toLowerCase(), index) }
+            map.put(command.name.toLowerCase(), index)
+            command.aliases.forEach { map.put(it.toLowerCase(), index) }
         }
     }
 

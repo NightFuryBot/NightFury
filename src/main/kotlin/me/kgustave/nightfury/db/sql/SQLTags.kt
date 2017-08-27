@@ -162,6 +162,18 @@ class SQLLocalTags(val connection: Connection)
         0L
     }
 
+    fun getAllTags(guild: Guild) : Set<String> {
+        val names = HashSet<String>()
+        try {
+            connection prepare "SELECT names FROM local_tags WHERE guild_id = ?" closeAfter {
+                insert(guild.idLong) executeQuery { while(it.next()) names.add(it.getString("name")) }
+            }
+        } catch (e : SQLException) {
+            SQL.LOG.warn(e)
+        }
+        return names
+    }
+
     fun getAllTags(userid: Long, guild: Guild) : Set<String> {
         val names = HashSet<String>()
         try {

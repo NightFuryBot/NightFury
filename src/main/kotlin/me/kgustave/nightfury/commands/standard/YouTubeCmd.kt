@@ -26,7 +26,7 @@ import me.kgustave.nightfury.api.YouTubeAPI
  * @author Kaidan Gustave
  */
 @APICache
-@MustHaveArguments("Specify what to search youtube for.")
+@MustHaveArguments("Specify what to search YouTube for.")
 class YouTubeCmd(val ytAPI: YouTubeAPI) : Command()
 {
     init {

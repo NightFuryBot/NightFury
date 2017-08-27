@@ -17,7 +17,9 @@ package me.kgustave.nightfury.extensions
 
 import club.minnced.kjda.entities.isSelf
 import net.dv8tion.jda.core.Permission
+import net.dv8tion.jda.core.audit.ActionType
 import net.dv8tion.jda.core.entities.*
+import net.dv8tion.jda.core.requests.restaction.pagination.AuditLogPaginationAction
 
 infix fun Guild.refreshMutedRole(role: Role)
 {
@@ -72,3 +74,12 @@ fun Message.removeMenuReactions()
         if(it.isSelf) it.removeReaction(this.author).queue()
     }
 }
+
+infix fun Member.canView(channel: TextChannel) = getPermissions(channel).contains(Permission.MESSAGE_READ)
+infix fun Role.canView(channel: TextChannel) = hasPermission(channel, Permission.MESSAGE_READ)
+infix fun Member.canJoin(channel: VoiceChannel) = getPermissions(channel).contains(Permission.VOICE_CONNECT)
+infix fun Role.canJoin(channel: VoiceChannel) = hasPermission(channel, Permission.VOICE_CONNECT)
+
+infix inline fun AuditLogPaginationAction.limit(lazy: () -> Int) : AuditLogPaginationAction = limit(lazy())
+
+infix inline fun AuditLogPaginationAction.action(lazy: () -> ActionType) : AuditLogPaginationAction = type(lazy())

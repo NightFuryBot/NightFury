@@ -35,6 +35,7 @@ import net.dv8tion.jda.core.entities.User
 /**
  * @author Kaidan Gustave
  */
+@MustHaveArguments("Specify the name of a tag to call.")
 class TagCommand(waiter: EventWaiter) : Command()
 {
     init {
@@ -64,53 +65,58 @@ class TagCommand(waiter: EventWaiter) : Command()
 
     override fun execute(event: CommandEvent)
     {
-        if(event.args.isEmpty())
-            return event.replyError(TOO_FEW_ARGS_ERROR.format("Try specifying a tag name in the format `${event.client.prefix}tag [tag name]`."))
         val parts = event.args.split(Regex("\\s+"),2)
+
         val name = if(event.client.commands[parts[0]]!=null)
-            return event.reply("*You remember Monitor's words: Not everything is a tag!*")
+            // The tag is a command name, so we inform the user that it's a command not a tag and end
+            return event.reply("You remember Monitor's words: *\"Not everything is a tag!\"*")
         else parts[0]
+
+        // Always have at minimum an empty string
         val args = if(parts.size>1) parts[1] else ""
+
         if(event.isFromType(ChannelType.TEXT)) {
             val content : String = when {
                 event.localTags.isTag(name, event.guild) -> event.localTags.getTagContent(name, event.guild)
                 event.globalTags.isTag(name) -> event.globalTags.getTagContent(name)
+
                 else -> ""
             }
+            // If the content is empty no tag was found, so tell them there is no tag and end
             if(content.isEmpty())
                 return event.replyError("**No Tag Found Matching \"$name\"**\n" +
                         SEE_HELP.format(event.client.prefix,this.name))
             else try {
-                event.reply(
-                        event.client.parser.clear()
-                                .put("args", args.trim())
-                                .put("user", event.author)
-                                .put("guild", event.guild)
-                                .put("channel", event.textChannel)
-                                .parse(content)
-                )
+                // Parse the content and run
+                event.reply(event.client.parser.clear()
+                        .put("args", args.trim())
+                        .put("user", event.author)
+                        .put("guild", event.guild)
+                        .put("channel", event.textChannel)
+                        .parse(content))
             } catch (e : TagErrorException) {
+                // Errors that happen will be caught and sent separately to provide concise info on what went wrong
                 if(e.message!=null) event.replyError(e.message)
-                else                event.replyError("Tag matching \"$name\" could not be processed for an unknown reason!")
+                else event.replyError("Tag matching \"$name\" could not be processed for an unknown reason!")
             }
         } else {
-            val content : String = if(event.globalTags.isTag(name)) {
-                event.globalTags.getTagContent(name)
-            } else ""
+            // Not from a guild, no need to check for local tags
+            val content : String = if(event.globalTags.isTag(name)) event.globalTags.getTagContent(name) else ""
 
+            // If the content is empty no tag was found, so tell them there is no tag and end
             if(content.isEmpty())
                 return event.replyError("**No Global Tag Found Matching \"$name\"**\n" +
                         SEE_HELP.format(event.client.prefix,this.name))
             else try {
-                event.reply(
-                        event.client.parser.clear()
-                                .put("args", args)
-                                .put("user", event.author)
-                                .parse(content)
-                )
+                // Parse content and run
+                event.reply(event.client.parser.clear()
+                        .put("args", args)
+                        .put("user", event.author)
+                        .parse(content))
             } catch (e : TagErrorException) {
+                // Errors that happen will be caught and sent separately to provide concise info on what went wrong
                 if(e.message!=null) event.replyError(e.message)
-                else                event.replyError("Tag matching \"$name\" could not be processed for an unknown reason!")
+                else event.replyError("Tag matching \"$name\" could not be processed for an unknown reason!")
             }
         }
     }
@@ -162,6 +168,9 @@ private class TagCreateCmd : Command()
         val name = parts[0]
         val content = parts[1]
 
+        // Fails if:
+        // There exists a local tag by the name specified
+        // There exists a global tag by the name specified
         if(event.localTags.isTag(name, event.guild) || event.globalTags.isTag(name))
             return event.replyError("Tag named \"$name\" already exists!")
         else {
@@ -218,6 +227,9 @@ private class TagCreateGlobalCmd : Command()
         val name = parts[0]
         val content = parts[1]
 
+        // Fails if:
+        // From a TextChannel and there exists a local tag by the name specified
+        // From a PrivateChannel and there exists a global tag by the name specified
         if((event.isFromType(ChannelType.TEXT) && event.localTags.isTag(name, event.guild)) || event.globalTags.isTag(name))
             return event.replyError("Tag named \"$name\" already exists!")
         else {
@@ -593,6 +605,6 @@ private class TagOverrideCmd : Command()
 }
 
 val CommandEvent.localTags : SQLLocalTags
-    get() {return this.client.manager.localTags}
+    get() = client.manager.localTags
 val CommandEvent.globalTags : SQLGlobalTags
-    get() {return this.client.manager.globalTags}
+    get() = client.manager.globalTags
