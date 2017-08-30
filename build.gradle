@@ -43,7 +43,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 6, build: 1)
+def versionObj = new Version(major: 0, minor: 6, build: 2)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"

@@ -35,7 +35,6 @@ import net.dv8tion.jda.core.utils.SimpleLog
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
-import java.sql.SQLException
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -45,7 +44,7 @@ fun main(args: Array<String>?)
 
     Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
 
-    try { NightFury(args ?: emptyArray()) } catch(e : IOException) {
+    try { NightFury() } catch(e : IOException) {
         NightFury.LOG.fatal("Failed to get configurations!")
         NightFury.LOG.log(e)
     }
@@ -54,7 +53,7 @@ fun main(args: Array<String>?)
 /**
  * @author Kaidan Gustave
  */
-class NightFury(args: Array<String>)
+class NightFury
 {
     companion object
     {
@@ -75,25 +74,6 @@ class NightFury(args: Array<String>)
         val config = Config(Paths.get(System.getProperty("user.dir"), "config.txt").toFile())
         val manager = DatabaseManager(config.dbURL, config.dbUser, config.dbPass)
 
-        if(args.isNotEmpty())
-        {
-            args.forEach {
-                when(it)
-                {
-                    "-setupDB"         -> if(!manager.setupDatabase())        throw SQLException("Failed to setup database!")
-                    "-setupCases"      -> if(!manager.setupCasesTable())      throw SQLException("Failed to setup cases table!")
-                    "-setupChannels"   -> if(!manager.setupChannelsTable())   throw SQLException("Failed to setup channels table!")
-                    "-setupPrefixes"   -> if(!manager.setupPrefixesTable())   throw SQLException("Failed to setup prefixes table!")
-                    "-setupRoles"      -> if(!manager.setupRolesTable())      throw SQLException("Failed to setup roles table!")
-                    "-setupGlobalTags" -> if(!manager.setupGlobalTagsTable()) throw SQLException("Failed to setup global tags table!")
-                    "-setupLocalTags"  -> if(!manager.setupLocalTagsTable())  throw SQLException("Failed to setup local tags table!")
-                    "-setupCCommands"  -> if(!manager.setupCommandsTable())   throw SQLException("Failed to setup custom commands table!")
-                    "-setupWelcomes"   -> if(!manager.setupWelcomesTable())   throw SQLException("Failed to setup welcomes table!")
-                    "-setupLimits"     -> if(!manager.setupLimitsTable())     throw SQLException("Failed to setup limits table!")
-                }
-            }
-        }
-
         val google = GoogleAPI()
         val e621 = E621API()
         val yt = YouTubeAPI(config.ytApiKey)
@@ -105,7 +85,8 @@ class NightFury(args: Array<String>)
         val client = Client(
                 config.prefix, config.devId, manager,
                 config.success, config.warning, config.error,
-                config.server, config.dbotskey, waiter, parser,
+                config.server, config.dbotskey, config.dborgkey,
+                waiter, parser,
 
                 AboutCmd(*config.permissions),
                 AvatarCmd(),

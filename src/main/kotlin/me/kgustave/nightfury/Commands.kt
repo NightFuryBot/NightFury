@@ -20,7 +20,6 @@ import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.ArgumentPatterns
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
-import java.util.*
 import java.util.function.BiConsumer
 
 /**
@@ -159,12 +158,12 @@ abstract class Command
     {
         if(children.isNotEmpty() && event.args.isNotEmpty())
         {
-            val parts = Arrays.copyOf<String>(event.args.split(Regex("\\s+"), 2).toTypedArray(), 2)
-            children.forEach { child ->
-                if(child.isForCommand(parts[0]))
+            val parts = event.args.split(ArgumentPatterns.commandArgs, 2)
+            children.forEach {
+                if(it.isForCommand(parts[0]))
                 {
-                    event.args = parts[1]?:""
-                    return child.run(event)
+                    event.args = if(parts.size>1) parts[1] else ""
+                    return it.run(event)
                 }
             }
         }
@@ -230,7 +229,8 @@ abstract class Command
                 return if(it.error.isNotEmpty())
                     event.replyError(TOO_FEW_ARGS_ERROR.format(it.error))
                 else
-                    event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix, (if(fullname!="null") fullname else name).toLowerCase()))
+                    event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix,
+                            (if(fullname!="null") fullname else name).toLowerCase()))
             }
         }
 

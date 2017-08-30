@@ -47,10 +47,7 @@ class SQLCustomCommands(val connection: Connection)
         connection prepare getContent closeAfter {
             insert(name, guild.idLong) executeQuery { if(it.next()) it.getString("content")?:"" else "" }
         }
-    } catch (e : SQLException) {
-        SQL.LOG.warn(e)
-        ""
-    }
+    } catch (e : SQLException) { SQL.LOG.warn(e); "" }
 
     fun add(name: String, content: String, guild: Guild) : Unit = try {
         connection prepare(add) closeAfter { insert(name, content, guild.idLong).execute() }
@@ -58,13 +55,9 @@ class SQLCustomCommands(val connection: Connection)
 
     fun remove(name: String, guild: Guild) : Unit = try {
         connection prepare(remove) closeAfter { insert(name, guild.idLong).execute() }
-    } catch (e : SQLException) {
-        SQL.LOG.warn(e)
-    }
+    } catch (e : SQLException) { SQL.LOG.warn(e) }
 
     fun removeAll(guild: Guild) : Unit = try {
         connection prepare removeAll closeAfter { insert(guild.idLong).execute() }
-    } catch (e : SQLException) {
-        SQL.LOG.warn(e)
-    }
+    } catch (e : SQLException) { SQL.LOG.warn(e) }
 }

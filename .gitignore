@@ -10,9 +10,17 @@
 # Data Files
 config.txt
 SQLSetup.json
+*.mv.db
+*.lock.db
+*.trace.db
 
 # Misc Files
 /wiki/
 /Extensions/
 /scripts/
-/bash
+/bash/
+
+# Images
+*.gif
+*.jpg
+*.png

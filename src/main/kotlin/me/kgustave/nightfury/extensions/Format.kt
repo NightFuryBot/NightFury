@@ -21,6 +21,7 @@ import java.util.regex.Pattern
 
 object ArgumentPatterns
 {
+    val commandArgs = Regex("\\s+")
     val discordID: Pattern = Regex("(\\d{17,20})").toPattern()
     val userMention: Pattern = Regex("<@!?(\\d{17,20})>").toPattern()
     val reasonPattern = Regex("(^.+)\\s(?:for\\s+)([\\s\\S]+)$", RegexOption.DOT_MATCHES_ALL).toPattern()

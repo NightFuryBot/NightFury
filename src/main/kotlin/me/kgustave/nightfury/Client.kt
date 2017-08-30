@@ -21,8 +21,8 @@ import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
+import me.kgustave.nightfury.extensions.ArgumentPatterns
 import me.kgustave.nightfury.listeners.*
-import me.kgustave.nightfury.listeners.command.*
 import me.kgustave.nightfury.resources.*
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.OnlineStatus
@@ -50,8 +50,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-import kotlin.collections.HashMap
-import kotlin.collections.HashSet
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.functions
 import kotlin.streams.toList
@@ -62,8 +60,8 @@ import kotlin.streams.toList
 class Client internal constructor
 (val prefix: String, val devId: Long, val manager: DatabaseManager,
  val success: String, val warning: String, val error: String,
- val server: String, val dBotsKey : String, val waiter: EventWaiter,
- val parser: Parser, vararg commands: Command) : EventListener
+ val server: String, val dBotsKey: String, val dBorgKey: String,
+ val waiter: EventWaiter, val parser: Parser, vararg commands: Command): EventListener
 {
     //////////////////////
     // PRE-INIT MEMBERS //
@@ -78,20 +76,13 @@ class Client internal constructor
     val messageCacheSize : Int
         get() = callCache.size
 
-    internal var listener : CommandListener
+    internal var listener : CommandListener = CommandListener.Mode.STANDARD.listener
 
-    private val executor  : ScheduledExecutorService               = Executors.newSingleThreadScheduledExecutor()
-    private val cooldowns : HashMap<String, OffsetDateTime>        = HashMap()
-    private val scheduled : HashMap<String, ScheduledFuture<*>>    = HashMap()
-    private val uses      : HashMap<String, Int>                   = HashMap()
-    private val callCache : FixedSizeCache<Long, HashSet<Message>> = FixedSizeCache(300)
-
-    private val listeners : Array<CommandListener> = arrayOf(StandardListener(), IdleListener(), DebugListener())
-
-    init
-    {
-        listener = listeners[0]
-    }
+    private val executor  : ScheduledExecutorService                  = Executors.newSingleThreadScheduledExecutor()
+    private val cooldowns : MutableMap<String, OffsetDateTime>        = HashMap()
+    private val scheduled : MutableMap<String, ScheduledFuture<*>>    = HashMap()
+    private val uses      : MutableMap<String, Int>                   = HashMap()
+    private val callCache : FixedSizeCache<Long, MutableSet<Message>> = FixedSizeCache(300)
 
     companion object
     {
@@ -101,8 +92,8 @@ class Client internal constructor
 
     fun targetListener(name: String)
     {
-        val l = listeners.filter { it.name == name.toLowerCase() }
-        if(l.isNotEmpty()) listener = l[0]
+        val l = CommandListener.Mode.typeOf(name)
+        if(l != null) listener = l.listener
     }
 
     fun getRemainingCooldown(name: String): Int
@@ -186,7 +177,6 @@ class Client internal constructor
         if(toLeave.isNotEmpty())
         {
             toLeave.forEach { it.leave().queue() }
-
             Client.log.info("Left ${toLeave.size} bad guilds!")
         }
 
@@ -210,7 +200,7 @@ class Client internal constructor
         if(event.guild.selfMember.joinDate.plusMinutes(5).isAfter(OffsetDateTime.now()))
         {
             if(event.guild.isGood) updateStats(event.jda)
-            else                   event.guild.leave().queue()
+            else event.guild.leave().queue()
         }
     }
 
@@ -232,7 +222,7 @@ class Client internal constructor
             rawContent.startsWith(prefix, true) -> // From Anywhere with default prefix
             {
                 prefixUsed = prefix
-                parts = rawContent.substring(prefixUsed.length).trim().split(Regex("\\s+"), 2)
+                parts = rawContent.substring(prefixUsed.length).trim().split(ArgumentPatterns.commandArgs, 2)
             }
 
             event.guild != null -> // From Guild without default prefix
@@ -242,7 +232,7 @@ class Client internal constructor
                     val prefix = prefixes.stream().filter { rawContent.startsWith(it, true) }?.findFirst()
                     if(prefix!=null && prefix.isPresent) {
                         prefixUsed = prefix.get()
-                        parts = rawContent.substring(prefixUsed.length).trim().split(Regex("\\s+"), 2)
+                        parts = rawContent.substring(prefixUsed.length).trim().split(ArgumentPatterns.commandArgs, 2)
                     } else return
                 } else return
             }
@@ -340,7 +330,8 @@ class Client internal constructor
             val stored = callCache[id]
             if(stored != null)
                 stored.add(message)
-            else {
+            else
+            {
                 val toStore = HashSet<Message>()
                 toStore.add(message)
                 callCache.add(id, toStore)
@@ -382,31 +373,51 @@ class Client internal constructor
         if(jda.shardInfo != null)
             body.put("shard_id", jda.shardInfo.shardId).put("shard_count", jda.shardInfo.shardTotal)
 
-        val builder = Request.Builder().post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
-                .url("https://bots.discord.pw/api/bots/" + jda.selfUser.id + "/stats")
-                .header("Authorization", dBotsKey)
-                .header("Content-Type", "application/json")
-
-        client.newCall(builder.build()).enqueue(object : Callback {
+        // Create POST request to bots.discord.pw
+        client.newRequest({
+            post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
+            url("https://bots.discord.pw/api/bots/${jda.selfUser.id}/stats")
+            header("Authorization", dBotsKey)
+            header("Content-Type", "application/json")
+        }).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) = response.close()
 
-            override fun onFailure(call: Call, e: IOException) {
+            override fun onFailure(call: Call, e: IOException)
+            {
                 Client.log.fatal("Failed to send information to bots.discord.pw")
                 Client log e
             }
         })
 
+        // Send POST request to discordbots.org
+        client.newRequest({
+            post(RequestBody.create(Requester.MEDIA_TYPE_JSON,body.toString()))
+            url("https://discordbots.org/api/bots/${jda.selfUser.id}/stats")
+            header("Authorization", dBorgKey)
+            header("Content-Type", "application/json")
+        }).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) = response.close()
+
+            override fun onFailure(call: Call, e: IOException) {
+                Client.log.fatal("Failed to send information to discordbots.org")
+                Client log e
+            }
+        })
+
+        // If we're not sharded there's no reason to send a GET request
         if(jda.shardInfo == null)
         {
             totalGuilds = jda.guilds.size
             return
         }
 
+        // Send GET request to bots.discord.pw
         try {
-            client.newCall(Request.Builder().get()
-                    .url("https://bots.discord.pw/api/bots/" + jda.selfUser.id + "/stats")
-                    .header("Authorization", dBotsKey).header("Content-Type", "application/json").build())
-                    .execute().body()!!.charStream().use {
+            client.newRequest {
+                get().url("https://bots.discord.pw/api/bots/${jda.selfUser.id}/stats")
+                header("Authorization", dBotsKey)
+                header("Content-Type", "application/json")
+            }.execute().body()!!.charStream().use {
                 val array = JSONObject(JSONTokener(it)).getJSONArray("stats")
                 var total = 0
                 array.forEach { total += (it as JSONObject).getInt("server_count") }
@@ -416,5 +427,11 @@ class Client internal constructor
             Client.log.fatal("Failed to retrieve bot shard information from bots.discord.pw")
             Client log e
         }
+    }
+
+    private inline fun OkHttpClient.newRequest(lazy: Request.Builder.() -> Unit) : Call {
+        val builder = Request.Builder()
+        builder.lazy()
+        return this.newCall(builder.build())
     }
 }

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("LoopToCallChain")
 package me.kgustave.nightfury.db
 
 import me.kgustave.nightfury.db.sql.*
@@ -26,13 +27,25 @@ import java.util.Comparator
 /**
  * @author Kaidan Gustave
  */
-class DatabaseManager(url: String, user: String, pass: String)
+class DatabaseManager @Throws(Exception::class) constructor(url: String, user: String, pass: String)
 {
-    init {
-        try { Class.forName("org.h2.Driver").newInstance() } catch (e: Exception) { SQL.LOG.fatal(e) }
-    }
+    val connection : Connection
 
-    val connection : Connection = DriverManager.getConnection(url, user, pass)
+    init {
+        try {
+            Class.forName("org.h2.Driver").newInstance()
+        } catch (e: Exception) {
+            throw e
+        }
+        // Create the connection
+        connection = DriverManager.getConnection(url, user, pass)
+
+        for (data in TableData.values())
+            if(!(connection createTable data)) {
+                connection.close()
+                throw SQLException("Failed to set up vital DB Data!")
+            }
+    }
 
     private val roleMe : SQLRoleMe = SQLRoleMe(connection)
     private val colorMe : SQLColorMe = SQLColorMe(connection)
@@ -55,51 +68,76 @@ class DatabaseManager(url: String, user: String, pass: String)
 
     val commandLimits : SQLLimits = SQLLimits(connection)
 
-    fun setupDatabase() = setupCasesTable() && setupChannelsTable()
-        && setupPrefixesTable() && setupRolesTable()
+    infix fun Connection.createTable(data: TableData) : Boolean= top@ try {
+        if(this hasTableNamed data.name)
+            return@top true
+        else {
+            val params = data.parameters
+            // Automatically builds a statement out of parameter data
+            val statement = buildString {
+                append("CREATE TABLE ${data.name} (")
+                for(i in 0 until (params.size-1))
+                    append(params[i]).append(", ")
+                append("${params[params.size-1]})")
+            }
+            this prepare statement closeAfter { execute() }
+            SQL.LOG.info("Created ${data.name} Table!")
+            return@top true
+        }
+    } catch (e : SQLException) {
+        SQL.LOG.warn(e)
+        return@top false
+    }
+
+    infix fun Connection.hasTableNamed(name: String) = this.metaData.getTables(null, null, name, null).use { it.next() }
+
+    /*fun setupDatabase() = setupCasesTable() && setupChannelsTable()
+        && prefixesTable() && setupRolesTable()
         && setupGlobalTagsTable() && setupLocalTagsTable()
         && setupCommandsTable() && setupWelcomesTable()
 
-    fun setupCasesTable() = createTable("Cases")
-    {
-        "CREATE TABLE cases (" +
-                "number int, guild_id long, message_id long, mod_id long, target_id long," +
-                " is_on_user boolean, action varchar(20), reason varchar(200)" +
-            ")"
-    }
+    fun setupCasesTable() = createTable("Cases",
+              "number int",     "guild_id long",     "message_id long",      "mod_id long",
+            "target_id long", "is_on_user boolean", "action varchar(20)", "reason varchar(200)")
 
-    fun setupChannelsTable() = createTable("Channels")
-    { "CREATE TABLE channels (guild_id long, channel_id long, type varchar(20))" }
+    fun setupChannelsTable() = createTable("Channels",
+            "guild_id long", "channel_id long", "type varchar(20)")
 
-    fun setupPrefixesTable() = createTable("Prefixes")
-    { "CREATE TABLE prefixes (guild_id long, prefix varchar(50))" }
+    fun prefixesTable() = createTable("Prefixes",
+            "guild_id long", "prefix varchar(50)")
 
-    fun setupRolesTable() = createTable("Roles")
-    { "CREATE TABLE roles (guild_id long, role_id long, type varchar(20))" }
+    fun setupRolesTable() = createTable("Roles",
+            "guild_id long", "role_id long", "type varchar(20)")
 
-    fun setupGlobalTagsTable() = createTable("Global Tags")
-    { "CREATE TABLE global_tags (name varchar(50), owner_id long, content varchar(1900))" }
+    fun setupGlobalTagsTable() = createTable("Global Tags",
+            "name varchar(50)", "owner_id long", "content varchar(1900)")
 
-    fun setupLocalTagsTable() = createTable("Local Tags")
-    { "CREATE TABLE local_tags (name varchar(50), guild_id long, owner_id long, content varchar(1900))" }
+    fun setupLocalTagsTable() = createTable("Local Tags",
+            "name varchar(50)", "guild_id long", "owner_id long", "content varchar(1900)")
 
-    fun setupCommandsTable() = createTable("Custom Commands")
-    { "CREATE TABLE custom_commands (name varchar(50), content varchar(1900), guild_id long)" }
+    fun setupCommandsTable() = createTable("Custom Commands",
+            "name varchar(50)", "content varchar(1900)", "guild_id long")
 
-    fun setupWelcomesTable() = createTable("Welcomes")
-    { "CREATE TABLE welcomes (guild_id long, welcome varchar(1900))" }
+    fun setupWelcomesTable() = createTable("Welcomes",
+            "guild_id long", "welcome varchar(1900)")
 
-    fun setupLimitsTable() = createTable("command_limits")
-    { "CREATE TABLE command_limits (guild_id long, command_name varchar(100), limit_number int)"}
+    fun setupLimitsTable() = createTable("Command Limits",
+            "guild_id long", "command_name varchar(100)", "limit_number int")*/
 
-    private inline fun createTable(tableName : String, sql : () -> String) = try {
-        this evaluate sql()
-        SQL.LOG.info("Created $tableName Table!")
-        true
+    /*private fun createTable(tableName : String, vararg tableParams: String) = try {
+        val name = tableName.replace(Regex("\\s+"), "_").toUpperCase()
+        if(connection hasTableNamed name)
+            true // return true if it already exists
+        else {
+            connection prepare
+                    "CREATE TABLE $name (${tableParams.joinToString { "$it, " }.trim()})" closeAfter { execute() }
+            SQL.LOG.info("Created $tableName Table!")
+            true
+        }
     } catch (e : SQLException) {
         SQL.LOG.warn(e)
         false
-    }
+    }*/
 
     infix fun isRoleMe(role: Role) : Boolean {
         val rolemes = getRoleMes(role.guild)
@@ -199,7 +237,8 @@ class DatabaseManager(url: String, user: String, pass: String)
         commandLimits.addLimit(guild, command.toLowerCase(), limit)
     fun removeLimit(guild: Guild, command: String) = commandLimits.removeLimit(guild, command.toLowerCase())
 
-    infix fun evaluate(string: String) =  try {
+    @Suppress("Unused")
+    infix fun evaluate(string: String) = try {
         connection prepare string closeAfter { execute() }
     } catch (e: SQLException) { throw e }
 
@@ -219,5 +258,29 @@ class DatabaseManager(url: String, user: String, pass: String)
         commandLimits.removeAllLimits(guild)
     }
 
-    fun shutdown() = try { connection.close() } catch (e: SQLException) { SQL.LOG.warn(e) }
+    fun shutdown() = try {
+        connection.close()
+    } catch (e: SQLException) { SQL.LOG.warn(e) }
+
+    enum class TableData(vararg val parameters: String)
+    {
+        CASES("number int",     "guild_id long",      "message_id long",    "mod_id long",
+              "target_id long", "is_on_user boolean", "action varchar(20)", "reason varchar(200)"),
+
+        CHANNELS("guild_id long", "channel_id long", "type varchar(20)"),
+
+        PREFIXES("guild_id long", "prefix varchar(50)"),
+
+        ROLES("guild_id long", "role_id long", "type varchar(20)"),
+
+        GLOBAL_TAGS("name varchar(50)", "owner_id long", "content varchar(1900)"),
+
+        LOCAL_TAGS("name varchar(50)", "guild_id long", "owner_id long", "content varchar(1900)"),
+
+        CUSTOM_COMMANDS("name varchar(50)", "content varchar(1900)", "guild_id long"),
+
+        WELCOMES("guild_id long", "welcome varchar(1900)"),
+
+        COMMAND_LIMITS("guild_id long", "command_name varchar(100)", "limit_number int");
+    }
 }

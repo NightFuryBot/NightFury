@@ -53,7 +53,7 @@ class MemoryCmd : Command()
             appendln("[ Free Memory Available ]    ${runtime.freeMemory() / mb}mb")
             appendln("[ Total Memory Usage ]       ${runtime.totalMemory() / mb}mb")
               append("[ Maximum Memory Available ] ${runtime.maxMemory() / mb}mb")
-            append("```")
+              append("```")
         })
     }
 }
