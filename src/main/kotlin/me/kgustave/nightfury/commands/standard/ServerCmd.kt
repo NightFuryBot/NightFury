@@ -28,6 +28,8 @@ import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.commands.admin.ModeratorListBaseCmd
 import me.kgustave.nightfury.extensions.*
+import me.kgustave.nightfury.listeners.InvisibleTracker
+import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.User
@@ -37,7 +39,7 @@ import java.util.Comparator
 /**
  * @author Kaidan Gustave
  */
-class ServerCmd(waiter: EventWaiter) : Command()
+class ServerCmd(waiter: EventWaiter, invisTracker: InvisibleTracker) : Command()
 {
     init {
         this.name = "Server"
@@ -55,7 +57,8 @@ class ServerCmd(waiter: EventWaiter) : Command()
         this.children = arrayOf(
                 ServerJoinsCmd(waiter),
                 ModeratorListBaseCmd.ServerModeratorsCmd(),
-                ServerOwnerCmd(),
+                ServerOwnerCmd(invisTracker),
+                ServerSettingsCmd(),
                 ServerSettingsCmd()
         )
     }
@@ -93,7 +96,7 @@ class ServerCmd(waiter: EventWaiter) : Command()
 }
 
 @AutoInvokeCooldown
-private class ServerOwnerCmd : Command()
+private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Command()
 {
     companion object
     {
@@ -129,6 +132,7 @@ private class ServerOwnerCmd : Command()
     {
         val member : Member = event.guild.owner
         val user : User = member.user
+
         event.reply(embed {
             title = "${if(user.isBot) event.jda.getEmoteById(230105988211015680L).asMention else "\u2139"} " +
                     "__Information on ${user.formattedName(false)}:__"
@@ -151,16 +155,38 @@ private class ServerOwnerCmd : Command()
                 appendln()
             }
             append(BULLET).append("**Status:** ")
-            if(member.game!=null) {
-                if(member.game.url!=null) {
+            if(member.game!=null)
+            {
+                if(member.game.url!=null)
+                {
                     append(event.jda.getEmoteById(STREAMING_EMOTE_ID).asMention)
                     append(" Streaming **[${cleanEscapes(member.game.name)}](${member.game.url})**")
-                } else {
+                }
+                else
+                {
                     append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
                     append(" Playing **${cleanEscapes(member.game.name)}**")
                 }
-            } else
-                append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention).append(" *${member.onlineStatus.name}*")
+            }
+            else if(member.onlineStatus == OnlineStatus.OFFLINE && invisTracker.isInvisible(member.user))
+            {
+                val lastTimeTyping = invisTracker.getLastTimeTyping(user)
+                if(lastTimeTyping!=null)
+                {
+                    append(event.jda.getEmoteById(getEmoteIdFor(OnlineStatus.INVISIBLE)).asMention)
+                    append(" *${OnlineStatus.INVISIBLE.name}* (Last seen $lastTimeTyping minutes ago)")
+                }
+                else
+                {
+                    append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
+                    append(" *${member.onlineStatus.name}*")
+                }
+            }
+            else
+            {
+                append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
+                append(" *${member.onlineStatus.name}*")
+            }
             appendln()
             append(BULLET).append("**Creation Date:** ").append(user.creationTime.format(DateTimeFormatter.ISO_LOCAL_DATE))
             appendln()
@@ -201,7 +227,7 @@ private class ServerJoinsCmd(waiter: EventWaiter) : Command()
         this.help = "Gets an ordered list of this server's join history."
         this.guildOnly = true
         this.cooldown = 10
-        this.cooldownScope = CooldownScope.USER_GUILD
+        this.cooldownScope = CooldownScope.CHANNEL
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
@@ -284,70 +310,56 @@ private class ServerSettingsCmd : Command()
     }
 }
 
-class ServerStatsCmd : Command()
+@AutoInvokeCooldown
+private class ServerStatsCmd : Command()
 {
     init {
         this.name = "Stats"
         this.fullname = "Server Stats"
         this.help = "Gets server statistics and information."
+        this.guildOnly = true
+        this.cooldown = 10
+        this.cooldownScope = CooldownScope.CHANNEL
+        this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
     override fun execute(event: CommandEvent)
     {
-        val m = event.guild.members
-        val members = m.size
-        val admins = m.filter { it.isAdmin }.size
-
-        // Terminology:
-        // 'visible' implies the Member can join or read the channel.
-        // 'default' implies the Public Role (@everyone) can view this channel.
-
-        // Text Channels
-        val tc = event.guild.textChannels
-        val textChannels        = tc.size
-        val visibleTextChannels = tc.filter { event.member canView it }.size
-        val defaultTextChannels = tc.filter { it.guild.publicRole canView it }.size
-
-        // Voice Channels
-        val vc = event.guild.voiceChannels
-        val voiceChannels        = vc.size
-        val visibleVoiceChannels = vc.filter { event.member canJoin it }.size
-        val defaultVoiceChannels = vc.filter { it.guild.publicRole canJoin it }.size
-
-
-        val creationTime = event.guild.creationTime
-        val serverIcon = event.guild.iconUrl
-
-        val tags = event.localTags.getAllTags(event.guild).size
         event.reply(embed {
             title { "Stats for ${event.guild.name}" }
-            url   { serverIcon }
+            url   { event.guild.iconUrl }
+            thumbnail { event.guild.iconUrl }
 
             field {
                 name = "Members"
-                appendln("Total: $members")
-                appendln("Administrators: $admins")
+                appendln("Owner: ${event.guild.owner.user.formattedName(false)}")
+                appendln("Total: ${event.guild.members.size}")
+                if(event.manager.hasModRole(event.guild)) {
+                    val modRole = event.manager.getModRole(event.guild)
+                    appendln("Moderators: ${event.guild.members.filter { it.roles.contains(modRole) }.size}")
+                }
+                appendln("Administrators: ${event.guild.members.filter { it.isAdmin }.size}")
             }
 
             field {
                 name = "Text Channels"
-                appendln("Total: $textChannels")
-                appendln("Visible: $visibleTextChannels")
-                appendln("Hidden: $defaultTextChannels")
+                appendln("Total: ${event.guild.textChannels.size}")
+                appendln("Visible: ${event.guild.textChannels.filter { event.member canView it }.size}")
+                appendln("Hidden: ${event.guild.textChannels.filter { it.guild.publicRole canView it }.size}")
             }
 
             field {
                 name = "Voice Channels"
-                appendln("Total: $voiceChannels")
-                appendln("Joinable: $visibleVoiceChannels")
-                appendln("Default: $defaultVoiceChannels")
+                appendln("Total: ${event.guild.voiceChannels.size}")
+                appendln("Unlocked: ${event.guild.voiceChannels.filter { event.member canJoin it }.size}")
+                appendln("Default: ${event.guild.voiceChannels.filter { it.guild.publicRole canJoin it }.size}")
             }
 
             footer {
-                value = "Created "
+                value = "Created ${event.guild.creationTime.readableFormat}"
             }
 
-            time { creationTime }
+            time { event.guild.creationTime }
         })
     }
 

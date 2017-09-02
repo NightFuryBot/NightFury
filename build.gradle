@@ -43,13 +43,13 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 6, build: 2)
+def versionObj = new Version(major: 0, minor: 6, build: 3)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
 def dirChar = File.separatorChar
-def jdaVersion = '3.2.0_251'
+def jdaVersion = '3.2.0_258'
 def kjdaVersion = 'master-SNAPSHOT'
 def jdaUtilsVersion = '1.6'
 def kjdaUtilsVersion = '0.4'
@@ -91,6 +91,7 @@ dependencies {
     compile group: 'com.jagrosh', name: 'JagTag', version: '0.5'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile 'com.github.SvenWoltmann:color-thief-java:v1.1.1'
 }
 
 jar {

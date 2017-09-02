@@ -27,3 +27,12 @@ val OnlineStatus.emoteId : Long
         OnlineStatus.INVISIBLE -> 313956277107556352L
         OnlineStatus.UNKNOWN -> 313956277107556352L
     }
+fun getEmoteIdFor(status: OnlineStatus) = status.emoteId
+
+infix fun Int.randomNextInt(int: Int): Int
+{
+    require( this >=0 ) {    "Cannot use negative numbers as receiver in random range!"    }
+    require(this < int) {            "Parameter must be greater than receiver!"            }
+
+    return this + (Math.random() * (int - this + 1)).toInt()
+}

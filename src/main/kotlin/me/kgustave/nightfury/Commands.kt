@@ -256,13 +256,13 @@ abstract class Command
 
     fun CommandEvent.modSearch() : Pair<Long, String?>?
     {
-        val targetId = ArgumentPatterns.targetIDWithReason.matcher(this.args)
-        val targetMention = ArgumentPatterns.targetMentionWithReason.matcher(this.args)
+        val targetId = ArgumentPatterns.targetIDWithReason.matcher(args)
+        val targetMention = ArgumentPatterns.targetMentionWithReason.matcher(args)
 
         return when {
             targetId.matches()      -> Pair(targetId.group(1).trim().toLong(), targetId.group(2)?.trim())
             targetMention.matches() -> Pair(targetMention.group(1).trim().toLong(), targetMention.group(2)?.trim())
-            else                    -> { this.replyError(INVALID_ARGS_HELP.format(this.prefixUsed, name)); null }
+            else                    -> { replyError(INVALID_ARGS_HELP.format(client.prefix, name)); null }
         }
     }
 

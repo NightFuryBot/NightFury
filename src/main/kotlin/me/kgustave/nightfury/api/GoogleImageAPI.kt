@@ -16,50 +16,47 @@
 package me.kgustave.nightfury.api
 
 import net.dv8tion.jda.core.utils.SimpleLog
+import org.json.JSONObject
 import org.jsoup.Jsoup
 import java.io.IOException
-import java.net.URLDecoder
 import java.net.URLEncoder
-import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
  */
-class GoogleAPI : AbstractAPICache<List<String>>()
+class GoogleImageAPI : AbstractAPICache<List<String>>()
 {
-    private companion object
-    {
-        private val URL_FORMAT : String = "https://www.google.com/search?q=%s&num=10"
-        private val LOG : SimpleLog = SimpleLog.getLog("Google")
-        private val ENCODING = "UTF-8"
-        private val USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
-    }
+    override val hoursToDecay: Long
+        get() = 5
 
-    override val hoursToDecay: Long = 5
+    companion object {
+        private val URL = "https://www.google.com/search?site=imghp&tbm=isch&source=hp&biw=1680&bih=940&q=%s&safe=active"
+        private val LOG : SimpleLog = SimpleLog.getLog("Google Image")
+        private val ENCODING = "UTF-8"
+        private val USER_AGENT =
+                "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36"
+    }
 
     fun search(query: String) : List<String>?
     {
         val cached = getFromCache(query)
         if(cached!=null)
             return cached
-        val request: String = try {
-            String.format(URL_FORMAT, URLEncoder.encode(query, ENCODING))
+        val request = try {
+            val enc = URLEncoder.encode(query, ENCODING)
+            String.format(URL, enc)
         } catch (e: UnsupportedOperationException) {
             LOG.fatal(e)
             return@search null
         }
-        val result : List<String> = try {
-            Jsoup.connect(request).userAgent(USER_AGENT).timeout(7500).get()
-                    .select("a[href]").stream()
-                    .map { it.attr("href") }
-                    .filter { it.startsWith("/url?q=") }
-                    .map {
-                        try {
-                            URLDecoder.decode(it.substring(7, it.indexOf("&sa=")), ENCODING)
-                        } catch (e: UnsupportedOperationException) { "" }
-                    }
-                    .filter { it.isNotEmpty() || it != "/settings/ads/preferences?hl=en" }
-                    .toList()
+        val result = ArrayList<String>()
+        try {
+            Jsoup.connect(request).userAgent(USER_AGENT)
+                    .referrer("https://google.com/")
+                    .timeout(7500) // Timeout
+                    .get().select("div.rg_meta").stream()
+                    .filter  { it.childNodeSize() > 0 }
+                    .forEach { result.add(JSONObject(it.childNode(0).toString()).getString("ou")) }
         } catch (e: IOException) {
             LOG.fatal(e)
             return@search null

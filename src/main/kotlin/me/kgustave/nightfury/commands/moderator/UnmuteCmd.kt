@@ -43,7 +43,7 @@ class UnmuteCmd : Command()
     {
         val mutedRole = event.client.manager.getMutedRole(event.guild)
                 ?:return event.replyError("**Muted role has not been setup!**\n" +
-                "Try using `${event.prefixUsed}mute setup` to create a new mute role, or `${event.prefixUsed}mute set` to " +
+                "Try using `${event.client.prefix}mute setup` to create a new mute role, or `${event.client.prefix}mute set` to " +
                 "register an existing one!")
 
         val parsed = event.modSearch()?:return

@@ -90,13 +90,17 @@ class Client internal constructor
         private infix fun log(e : Exception) = log.log(e)
     }
 
+    //////////////////////
+    // MEMBER FUNCTIONS //
+    //////////////////////
+
     fun targetListener(name: String)
     {
         val l = CommandListener.Mode.typeOf(name)
         if(l != null) listener = l.listener
     }
 
-    fun getRemainingCooldown(name: String): Int
+    fun getRemainingCooldown(name: String) : Int
     {
         return if(cooldowns.containsKey(name)) {
             val time = OffsetDateTime.now().until(cooldowns[name], ChronoUnit.SECONDS).toInt()
@@ -186,6 +190,7 @@ class Client internal constructor
                 clearAPICaches()
                 cleanCooldowns()
                 cleanSchedule()
+                System.gc()
             } catch(e : Exception) {
                 Client.log.info("Failed to clear caches!")
                 Client log e
@@ -245,7 +250,7 @@ class Client internal constructor
         if(listener.checkCall(event, this, name, args))
         {
             val command = commands[name]
-            val commandEvent = CommandEvent(event,args.trim(),this,prefixUsed)
+            val commandEvent = CommandEvent(event,args.trim(),this)
             if(command != null)
             {
                 listener.onCommandCall(commandEvent, command)
@@ -391,7 +396,7 @@ class Client internal constructor
 
         // Send POST request to discordbots.org
         client.newRequest({
-            post(RequestBody.create(Requester.MEDIA_TYPE_JSON,body.toString()))
+            post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
             url("https://discordbots.org/api/bots/${jda.selfUser.id}/stats")
             header("Authorization", dBorgKey)
             header("Content-Type", "application/json")
@@ -413,11 +418,11 @@ class Client internal constructor
 
         // Send GET request to bots.discord.pw
         try {
-            client.newRequest {
+            client.newRequest({
                 get().url("https://bots.discord.pw/api/bots/${jda.selfUser.id}/stats")
                 header("Authorization", dBotsKey)
                 header("Content-Type", "application/json")
-            }.execute().body()!!.charStream().use {
+            }).execute().body()!!.charStream().use {
                 val array = JSONObject(JSONTokener(it)).getJSONArray("stats")
                 var total = 0
                 array.forEach { total += (it as JSONObject).getInt("server_count") }
@@ -429,7 +434,8 @@ class Client internal constructor
         }
     }
 
-    private inline fun OkHttpClient.newRequest(lazy: Request.Builder.() -> Unit) : Call {
+    private inline fun OkHttpClient.newRequest(lazy: Request.Builder.() -> Unit) : Call
+    {
         val builder = Request.Builder()
         builder.lazy()
         return this.newCall(builder.build())

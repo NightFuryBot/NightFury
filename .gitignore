@@ -9,6 +9,7 @@
 
 # Data Files
 config.txt
+testConfig.txt
 SQLSetup.json
 *.mv.db
 *.lock.db

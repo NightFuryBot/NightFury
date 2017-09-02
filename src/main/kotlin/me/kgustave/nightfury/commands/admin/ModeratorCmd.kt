@@ -67,7 +67,7 @@ private class ModeratorAddCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val modRole = event.manager.getModRole(event.guild)
-                ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.prefixUsed, fullname)}")
+                ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.client.prefix, fullname)}")
 
         val parsed = event.modSearch()?:return
 
@@ -112,7 +112,7 @@ private class ModeratorRemoveCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val modRole = event.manager.getModRole(event.guild)
-                ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.prefixUsed, fullname)}")
+                ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.client.prefix, fullname)}")
 
         val parsed = event.modSearch()?:return
 
@@ -250,7 +250,7 @@ private class ModeratorOnlineCmd : Command()
                 .toList()
 
         if(mods.isEmpty())
-            return event.replyError("**No Moderators Online!**\nFor a full list of Moderators, use `${event.prefixUsed}moderator list`.")
+            return event.replyError("**No Moderators Online!**\nFor a full list of Moderators, use `${event.client.prefix}moderator list`.")
 
         event.reply(embed {
             title { "**Moderators On ${event.guild.name}**" }

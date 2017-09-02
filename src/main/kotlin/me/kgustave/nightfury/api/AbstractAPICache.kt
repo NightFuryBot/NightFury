@@ -27,13 +27,20 @@ abstract class AbstractAPICache<T>
 
     abstract val hoursToDecay : Long
 
-    fun addToCache(query : String, item : T) = synchronized(cache) { cache.put(query.toLowerCase(), Pair(item, OffsetDateTime.now())) }
+    fun addToCache(query : String, item : T) = synchronized(cache)
+    {
+        cache.put(query.toLowerCase(), item.to(OffsetDateTime.now()))
+    }
 
-    fun getFromCache(query: String) : T? = synchronized(cache) { cache[query.toLowerCase()]?.first }
+    fun getFromCache(query: String) : T? = synchronized(cache)
+    {
+        cache[query.toLowerCase()]?.first
+    }
 
     fun clearCache()
     {
-        synchronized(cache) {
+        synchronized(cache)
+        {
             val now = OffsetDateTime.now()
             cache.keys.stream()
                     .filter { now.isAfter(cache[it]!!.second.plusHours(hoursToDecay)) }

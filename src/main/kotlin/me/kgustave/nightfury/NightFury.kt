@@ -22,6 +22,7 @@ import com.jagrosh.jagtag.Parser
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.api.E621API
 import me.kgustave.nightfury.api.GoogleAPI
+import me.kgustave.nightfury.api.GoogleImageAPI
 import me.kgustave.nightfury.api.YouTubeAPI
 import me.kgustave.nightfury.commands.admin.*
 import me.kgustave.nightfury.commands.moderator.*
@@ -30,6 +31,7 @@ import me.kgustave.nightfury.commands.other.*
 import me.kgustave.nightfury.commands.standard.*
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.jagtag.getMethods
+import me.kgustave.nightfury.listeners.InvisibleTracker
 import net.dv8tion.jda.core.*
 import net.dv8tion.jda.core.utils.SimpleLog
 import java.io.File
@@ -53,11 +55,11 @@ fun main(args: Array<String>?)
 /**
  * @author Kaidan Gustave
  */
-class NightFury
+class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.txt").toFile())
 {
     companion object
     {
-        val version : String = this::class.java.`package`.implementationVersion
+        val version : String = this::class.java.`package`.implementationVersion?:"BETA"
         val github : String = "https://github.com/TheMonitorLizard/NightFury/"
         val LOG: SimpleLog = SimpleLog.getLog("NightFury")
 
@@ -71,16 +73,19 @@ class NightFury
 
     init
     {
-        val config = Config(Paths.get(System.getProperty("user.dir"), "config.txt").toFile())
+        val config = Config(file)
         val manager = DatabaseManager(config.dbURL, config.dbUser, config.dbPass)
 
         val google = GoogleAPI()
         val e621 = E621API()
         val yt = YouTubeAPI(config.ytApiKey)
+        val image = GoogleImageAPI()
 
         val waiter = EventWaiter()
 
         val parser : Parser = JagTag.newDefaultBuilder().addMethods(getMethods()).build()
+
+        val invisTracker = InvisibleTracker()
 
         val client = Client(
                 config.prefix, config.devId, manager,
@@ -93,11 +98,12 @@ class NightFury
                 ColorMeCmd(),
                 GoogleCmd(google),
                 HelpCmd(),
-                InfoCmd(),
+                ImageCmd(image),
+                InfoCmd(invisTracker),
                 InviteCmd(*config.permissions),
                 PingCmd(),
                 RoleMeCmd(waiter),
-                ServerCmd(waiter),
+                ServerCmd(waiter, invisTracker),
                 TagCommand(waiter),
                 YouTubeCmd(yt),
 
@@ -120,6 +126,7 @@ class NightFury
 
                 BashCmd(),
                 EvalCmd(),
+                GuildlistCmd(waiter),
                 MemoryCmd(),
                 ModeCmd(),
                 RestartCmd(),
@@ -130,9 +137,12 @@ class NightFury
         {
             manager  { AsyncEventManager() }
             listener { client }
+            listener { invisTracker }
             token    { config.token }
             status   { OnlineStatus.DO_NOT_DISTURB }
             game     { "Starting Up..." }
+            
+            audio(false)
         }
     }
 
@@ -155,7 +165,7 @@ internal class Config(key: File)
     internal val dbUser      : String            = tokens[5]
     internal val dbPass      : String            = tokens[6]
     internal val ytApiKey    : String            = tokens[7]
-    internal val prefix      : String            = "|"
+    internal val prefix      : String            = if(key.nameWithoutExtension == "testConfig") "||" else "|"
     internal val success     : String            = "\uD83D\uDC32"
     internal val warning     : String            = "\uD83D\uDC22"
     internal val error       : String            = "\uD83D\uDD25"

@@ -24,6 +24,8 @@ import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.extensions.*
+import me.kgustave.nightfury.listeners.InvisibleTracker
+import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import net.dv8tion.jda.core.entities.Member
@@ -35,7 +37,7 @@ import java.util.Comparator
  * @author Kaidan Gustave
  */
 @AutoInvokeCooldown
-class InfoCmd : Command()
+class InfoCmd(private val invisTracker: InvisibleTracker) : Command()
 {
     companion object {
         private val BULLET : String = "\uD83D\uDD39 "
@@ -126,16 +128,38 @@ class InfoCmd : Command()
                     appendln()
                 }
                 append(BULLET).append("**Status:** ")
-                if(member.game!=null) {
-                    if(member.game.url!=null) {
+                if(member.game!=null)
+                {
+                    if(member.game.url!=null)
+                    {
                         append(event.jda.getEmoteById(STREAMING_EMOTE_ID).asMention)
                         append(" Streaming **[${cleanEscapes(member.game.name)}](${member.game.url})**")
-                    } else {
+                    }
+                    else
+                    {
                         append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
                         append(" Playing **${cleanEscapes(member.game.name)}**")
                     }
-                } else
-                    append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention).append(" *${member.onlineStatus.name}*")
+                }
+                else if(member.onlineStatus == OnlineStatus.OFFLINE && invisTracker.isInvisible(member.user))
+                {
+                    val lastTimeTyping = invisTracker.getLastTimeTyping(member.user)
+                    if(lastTimeTyping!=null)
+                    {
+                        append(event.jda.getEmoteById(OnlineStatus.INVISIBLE.emoteId).asMention)
+                        append(" *${OnlineStatus.INVISIBLE.name}* (Last seen $lastTimeTyping minutes ago)")
+                    }
+                    else
+                    {
+                        append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
+                        append(" *${member.onlineStatus.name}*")
+                    }
+                }
+                else
+                {
+                    append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
+                    append(" *${member.onlineStatus.name}*")
+                }
                 appendln()
             }
             append(BULLET).append("**Creation Date:** ").append(user.creationTime.format(DateTimeFormatter.ISO_LOCAL_DATE))

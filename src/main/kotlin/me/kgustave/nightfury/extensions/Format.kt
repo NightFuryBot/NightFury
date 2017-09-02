@@ -17,6 +17,7 @@
 package me.kgustave.nightfury.extensions
 
 import net.dv8tion.jda.core.entities.*
+import java.time.OffsetDateTime
 import java.util.regex.Pattern
 
 object ArgumentPatterns
@@ -51,3 +52,7 @@ private inline fun <T> List<T>.listOut(kind: String, argument: String, conversio
 fun noMatch(lookedFor: String, query: String) = "Could not find any $lookedFor matching \"$query\"!"
 
 infix fun User.formattedName(boldName: Boolean) = "${if(boldName) "**$name**" else name}#$discriminator"
+
+inline val OffsetDateTime.readableFormat
+    inline get() = "${dayOfWeek.run{"${name[0]}${name.substring(1)}"}}," +
+                   "${month.run{"${name[0]}${name.substring(1)}"}} $dayOfMonth, $year"

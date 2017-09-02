@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("unused")
+@file:Suppress("unused", "HasPlatformType")
 package me.kgustave.nightfury
 
 import net.dv8tion.jda.core.Permission
@@ -23,20 +23,20 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 /**
  * @author Kaidan Gustave
  */
-class CommandEvent internal constructor(val event: MessageReceivedEvent, args: String, val client: Client, val prefixUsed: String)
+class CommandEvent internal constructor(val event: MessageReceivedEvent, args: String, val client: Client)
 {
-    val jda = event.jda!!
-    val author = event.author!!
-    val member = event.member
-    val guild = event.guild
-    val channel = event.channel!!
-    val textChannel = event.textChannel
+    val jda            = event.jda!!
+    val author         = event.author!!
+    val member         = event.member
+    val guild          = event.guild
+    val channel        = event.channel!!
+    val textChannel    = event.textChannel
     val privateChannel = event.privateChannel
-    val group = event.group
-    val channelType = event.channelType!!
-    val message = event.message!!
-    val messageId = event.messageId!!
-    val messageIdLong = event.messageIdLong
+    val group          = event.group
+    val channelType    = event.channelType!!
+    val message        = event.message!!
+    val messageId      = event.messageId!!
+    val messageIdLong  = event.messageIdLong
     val responseNumber = event.responseNumber
 
     fun isFromType(type: ChannelType) = channelType == type
@@ -66,41 +66,41 @@ class CommandEvent internal constructor(val event: MessageReceivedEvent, args: S
 
     fun replyInDm(string: String) {
         author.openPrivateChannel().queue({ sendMessage(string, it) },
-                { channel.sendMessage(blockingDM.format(client.warning)).queue() })
+                { sendMessage(blockingDM.format(client.warning), channel) })
     }
     fun replyInDm(string: String, success: (Message) -> Unit) {
         author.openPrivateChannel().queue({ sendMessage(string, it, success) },
-                { channel.sendMessage(blockingDM.format(client.warning)).queue() })
+                { sendMessage(blockingDM.format(client.warning), channel) })
     }
     fun replyInDm(string: String, success: (Message) -> Unit, failure: (Throwable) -> Unit) {
         author.openPrivateChannel().queue({ sendMessage(string, it, success, failure) },
-                { channel.sendMessage(blockingDM.format(client.warning)).queue() })
+                { sendMessage(blockingDM.format(client.warning), channel) })
     }
 
     fun replyInDm(embed: MessageEmbed) {
         author.openPrivateChannel().queue({ sendMessage(embed, it) },
-                { channel.sendMessage(blockingDM.format(client.warning)).queue() })
+                { sendMessage(blockingDM.format(client.warning), channel) })
     }
     fun replyInDm(embed: MessageEmbed, success: (Message) -> Unit) {
         author.openPrivateChannel().queue({ sendMessage(embed, it, success) },
-                { channel.sendMessage(blockingDM.format(client.warning)).queue() })
+                { sendMessage(blockingDM.format(client.warning), channel) })
     }
     fun replyInDm(embed: MessageEmbed, success: (Message) -> Unit, failure: (Throwable) -> Unit) {
         author.openPrivateChannel().queue({ sendMessage(embed, it, success, failure) },
-                { channel.sendMessage(blockingDM.format(client.warning)).queue() })
+                { sendMessage(blockingDM.format(client.warning), channel) })
     }
 
     fun replyInDm(message: Message) {
         author.openPrivateChannel().queue({ sendMessage(message, it) },
-                { channel.sendMessage(blockingDM.format(client.warning)).queue() })
+                { sendMessage(blockingDM.format(client.warning), channel) })
     }
     fun replyInDm(message: Message, success: (Message) -> Unit) {
         author.openPrivateChannel().queue({ sendMessage(message, it, success) },
-                { channel.sendMessage(blockingDM.format(client.warning)).queue() })
+                { sendMessage(blockingDM.format(client.warning), channel) })
     }
     fun replyInDm(message: Message, success: (Message) -> Unit, failure: (Throwable) -> Unit) {
         author.openPrivateChannel().queue({ sendMessage(message, it, success, failure) },
-                { channel.sendMessage(blockingDM.format(client.warning)).queue() })
+                { sendMessage(blockingDM.format(client.warning), channel) })
     }
 
     fun replySuccess(string: String) = reply("${client.success} $string")
@@ -195,8 +195,8 @@ class CommandEvent internal constructor(val event: MessageReceivedEvent, args: S
     fun reactWarning() = react(client.warning)
     fun reactError() = react(client.error)
     fun react(string: String) {
-        if(string.matches(emoteRegex)) {
-            val emote = jda.getEmoteById(string.replace(emoteRegex, "$1"))
+        if(emoteRegex.matches(string)) {
+            val emote = jda.getEmoteById(emoteRegex.replace(string, "$1"))
             if(emote!=null) addReaction(emote)
         }
         else addReaction(string)
@@ -204,14 +204,14 @@ class CommandEvent internal constructor(val event: MessageReceivedEvent, args: S
     fun addReaction(emote: String) {
         if(event.isFromType(ChannelType.TEXT)) {
             if(selfMember.hasPermission(textChannel, Permission.MESSAGE_ADD_REACTION))
-                message.addReaction(emote).queue()
-        } else message.addReaction(emote).queue()
+                message.addReaction(emote).queue({},{})
+        } else message.addReaction(emote).queue({},{})
     }
     fun addReaction(emote: Emote) {
         if(event.isFromType(ChannelType.TEXT)) {
             if(selfMember.hasPermission(textChannel, Permission.MESSAGE_ADD_REACTION))
-                message.addReaction(emote).queue()
-        } else message.addReaction(emote).queue()
+                message.addReaction(emote).queue({},{})
+        } else message.addReaction(emote).queue({},{})
     }
 
     fun linkMessage(message: Message) {
