@@ -43,7 +43,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 6, build: 3)
+def versionObj = new Version(major: 0, minor: 6, build: 4)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
@@ -109,6 +109,9 @@ shadowJar {
 
     // JDA-Utilities
     exclude('com/jagrosh/jdautilities/commandclient/**')
+
+    // KJDA
+    exclude('club/minnced/kjda/events/**')
 
     // KJDA-Utilities
     exclude(

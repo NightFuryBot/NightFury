@@ -131,27 +131,23 @@ class SQLLocalTags(val connection: Connection)
         connection prepare deleteTag closeAfter { insert(name, ownerId, guild.idLong).execute() }
     } catch (e : SQLException) { SQL.LOG.warn(e) }
 
-    fun deleteAllTags(guild: Guild) : Unit = try {
-        connection prepare deleteAllTags closeAfter { insert(guild.idLong).execute() }
+    fun deleteAllTags(guild: Guild) = deleteAllTags(guild.idLong)
+
+    fun deleteAllTags(id: Long) : Unit = try {
+        connection prepare deleteAllTags closeAfter { insert(id).execute() }
     } catch (e : SQLException) { SQL.LOG.warn(e) }
 
     fun getOriginalName(name: String, guild: Guild) = try {
         connection prepare getTagName closeAfter {
             insert(name, guild.idLong) executeQuery { if(it.next()) it.getString("name")?:"" else "" }
         }
-    } catch (e : SQLException) {
-        SQL.LOG.warn(e)
-        ""
-    }
+    } catch (e : SQLException) { SQL.LOG.warn(e); "" }
 
     fun getTagContent(name: String, guild: Guild) = try {
         connection prepare getTagContent closeAfter {
             insert(name, guild.idLong) executeQuery { if(it.next()) it.getString("content")?:"" else "" }
         }
-    } catch (e : SQLException) {
-        SQL.LOG.warn(e)
-        ""
-    }
+    } catch (e : SQLException) { SQL.LOG.warn(e); "" }
 
     fun getTagOwnerId(name: String, guild: Guild) = try {
         connection prepare getTagOwnerId closeAfter {

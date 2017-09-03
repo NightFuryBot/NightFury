@@ -25,8 +25,7 @@ import me.kgustave.nightfury.api.GoogleAPI
 /**
  * @author Kaidan Gustave
  */
-@APICache
-@MustHaveArguments("Specify what to search Google for.")
+@[APICache MustHaveArguments("Specify what to search Google for.")]
 class GoogleCmd(private val api: GoogleAPI) : Command()
 {
     init {
@@ -46,14 +45,13 @@ class GoogleCmd(private val api: GoogleAPI) : Command()
             val results = api.search(query)
             when {
                 results == null   -> event.replyError("An unexpected error occurred while searching!")
-                results.isEmpty() -> event.replyError("No results were found for \"$query\"!")
-                else              -> event.replySuccess("**${event.author.asMention} ${results[0]}**")
+                results.isEmpty() -> event.replyError("No results were found for \"**$query**\"!")
+                else              -> event.replySuccess("${event.author.asMention} ${results[0]}")
             }
             event.invokeCooldown()
         }
     }
 
-    @APICache
-    @Suppress("unused")
+    @[APICache Suppress("unused")]
     fun clearCache() = api.clearCache()
 }

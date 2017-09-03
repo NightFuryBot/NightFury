@@ -44,7 +44,9 @@ class EvalCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val args = event.args
+        val args = if(event.args.startsWith("```") && event.args.endsWith("```")) {
+            event.args.substring(event.args.indexOf('\n')+1, event.args.length-3)
+        } else event.args
 
         when {
             args matches Regex("9\\s*\\+\\s*10") -> event.reply("```java\n$args```Evaluated:\n```\n21```")
@@ -74,7 +76,6 @@ class EvalCmd : Command()
     private infix inline fun <reified T : ScriptEngine> T.load(event: CommandEvent) : T {
         // STANDARD
         put("event", event)
-        put("args", event.args)
         put("jda", event.jda)
         put("author", event.author)
         put("channel", event.channel)

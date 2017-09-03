@@ -25,8 +25,7 @@ import me.kgustave.nightfury.api.YouTubeAPI
 /**
  * @author Kaidan Gustave
  */
-@APICache
-@MustHaveArguments("Specify what to search YouTube for.")
+@[APICache MustHaveArguments("Specify what to search YouTube for.")]
 class YouTubeCmd(val ytAPI: YouTubeAPI) : Command()
 {
     init {
@@ -44,17 +43,15 @@ class YouTubeCmd(val ytAPI: YouTubeAPI) : Command()
         val query = event.args
         event.channel.sendTyping().queue {
             val results = ytAPI.search(query)
-            when
-            {
+            when {
                 results == null -> event.replyError("An unexpected error occurred while searching!")
-                results.isEmpty() -> event.replyError("No results were found for \"$query\"!")
-                else -> event.replySuccess("**${event.author.asMention} https://youtube.com/watch?v=${results[0]}**")
+                results.isEmpty() -> event.replyError("No results were found for \"**$query**\"!")
+                else -> event.replySuccess("${event.author.asMention} https://youtube.com/watch?v=${results[0]}")
             }
             event.invokeCooldown()
         }
     }
 
-    @APICache
-    @Suppress("unused")
+    @[APICache Suppress("unused")]
     fun clearCache() = ytAPI.clearCache()
 }

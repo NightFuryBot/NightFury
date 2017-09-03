@@ -136,7 +136,7 @@ class DatabaseListener(private val manager: DatabaseManager, private val executo
         // Soft 5 Minute
         synchronized(leaving) {
             leaving.put(event.guild.idLong, executor.schedule({
-                manager.leaveGuild(event.guild)
+                manager.wipeData(event.guild)
             }, 5, TimeUnit.MINUTES))
         }
     }

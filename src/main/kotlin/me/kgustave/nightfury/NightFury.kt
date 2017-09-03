@@ -16,7 +16,6 @@
 package me.kgustave.nightfury
 
 import club.minnced.kjda.*
-import club.minnced.kjda.events.AsyncEventManager
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Parser
 import com.jagrosh.jdautilities.waiter.EventWaiter
@@ -133,15 +132,13 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
                 ShutdownCmd()
         )
 
-        JDABuilder(AccountType.BOT) buildAsync
-        {
+        JDABuilder(AccountType.BOT) buildAsync {
             manager  { AsyncEventManager() }
             listener { client }
             listener { invisTracker }
             token    { config.token }
             status   { OnlineStatus.DO_NOT_DISTURB }
             game     { "Starting Up..." }
-            
             audio(false)
         }
     }

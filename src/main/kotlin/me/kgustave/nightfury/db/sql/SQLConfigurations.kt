@@ -47,11 +47,15 @@ class SQLLimits(val connection: Connection)
         connection prepare setCommandLimit closeAfter { insert(limit, guild.idLong, command).execute() }
     } catch (e: SQLException) { SQL.LOG.warn(e) }
 
-    fun removeLimit(guild: Guild, command: String) : Unit = try {
-        connection prepare removeCommandLimit closeAfter { insert(guild.idLong, command).execute() }
+    fun removeLimit(guild: Guild, command: String) = removeLimit(guild.idLong, command)
+
+    fun removeLimit(id: Long, command: String) : Unit = try {
+        connection prepare removeCommandLimit closeAfter { insert(id, command).execute() }
     } catch (e: SQLException) { SQL.LOG.warn(e) }
 
-    fun removeAllLimits(guild: Guild) : Unit = try {
-        connection prepare removeAllCommandLimits closeAfter { insert(guild.idLong).execute() }
+    fun removeAllLimits(guild: Guild) = removeAllLimits(guild.idLong)
+
+    fun removeAllLimits(id: Long) : Unit = try {
+        connection prepare removeAllCommandLimits closeAfter { insert(id).execute() }
     } catch (e: SQLException) { SQL.LOG.warn(e) }
 }

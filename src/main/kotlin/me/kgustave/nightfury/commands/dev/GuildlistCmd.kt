@@ -22,6 +22,7 @@ import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import net.dv8tion.jda.core.Permission
+import net.dv8tion.jda.core.entities.ChannelType
 
 /**
  * @author Kaidan Gustave
@@ -50,6 +51,8 @@ class GuildlistCmd(waiter: EventWaiter) : Command()
     {
         builder.clearItems()
         event.jda.guilds.forEach { builder.add { "**${it.name}** (ID: ${it.id})" } }
+        if(event.isFromType(ChannelType.TEXT))
+            builder.color { event.member.color }
         builder.displayIn { event.channel }
     }
 }

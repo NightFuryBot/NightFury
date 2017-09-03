@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("LoopToCallChain")
 package me.kgustave.nightfury.db
 
 import me.kgustave.nightfury.db.sql.*
@@ -68,6 +67,9 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
 
     val commandLimits : SQLLimits = SQLLimits(connection)
 
+    val userListing : SQLUserListing = SQLUserListing(connection)
+    val guildsListing : SQLGuildListing = SQLGuildListing(connection)
+
     infix fun Connection.createTable(data: TableData) : Boolean= top@ try {
         if(this hasTableNamed data.name)
             return@top true
@@ -90,54 +92,6 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
     }
 
     infix fun Connection.hasTableNamed(name: String) = this.metaData.getTables(null, null, name, null).use { it.next() }
-
-    /*fun setupDatabase() = setupCasesTable() && setupChannelsTable()
-        && prefixesTable() && setupRolesTable()
-        && setupGlobalTagsTable() && setupLocalTagsTable()
-        && setupCommandsTable() && setupWelcomesTable()
-
-    fun setupCasesTable() = createTable("Cases",
-              "number int",     "guild_id long",     "message_id long",      "mod_id long",
-            "target_id long", "is_on_user boolean", "action varchar(20)", "reason varchar(200)")
-
-    fun setupChannelsTable() = createTable("Channels",
-            "guild_id long", "channel_id long", "type varchar(20)")
-
-    fun prefixesTable() = createTable("Prefixes",
-            "guild_id long", "prefix varchar(50)")
-
-    fun setupRolesTable() = createTable("Roles",
-            "guild_id long", "role_id long", "type varchar(20)")
-
-    fun setupGlobalTagsTable() = createTable("Global Tags",
-            "name varchar(50)", "owner_id long", "content varchar(1900)")
-
-    fun setupLocalTagsTable() = createTable("Local Tags",
-            "name varchar(50)", "guild_id long", "owner_id long", "content varchar(1900)")
-
-    fun setupCommandsTable() = createTable("Custom Commands",
-            "name varchar(50)", "content varchar(1900)", "guild_id long")
-
-    fun setupWelcomesTable() = createTable("Welcomes",
-            "guild_id long", "welcome varchar(1900)")
-
-    fun setupLimitsTable() = createTable("Command Limits",
-            "guild_id long", "command_name varchar(100)", "limit_number int")*/
-
-    /*private fun createTable(tableName : String, vararg tableParams: String) = try {
-        val name = tableName.replace(Regex("\\s+"), "_").toUpperCase()
-        if(connection hasTableNamed name)
-            true // return true if it already exists
-        else {
-            connection prepare
-                    "CREATE TABLE $name (${tableParams.joinToString { "$it, " }.trim()})" closeAfter { execute() }
-            SQL.LOG.info("Created $tableName Table!")
-            true
-        }
-    } catch (e : SQLException) {
-        SQL.LOG.warn(e)
-        false
-    }*/
 
     infix fun isRoleMe(role: Role) : Boolean {
         val rolemes = getRoleMes(role.guild)
@@ -242,20 +196,23 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
         connection prepare string closeAfter { execute() }
     } catch (e: SQLException) { throw e }
 
-    infix fun leaveGuild(guild: Guild) {
-        roleMe.removeAll(guild.idLong)
-        colorMe.removeAll(guild.idLong)
-        modRole.reset(guild.idLong)
-        mutedRole.reset(guild.idLong)
-        modLog.reset(guild.idLong)
-        ignoredChannels.removeAll(guild.idLong)
-        cases.removeAll(guild.idLong)
-        prefixes.removeAll(guild.idLong)
-        localTags.deleteAllTags(guild)
-        customCommands.removeAll(guild)
-        welcomeChannels.reset(guild.idLong)
-        welcomesMessages.reset(guild.idLong)
-        commandLimits.removeAllLimits(guild)
+    infix fun wipeData(guild: Guild) = wipeData(guild.idLong)
+
+    infix fun wipeData(id: Long)
+    {
+        roleMe.removeAll(id)
+        colorMe.removeAll(id)
+        modRole.reset(id)
+        mutedRole.reset(id)
+        modLog.reset(id)
+        ignoredChannels.removeAll(id)
+        cases.removeAll(id)
+        prefixes.removeAll(id)
+        localTags.deleteAllTags(id)
+        customCommands.removeAll(id)
+        welcomeChannels.reset(id)
+        welcomesMessages.reset(id)
+        commandLimits.removeAllLimits(id)
     }
 
     fun shutdown() = try {

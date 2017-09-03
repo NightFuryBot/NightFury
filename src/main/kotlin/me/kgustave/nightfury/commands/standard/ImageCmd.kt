@@ -31,8 +31,7 @@ import net.dv8tion.jda.core.entities.ChannelType
 /**
  * @author Kaidan Gustave
  */
-@APICache
-@MustHaveArguments("Specify what to search for.")
+@[APICache MustHaveArguments("Specify what to search for.")]
 class ImageCmd(private val api: GoogleImageAPI) : Command()
 {
     init {
@@ -49,10 +48,9 @@ class ImageCmd(private val api: GoogleImageAPI) : Command()
         val query = event.args
         event.channel.sendTyping().queue {
             val results = api.search(query)
-            when
-            {
+            when {
                 results == null -> event.replyError("An unexpected error occurred while searching!")
-                results.isEmpty() -> event.replyError("No results were found for \"$query\"!")
+                results.isEmpty() -> event.replyError("No results were found for \"**$query**\"!")
                 else -> {
                     event.reply(message {
                         append { "${event.client.success} ${event.author.asMention}" }
@@ -68,8 +66,7 @@ class ImageCmd(private val api: GoogleImageAPI) : Command()
         }
     }
 
-    @APICache
-    @Suppress("unused")
+    @[APICache Suppress("unused")]
     fun clearCache() = api.clearCache()
 
 }

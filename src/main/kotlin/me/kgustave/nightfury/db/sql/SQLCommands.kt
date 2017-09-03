@@ -53,11 +53,15 @@ class SQLCustomCommands(val connection: Connection)
         connection prepare(add) closeAfter { insert(name, content, guild.idLong).execute() }
     } catch (e : SQLException) { SQL.LOG.warn(e) }
 
-    fun remove(name: String, guild: Guild) : Unit = try {
-        connection prepare(remove) closeAfter { insert(name, guild.idLong).execute() }
+    fun remove(name: String, guild: Guild) = remove(name, guild.idLong)
+
+    fun remove(name: String, id: Long) : Unit = try {
+        connection prepare(remove) closeAfter { insert(name, id).execute() }
     } catch (e : SQLException) { SQL.LOG.warn(e) }
 
-    fun removeAll(guild: Guild) : Unit = try {
-        connection prepare removeAll closeAfter { insert(guild.idLong).execute() }
+    fun removeAll(guild: Guild) = removeAll(guild.idLong)
+
+    fun removeAll(id: Long) : Unit = try {
+        connection prepare(removeAll) closeAfter { insert(id).execute() }
     } catch (e : SQLException) { SQL.LOG.warn(e) }
 }

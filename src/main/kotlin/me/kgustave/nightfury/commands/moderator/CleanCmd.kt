@@ -21,6 +21,7 @@ import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.ArgumentPatterns
+import me.kgustave.nightfury.extensions.past
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Message
 import java.util.*
@@ -33,10 +34,10 @@ import kotlin.collections.HashSet
 class CleanCmd : Command()
 {
     companion object {
-        private val numberPattern = Regex("(\\d{1,4})").toPattern()
+        private val numberPattern = Regex("(\\d{1,4})")
 
-        private val linkPattern = Regex("https?:\\/\\/\\S+").toPattern()
-        private val quotePattern = Regex("\"(.*?)\"", RegexOption.DOT_MATCHES_ALL).toPattern()
+        private val linkPattern = Regex("https?:\\/\\/\\S+")
+        private val quotePattern = Regex("\"(.*?)\"", RegexOption.DOT_MATCHES_ALL)
     }
 
     init {
@@ -44,6 +45,12 @@ class CleanCmd : Command()
         this.aliases = arrayOf("clear", "prune")
         this.arguments = "[Number of Messages]"
         this.help = "Deletes a specified number of messages from the channel this is called in."
+        this.cooldown = 15
+        this.cooldownScope = CooldownScope.CHANNEL
+        this.category = Category.MODERATOR
+        this.guildOnly = true
+        this.botPermissions = arrayOf(Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE)
+
         this.helpBiConsumer = Command standardSubHelp
                         "This cleans the channel it is called in of up to 1000 messages that are less than " +
                         "two weeks old.\n\n" +
@@ -67,12 +74,6 @@ class CleanCmd : Command()
                         "As a final note, discord prevents the bulk deletion of messages older than 2 weeks by " +
                         "bots. As a result, NightFury, nor any other bot, is able to bulk clean a channel of " +
                         "messages that were sent two weeks prior to the command being used."
-
-        this.cooldown = 15
-        this.cooldownScope = CooldownScope.CHANNEL
-        this.category = Category.MODERATOR
-        this.guildOnly = true
-        this.botPermissions = arrayOf(Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE)
     }
 
     val Message.hasImage : Boolean
@@ -96,10 +97,8 @@ class CleanCmd : Command()
         val quotes : MutableSet<String> = HashSet()
 
         // Specific text
-        val quotesMatcher = quotePattern.matcher(args)
-        while(quotesMatcher.find())
-            quotes.add(quotesMatcher.group(1).trim().toLowerCase())
-        args = args.replace(quotePattern.toRegex(), "").trim()
+        quotePattern.findAll(args).forEach { quotes.add(it.groupValues[1].trim().toLowerCase()) }
+        args = quotePattern.replace(args, "").trim()
 
         val ids : MutableSet<Long> = HashSet()
 
@@ -147,107 +146,80 @@ class CleanCmd : Command()
         val cleanAll = quotes.isEmpty() && ids.isEmpty() && !bots && !embeds && !links && !images && !files
 
         // Number of messages to delete
-        val numMatcher = numberPattern.matcher(args.trim())
-        val num : Int = if(numMatcher.find()) {
-            val n = numMatcher.group(1).trim().toInt()
+        val numMatcher = numberPattern.findAll(args.trim())
+        val num : Int = if(numMatcher.any()) {
+            val n = numMatcher.first().value.trim().toInt()
             if(n<2 || n>1000)
-                return event.replyError(INVALID_ARGS_ERROR.format(
-                        "The number of messages to delete must be between 2 and 1000!"))
+                return event.replyError(
+                        INVALID_ARGS_ERROR.format("The number of messages to delete must be between 2 and 1000!"))
             else n + 1
         } else if(!cleanAll) {
             100
-        } else
-            return event.replyError(INVALID_ARGS_ERROR.format("`${event.args}` is not a valid number of messages!"))
+        } else return event.replyError(INVALID_ARGS_ERROR.format("`${event.args}` is not a valid number of messages!"))
 
-        val history = event.textChannel.history
-        val messages = LinkedList<Message>()
-        var left = num
         val twoWeeksPrior = event.message.creationTime.minusWeeks(2).plusMinutes(1)
 
-        while(left>100)
-        {
-            messages.addAll(history.retrievePast(100).complete())
-            left -= 100
-            if(messages[messages.size-1].creationTime.isBefore(twoWeeksPrior))
-            {
-                left = 0
+        // Launches in a coroutine
+        event.textChannel.history.past(num, { it[it.size-1].creationTime.isBefore(twoWeeksPrior) })
+        { messages ->
+            messages.remove(event.message) // Remove call message
+
+            val toDelete = LinkedList<Message>()
+            var pastTwoWeeks = false
+
+            // Filter based on flags
+            for(message in messages) if(!message.creationTime.isBefore(twoWeeksPrior)) when {
+
+                // Get right away if we're cleaning all
+                cleanAll                                                     -> toDelete.add(message)
+
+                ids.contains(message.author.idLong)                          -> toDelete.add(message)
+                bots && message.author.isBot                                 -> toDelete.add(message)
+                embeds && message.embeds.isNotEmpty()                        -> toDelete.add(message)
+                links && linkPattern.containsMatchIn(message.rawContent)     -> toDelete.add(message)
+
+                // Files comes before images because images are files
+                files && message.attachments.isNotEmpty()                    -> toDelete.add(message)
+                images && message.hasImage                                   -> toDelete.add(message)
+
+                quotes.any { message.rawContent.toLowerCase().contains(it) } -> toDelete.add(message)
+            } else {
+                pastTwoWeeks = true
                 break
             }
-        }
 
-        if(left>0) messages.addAll(history.retrievePast(left).complete())
+            if(toDelete.isEmpty()) // If it's empty, either nothing fit the criteria or all of it was past 2 weeks
+                return@past event.replyError("**No messages found to delete!**\n" +
+                        if(pastTwoWeeks) "Messages older than 2 weeks cannot be deleted!"
+                        else SEE_HELP.format(event.client.prefix,this.name.toLowerCase()))
 
-        messages.remove(event.message) // Remove call message
+            val numDeleted = toDelete.size
 
-        val toDelete = LinkedList<Message>()
-        var pastTwoWeeks = false
+            try {
 
-        // Filter based on flags
-        for(message in messages) if(!message.creationTime.isBefore(twoWeeksPrior)) when {
+                var i = 0
+                while(i<numDeleted) // Delet this
+                {
+                    if(i+100>numDeleted)
+                        if(i+1==numDeleted) toDelete[numDeleted-1].delete().complete()
+                        else event.textChannel.deleteMessages(toDelete.subList(i, numDeleted)).complete()
+                    else event.textChannel.deleteMessages(toDelete.subList(i, i+100)).complete()
+                    i+=100
+                }
 
-            // Get right away if we're cleaning all
-            cleanAll                                                     -> toDelete.add(message)
+                with(event.client.logger)
+                {
+                    if(reason != null) newClean(event.member, event.textChannel, numDeleted, reason)
+                    else               newClean(event.member, event.textChannel, numDeleted)
+                }
 
-            ids.contains(message.author.idLong)                          -> toDelete.add(message)
-            bots && message.author.isBot                                 -> toDelete.add(message)
-            embeds && message.embeds.isNotEmpty()                        -> toDelete.add(message)
-            links && linkPattern.matcher(message.rawContent).find()      -> toDelete.add(message)
+                event.replySuccess("Successfully cleaned $numDeleted messages!")
 
-            // Files comes before images because images are files
-            files && message.attachments.isNotEmpty()                    -> toDelete.add(message)
-            images && message.hasImage                                   -> toDelete.add(message)
-
-            quotes.any { message.rawContent.toLowerCase().contains(it) } -> toDelete.add(message)
-
-        } else {
-            pastTwoWeeks = true
-            break
-        }
-
-        if(toDelete.isEmpty()) // If it's empty, either nothing fit the criteria or all of it was past 2 weeks
-            return event.replyError("**No messages found to delete!**\n" +
-                if(pastTwoWeeks) "Messages older than 2 weeks cannot be deleted!"
-                else SEE_HELP.format(event.client.prefix,this.name.toLowerCase()))
-
-        val numDeleted = toDelete.size
-
-        try {
-            var i = 0
-            while(i<numDeleted) // Delet this
-            {
-                if(i+100>numDeleted)
-                    if(i+1==numDeleted) toDelete[numDeleted-1].delete().complete()
-                    else event.textChannel.deleteMessages(toDelete.subList(i, numDeleted)).complete()
-                else event.textChannel.deleteMessages(toDelete.subList(i, i+100)).complete()
-                i+=100
+            } catch (e : Exception) {
+                // If something happens, we want to make sure that we inform them because
+                // messages may have already been deleted.
+                event.replyError("An error occurred when deleting $numDeleted messages!")
             }
-            with(event.client.logger)
-            {
-                if(reason != null) newClean(event.member, event.textChannel, numDeleted, reason)
-                else               newClean(event.member, event.textChannel, numDeleted)
-            }
-            event.replySuccess("Successfully cleaned $numDeleted messages!")
-        } catch (e : Exception) {
-            // If something happens, we want to make sure that we inform them because
-            // messages may have already been deleted.
-            event.replyError("An error occurred when deleting $numDeleted messages!")
         }
-    }
-}
-
-private class CleanSelfCmd : Command()
-{
-    init {
-        this.name = "Self"
-        this.fullname = "Clean Self"
-        this.help = "Cleans messages sent in bulk."
-        this.guildOnly = true
-        this.devOnly = true
-        this.category = Category.MONITOR
-    }
-
-    override fun execute(event: CommandEvent)
-    {
-        event.textChannel.history.retrievePast(100).complete()
     }
 }

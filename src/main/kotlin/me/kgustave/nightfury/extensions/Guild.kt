@@ -16,10 +16,13 @@
 package me.kgustave.nightfury.extensions
 
 import club.minnced.kjda.entities.isSelf
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.launch
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.audit.ActionType
 import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.requests.restaction.pagination.AuditLogPaginationAction
+import java.util.*
 
 infix fun Guild.refreshMutedRole(role: Role)
 {
@@ -83,3 +86,33 @@ infix fun Role.canJoin(channel: VoiceChannel) = hasPermission(channel, Permissio
 infix inline fun AuditLogPaginationAction.limit(lazy: () -> Int) : AuditLogPaginationAction = limit(lazy())
 
 infix inline fun AuditLogPaginationAction.action(lazy: () -> ActionType) : AuditLogPaginationAction = type(lazy())
+
+fun MessageHistory.past(number: Int, breakIf: suspend (List<Message>) -> Boolean = { false },
+        catch: (Throwable) -> Unit = { throw it }, block: suspend (MutableList<Message>) -> Unit
+) = launch(CommonPool) {
+    require(number > 0) { "Cannot retrieve less than one past message!" }
+
+    if(number<=100) return@launch block(retrievePast(number).complete())
+
+    val list = LinkedList<Message>()
+    var left = number
+
+    while(left > 100)
+    {
+        list.addAll(retrievePast(100).complete())
+        left -= 100
+        if(breakIf(list))
+        {
+            left = 0
+            break
+        }
+    }
+
+    if(left>0) list.addAll(retrievePast(left).complete())
+
+    block(list)
+
+}.invokeOnCompletion {
+    if(it != null)
+        catch(it)
+}.dispose()

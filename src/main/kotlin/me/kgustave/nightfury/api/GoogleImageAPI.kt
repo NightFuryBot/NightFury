@@ -16,9 +16,9 @@
 package me.kgustave.nightfury.api
 
 import net.dv8tion.jda.core.utils.SimpleLog
-import org.json.JSONObject
 import org.jsoup.Jsoup
 import java.io.IOException
+import java.net.URLDecoder
 import java.net.URLEncoder
 
 /**
@@ -43,8 +43,7 @@ class GoogleImageAPI : AbstractAPICache<List<String>>()
         if(cached!=null)
             return cached
         val request = try {
-            val enc = URLEncoder.encode(query, ENCODING)
-            String.format(URL, enc)
+            String.format(URL, URLEncoder.encode(query, ENCODING))
         } catch (e: UnsupportedOperationException) {
             LOG.fatal(e)
             return@search null
@@ -56,7 +55,18 @@ class GoogleImageAPI : AbstractAPICache<List<String>>()
                     .timeout(7500) // Timeout
                     .get().select("div.rg_meta").stream()
                     .filter  { it.childNodeSize() > 0 }
-                    .forEach { result.add(JSONObject(it.childNode(0).toString()).getString("ou")) }
+                    .forEach {
+                        try {
+                            val node = it.childNode(0).toString()
+                            val frontIndex = node.indexOf("\"ou\":")+6 // Find the front index of the json key
+
+                            result += URLDecoder.decode(node.substring(frontIndex, node.indexOf("\",", frontIndex)), ENCODING)
+                        } catch (e: UnsupportedOperationException) {
+                            LOG.fatal("An exception was thrown while decoding an image URL: $e")
+                        } catch (e: IndexOutOfBoundsException) {
+                            LOG.fatal("An exception was thrown due to improper indexing: $e")
+                        }
+                    }
         } catch (e: IOException) {
             LOG.fatal(e)
             return@search null

@@ -58,7 +58,7 @@ class GoogleAPI : AbstractAPICache<List<String>>()
                             URLDecoder.decode(it.substring(7, it.indexOf("&sa=")), ENCODING)
                         } catch (e: UnsupportedOperationException) { "" }
                     }
-                    .filter { it.isNotEmpty() || it != "/settings/ads/preferences?hl=en" }
+                    .filter { it.isNotEmpty() && it != "/settings/ads/preferences?hl=en" }
                     .toList()
         } catch (e: IOException) {
             LOG.fatal(e)
