@@ -197,6 +197,7 @@ private class CustomCommandListCmd(waiter: EventWaiter) : Command()
             text        { -> "Custom Commands on ${event.guild.name}" }
             items       { addAll(ccs) }
             finalAction { event.linkMessage(it) }
+            user        { event.author }
             displayIn   { event.channel }
         }
     }

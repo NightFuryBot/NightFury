@@ -53,6 +53,7 @@ class GuildlistCmd(waiter: EventWaiter) : Command()
         event.jda.guilds.forEach { builder.add { "**${it.name}** (ID: ${it.id})" } }
         if(event.isFromType(ChannelType.TEXT))
             builder.color { event.member.color }
+        builder.user      { event.author }
         builder.displayIn { event.channel }
     }
 }

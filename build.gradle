@@ -43,13 +43,13 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 6, build: 4)
+def versionObj = new Version(major: 0, minor: 6, build: 5)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
 def dirChar = File.separatorChar
-def jdaVersion = '3.2.0_258'
+def jdaVersion = '3.3.0_264'
 def kjdaVersion = 'master-SNAPSHOT'
 def jdaUtilsVersion = '1.6'
 def kjdaUtilsVersion = '0.4'
@@ -124,6 +124,11 @@ shadowJar {
 
     // h2
     exclude('android/**')
+
+    // Unimplemented Internals
+    exclude('me.kgustave.nightfury.listeners.AntiAdsListener**')
+    exclude('me.kgustave.nightfury.db.sql.SQLListing**')
+    exclude('me.kgustave.nightfury.db.sql.SQLShards**')
 
     manifest {
         attributes 'Manifest-Version' : "${versionObj.major}.${versionObj.minor}"

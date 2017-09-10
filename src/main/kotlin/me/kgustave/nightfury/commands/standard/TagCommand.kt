@@ -433,6 +433,7 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
                 items   { addAll(localTags) }
             items       { addAll(globalTags) }
             finalAction { event.linkMessage(it); it.removeMenuReactions() }
+            user        { event.author }
             displayIn   { event.channel }
         }
     }

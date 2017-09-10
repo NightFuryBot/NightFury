@@ -245,11 +245,11 @@ private class ServerJoinsCmd(waiter: EventWaiter) : Command()
         val names = joins.map { it.user.formattedName(true) }
         with(builder)
         {
-            text { -> "Joins for ${event.guild.name}" }
-            items            { addAll(names) }
-            finalAction      { it.delete().queue() }
-            users            { arrayOf(event.author) }
-            displayIn { event.channel }
+            text        { -> "Joins for ${event.guild.name}" }
+            items       { addAll(names) }
+            finalAction { it.delete().queue() }
+            user        { event.author }
+            displayIn   { event.channel }
         }
     }
 }

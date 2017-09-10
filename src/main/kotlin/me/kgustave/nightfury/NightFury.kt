@@ -45,7 +45,9 @@ fun main(args: Array<String>?)
 
     Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
 
-    try { NightFury() } catch(e : IOException) {
+    try {
+        NightFury()
+    } catch(e : IOException) {
         NightFury.LOG.fatal("Failed to get configurations!")
         NightFury.LOG.log(e)
     }
@@ -67,7 +69,6 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
             LOG.info("Shutdown Complete! "+if(exit == 0)"Restarting..." else "Exiting...")
             System.exit(exit)
         }
-
     }
 
     init

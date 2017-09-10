@@ -28,12 +28,10 @@ import java.util.concurrent.Executors
  */
 class AsyncEventManager : IEventManager
 {
-    private val threadpool : ExecutorService by lazy {
-        Executors.newCachedThreadPool {
-            val thread = Thread(it, "EventThread")
-            thread.isDaemon
-            thread
-        }
+    private val threadpool : ExecutorService = Executors.newCachedThreadPool {
+        val thread = Thread(it, "EventThread")
+        thread.isDaemon = true
+        thread
     }
 
     private val listeners : MutableSet<EventListener> = CopyOnWriteArraySet<EventListener>()

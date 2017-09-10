@@ -211,6 +211,7 @@ private class RoleMeListCmd(waiter: EventWaiter) : Command()
             text        { -> "RoleMe Roles On ${event.guild.name}" }
             items       { addAll(rolemes) }
             finalAction { event.linkMessage(it) }
+            user        { event.author }
             displayIn   { event.channel }
         }
     }

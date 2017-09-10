@@ -195,7 +195,7 @@ abstract class Command
                             return event terminate BOT_PERM.format(event.client.error, p.name, "Voice Channel")
                     }
                     else if(!event.selfMember.hasPermission(event.textChannel, p))
-                        return event terminate(BOT_PERM.format(event.client.error, p.name, "Channel"))
+                        return event terminate BOT_PERM.format(event.client.error, p.name, "Channel")
                 }
                 else if(!event.selfMember.hasPermission(event.textChannel, p))
                     return event terminate BOT_PERM.format(event.client.error, p.name, "Guild")

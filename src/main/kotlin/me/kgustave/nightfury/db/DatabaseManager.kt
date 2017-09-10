@@ -67,9 +67,6 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
 
     val commandLimits : SQLLimits = SQLLimits(connection)
 
-    val userListing : SQLUserListing = SQLUserListing(connection)
-    val guildsListing : SQLGuildListing = SQLGuildListing(connection)
-
     infix fun Connection.createTable(data: TableData) : Boolean= top@ try {
         if(this hasTableNamed data.name)
             return@top true
