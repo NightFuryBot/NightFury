@@ -102,6 +102,7 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
                 InfoCmd(invisTracker),
                 InviteCmd(*config.permissions),
                 PingCmd(),
+                QuoteCmd(),
                 RoleMeCmd(waiter),
                 ServerCmd(waiter, invisTracker),
                 TagCommand(waiter),

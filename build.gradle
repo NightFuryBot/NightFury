@@ -43,16 +43,16 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 6, build: 5)
+def versionObj = new Version(major: 0, minor: 6, build: 6)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
 def dirChar = File.separatorChar
-def jdaVersion = '3.3.0_264'
+def jdaVersion = '3.3.0_266'
 def kjdaVersion = 'master-SNAPSHOT'
-def jdaUtilsVersion = '1.6'
-def kjdaUtilsVersion = '0.4'
+def jdaUtilsVersion = '1.7'
+def kjdaUtilsVersion = '0.5'
 def localLibDir = "${System.getProperty('user.home')}${dirChar}Desktop${dirChar}"
 
 sourceCompatibility = 1.8

@@ -68,7 +68,7 @@ class MuteCmd : Command() {
             target.roles.contains(mutedRole)
                     -> "I cannot mute ${target.user.formattedName(true)} because they are already muted!"
             !event.selfMember.canInteract(mutedRole)
-                    -> "I cannot give **${mutedRole.name}** to ${target.user.formattedName(true)}" +
+                    -> "I cannot give **${mutedRole.name}** to ${target.user.formattedName(true)} " +
                        "because it is a higher role I can interact with!"
             else    -> null
         }
