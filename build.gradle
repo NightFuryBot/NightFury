@@ -43,13 +43,13 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 6, build: 6)
+def versionObj = new Version(major: 0, minor: 6, build: 7)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
 def dirChar = File.separatorChar
-def jdaVersion = '3.3.0_266'
+def jdaVersion = '3.3.0_272'
 def kjdaVersion = 'master-SNAPSHOT'
 def jdaUtilsVersion = '1.7'
 def kjdaUtilsVersion = '0.5'

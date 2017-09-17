@@ -16,6 +16,7 @@
 package me.kgustave.nightfury.extensions
 
 import net.dv8tion.jda.core.OnlineStatus
+import java.io.Closeable
 
 val OnlineStatus.emoteId : Long
     get() = when(this)
@@ -36,3 +37,5 @@ infix fun Int.randomNextInt(int: Int): Int
 
     return this + (Math.random() * (int - this + 1)).toInt()
 }
+
+inline fun <reified T : Closeable, R> using(closeable: T, block: T.() -> R) = closeable.use(block)

@@ -193,25 +193,6 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
         connection prepare string closeAfter { execute() }
     } catch (e: SQLException) { throw e }
 
-    infix fun wipeData(guild: Guild) = wipeData(guild.idLong)
-
-    infix fun wipeData(id: Long)
-    {
-        roleMe.removeAll(id)
-        colorMe.removeAll(id)
-        modRole.reset(id)
-        mutedRole.reset(id)
-        modLog.reset(id)
-        ignoredChannels.removeAll(id)
-        cases.removeAll(id)
-        prefixes.removeAll(id)
-        localTags.deleteAllTags(id)
-        customCommands.removeAll(id)
-        welcomeChannels.reset(id)
-        welcomesMessages.reset(id)
-        commandLimits.removeAllLimits(id)
-    }
-
     fun shutdown() = try {
         connection.close()
     } catch (e: SQLException) { SQL.LOG.warn(e) }

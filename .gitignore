@@ -10,7 +10,7 @@
 # Data Files
 config.txt
 testConfig.txt
-SQLSetup.json
+*.json
 *.mv.db
 *.lock.db
 *.trace.db

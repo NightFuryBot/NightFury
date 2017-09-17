@@ -29,10 +29,10 @@ import me.kgustave.nightfury.commands.dev.*
 import me.kgustave.nightfury.commands.other.*
 import me.kgustave.nightfury.commands.standard.*
 import me.kgustave.nightfury.db.DatabaseManager
+import me.kgustave.nightfury.entities.SimpleLog
 import me.kgustave.nightfury.jagtag.getMethods
 import me.kgustave.nightfury.listeners.InvisibleTracker
 import net.dv8tion.jda.core.*
-import net.dv8tion.jda.core.utils.SimpleLog
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths

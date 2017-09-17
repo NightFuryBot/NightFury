@@ -18,7 +18,7 @@ package me.kgustave.nightfury.api
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.youtube.YouTube
-import net.dv8tion.jda.core.utils.SimpleLog
+import me.kgustave.nightfury.entities.SimpleLog
 import java.io.IOException
 
 /**

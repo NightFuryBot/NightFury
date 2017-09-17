@@ -15,7 +15,7 @@
  */
 package me.kgustave.nightfury.api
 
-import net.dv8tion.jda.core.utils.SimpleLog
+import me.kgustave.nightfury.entities.SimpleLog
 import org.jsoup.Jsoup
 import java.io.IOException
 import java.net.URLDecoder

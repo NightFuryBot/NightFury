@@ -32,9 +32,8 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Kaidan Gustave
  */
-class DatabaseListener(private val manager: DatabaseManager, private val executor: ScheduledExecutorService) : EventListener
+class DatabaseListener(private val manager: DatabaseManager) : EventListener
 {
-    private val leaving = HashMap<Long, ScheduledFuture<*>>()
 
     override fun onEvent(event: Event?) = when(event)
     {
@@ -42,8 +41,6 @@ class DatabaseListener(private val manager: DatabaseManager, private val executo
         is TextChannelCreateEvent -> onTextChannelCreate(event)
         is TextChannelDeleteEvent -> onTextChannelDelete(event)
         is VoiceChannelCreateEvent -> onVoiceChannelCreate(event)
-        is GuildJoinEvent -> onGuildJoin(event)
-        is GuildLeaveEvent -> onGuildLeave(event)
 
         else -> Unit
     }
@@ -120,24 +117,5 @@ class DatabaseListener(private val manager: DatabaseManager, private val executo
         val muted = manager.getMutedRole(event.guild)
         if(muted!=null)
             event.channel muteRole muted
-    }
-
-    fun onGuildJoin(event: GuildJoinEvent)
-    {
-        synchronized(leaving)
-        {
-            if(leaving.contains(event.guild.idLong))
-                leaving.remove(event.guild.idLong)?.cancel(false)
-        }
-    }
-
-    fun onGuildLeave(event: GuildLeaveEvent)
-    {
-        // Soft 5 Minute
-        synchronized(leaving) {
-            leaving.put(event.guild.idLong, executor.schedule({
-                manager.wipeData(event.guild)
-            }, 5, TimeUnit.MINUTES))
-        }
     }
 }

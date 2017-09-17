@@ -21,6 +21,7 @@ import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
+import me.kgustave.nightfury.entities.SimpleLog
 import me.kgustave.nightfury.extensions.ArgumentPatterns
 import me.kgustave.nightfury.listeners.*
 import me.kgustave.nightfury.resources.*
@@ -39,7 +40,6 @@ import net.dv8tion.jda.core.events.message.MessageDeleteEvent
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.EventListener
 import net.dv8tion.jda.core.requests.Requester
-import net.dv8tion.jda.core.utils.SimpleLog
 import okhttp3.*
 import org.json.JSONObject
 import org.json.JSONTokener
@@ -171,7 +171,7 @@ class Client internal constructor
 
     fun onReady(event: ReadyEvent)
     {
-        event.jda.addEventListener(waiter, DatabaseListener(manager, executor), AutoLoggingListener(manager, logger))
+        event.jda.addEventListener(waiter, DatabaseListener(manager), AutoLoggingListener(manager, logger))
         event.jda.presence.status = OnlineStatus.ONLINE
         event.jda.presence.game = Game.of("Type ${prefix}help")
 
@@ -423,9 +423,10 @@ class Client internal constructor
                 header("Authorization", dBotsKey)
                 header("Content-Type", "application/json")
             }).execute().body()!!.charStream().use {
-                val array = JSONObject(JSONTokener(it)).getJSONArray("stats")
                 var total = 0
-                array.forEach { total += (it as JSONObject).getInt("server_count") }
+                JSONObject(JSONTokener(it)).getJSONArray("stats").forEach {
+                    total += (it as JSONObject).getInt("server_count")
+                }
                 this.totalGuilds = total
             }
         } catch (e: Exception) {

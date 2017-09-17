@@ -15,7 +15,7 @@
  */
 package me.kgustave.nightfury.api
 
-import net.dv8tion.jda.core.utils.SimpleLog
+import me.kgustave.nightfury.entities.SimpleLog
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray

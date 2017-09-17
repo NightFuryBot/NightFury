@@ -20,8 +20,8 @@ import me.kgustave.nightfury.Client
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.NightFury
+import me.kgustave.nightfury.entities.SimpleLog
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
-import net.dv8tion.jda.core.utils.SimpleLog
 
 /**
  * @author Kaidan Gustave

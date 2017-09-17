@@ -19,8 +19,8 @@ import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.entities.SimpleLog
 import java.io.IOException
-import net.dv8tion.jda.core.utils.SimpleLog
 import java.io.InputStreamReader
 import java.io.BufferedReader
 
@@ -62,8 +62,8 @@ class BashCmd : Command() {
             return event.reply("I wasn't able to find the command `${event.args}`!")
         } catch (e: Exception) {
             SimpleLog.getLog("Bash").apply {
-                this.warn("An unknown error occurred!")
-                this.log(e)
+                warn("An unknown error occurred!")
+                log(e)
             }
             return event.replyError("An unknown error occurred!")
         }
