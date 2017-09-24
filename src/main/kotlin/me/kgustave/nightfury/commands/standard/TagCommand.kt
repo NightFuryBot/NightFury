@@ -15,7 +15,6 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import club.minnced.kjda.promise
 import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.kjdautils.utils.findMembers
@@ -26,6 +25,7 @@ import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.db.sql.SQLGlobalTags
 import me.kgustave.nightfury.db.sql.SQLLocalTags
+import me.kgustave.nightfury.entities.promise
 import me.kgustave.nightfury.extensions.*
 import me.kgustave.nightfury.jagtag.TagErrorException
 import net.dv8tion.jda.core.entities.ChannelType
@@ -491,7 +491,7 @@ private class TagOwnerCmd : Command()
         val str = if(isLocal) "local tag \"${event.localTags.getOriginalName(name, event.guild)}\""
         else "global tag \"${event.globalTags.getOriginalName(name)}\""
 
-        event.jda.retrieveUserById(ownerId).promise() then {
+        event.jda.retrieveUserById(ownerId).promise then {
             if(it == null) event.replyError("The owner of $str was improperly retrieved!")
             else           event.replySuccess("The $str is owned by ${it.formattedName(true)}${
             if(!event.jda.users.contains(it)) " (ID: ${it.id})." else "."

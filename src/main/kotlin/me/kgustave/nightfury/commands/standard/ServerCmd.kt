@@ -15,8 +15,6 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import club.minnced.kjda.builders.colorAwt
-import club.minnced.kjda.builders.embed
 import com.jagrosh.jdautilities.menu.orderedmenu.OrderedMenuBuilder
 import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
 import com.jagrosh.jdautilities.waiter.EventWaiter
@@ -27,6 +25,7 @@ import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.commands.admin.ModeratorListBaseCmd
+import me.kgustave.nightfury.entities.embed
 import me.kgustave.nightfury.extensions.*
 import me.kgustave.nightfury.listeners.InvisibleTracker
 import net.dv8tion.jda.core.OnlineStatus
@@ -139,7 +138,7 @@ private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Comma
             thumbnail = if(user.avatarUrl == null) user.defaultAvatarUrl else user.avatarUrl
             append(BULLET).append("**ID:** ${user.id}")
             appendln()
-            colorAwt = member.color
+            color { member.color }
             if(member.nickname != null)
             {
                 append(BULLET).append("**Nickname:** ${member.nickname}")
@@ -274,7 +273,7 @@ private class ServerSettingsCmd : Command()
                 value = "Settings for ${guild.name} (ID: ${guild.id})"
                 image = guild.iconUrl
             }
-            colorAwt = event.selfMember.color
+            color { event.selfMember.color }
             field {
                 this.name = "Prefixes"
                 this.value = buildString {

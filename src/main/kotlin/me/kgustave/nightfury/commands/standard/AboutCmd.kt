@@ -15,12 +15,11 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import club.minnced.kjda.builders.colorAwt
-import club.minnced.kjda.builders.embed
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.NightFury
 import me.kgustave.nightfury.entities.SimpleLog
+import me.kgustave.nightfury.entities.embed
 import me.kgustave.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.JDAInfo
 import net.dv8tion.jda.core.Permission
@@ -61,7 +60,7 @@ class AboutCmd(vararg val permissions : Permission) : Command()
         }
         val embed = embed {
             if(event.isFromType(ChannelType.TEXT))
-                colorAwt = event.selfMember.color
+                color { event.selfMember.color }
             author {
                 this.value = "All About ${event.selfUser.name}"
                 this.icon = event.selfUser.avatarUrl

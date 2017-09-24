@@ -15,11 +15,11 @@
  */
 package me.kgustave.nightfury.listeners
 
-import club.minnced.kjda.entities.isSelf
-import club.minnced.kjda.then
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
+import me.kgustave.nightfury.entities.then
 import me.kgustave.nightfury.extensions.action
+import me.kgustave.nightfury.extensions.isSelf
 import me.kgustave.nightfury.extensions.limit
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.audit.ActionType

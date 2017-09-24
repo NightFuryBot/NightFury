@@ -15,15 +15,14 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import club.minnced.kjda.builders.colorAwt
-import club.minnced.kjda.embed
-import club.minnced.kjda.message
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.api.GoogleImageAPI
+import me.kgustave.nightfury.extensions.embed
+import me.kgustave.nightfury.extensions.message
 import me.kgustave.nightfury.extensions.randomNextInt
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
@@ -56,8 +55,8 @@ class ImageCmd(private val api: GoogleImageAPI) : Command()
                         append { "${event.client.success} ${event.author.asMention}" }
                         embed  {
                             if(event.isFromType(ChannelType.TEXT))
-                                colorAwt = event.member.color
-                            image { results[0 randomNextInt results.size] }
+                                color { event.member.color }
+                            image { results[0 randomNextInt (results.size * .25).toInt()] }
                         }
                     })
                 }

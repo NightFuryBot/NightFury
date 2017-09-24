@@ -15,9 +15,9 @@
  */
 package me.kgustave.nightfury.extensions
 
-import club.minnced.kjda.entities.isSelf
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.launch
+import me.kgustave.nightfury.entities.get
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.audit.ActionType
 import net.dv8tion.jda.core.entities.*
@@ -26,8 +26,36 @@ import java.util.*
 
 infix fun Guild.refreshMutedRole(role: Role)
 {
+    categories.forEach    { it muteRole role }
     textChannels.forEach  { it muteRole role }
     voiceChannels.forEach { it muteRole role }
+}
+
+infix fun Category.muteRole(role: Role)
+{
+    if(!guild.selfMember.hasPermission(Permission.MANAGE_PERMISSIONS))
+        return
+    val overrides = getPermissionOverride(role)
+    val denied = overrides?.denied
+    if(denied != null)
+    {
+        val cannotWrite = denied.contains(Permission.MESSAGE_WRITE)
+        val cannotAddReaction = denied.contains(Permission.MESSAGE_ADD_REACTION)
+        val cannotSpeak = denied.contains(Permission.VOICE_SPEAK)
+        if(cannotWrite && cannotAddReaction && cannotSpeak)
+            return
+        with(overrides.managerUpdatable) {
+            if(!cannotWrite)
+                deny(Permission.MESSAGE_WRITE)
+            if(!cannotAddReaction)
+                deny(Permission.MESSAGE_ADD_REACTION)
+            if(!cannotSpeak)
+                deny(Permission.VOICE_SPEAK)
+            update().queue()
+        }
+    }
+    else createPermissionOverride(role)
+            .setDeny(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION, Permission.VOICE_SPEAK).queue()
 }
 
 infix fun TextChannel.muteRole(role: Role)
@@ -92,7 +120,7 @@ fun MessageHistory.past(number: Int, breakIf: suspend (List<Message>) -> Boolean
 ) = launch(CommonPool) {
     require(number > 0) { "Cannot retrieve less than one past message!" }
 
-    if(number<=100) return@launch block(retrievePast(number).complete())
+    if(number<=100) return@launch block(retrievePast(number).get() ?: mutableListOf())
 
     val list = LinkedList<Message>()
     var left = number

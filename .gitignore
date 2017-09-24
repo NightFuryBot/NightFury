@@ -12,6 +12,7 @@ config.txt
 testConfig.txt
 *.json
 *.mv.db
+*.h2.db
 *.lock.db
 *.trace.db
 
@@ -20,6 +21,7 @@ testConfig.txt
 /Extensions/
 /scripts/
 /bash/
+/backup/
 
 # Images
 *.gif

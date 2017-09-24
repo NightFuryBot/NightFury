@@ -51,6 +51,8 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
     private val modRole : SQLModeratorRole = SQLModeratorRole(connection)
     private val mutedRole : SQLMutedRole = SQLMutedRole(connection)
 
+    private val rolePersist : SQLRolePersist = SQLRolePersist(connection)
+
     private val modLog : SQLModeratorLog = SQLModeratorLog(connection)
     private val ignoredChannels : SQLIgnoredChannels = SQLIgnoredChannels(connection)
     private val welcomeChannels : SQLWelcomeChannel = SQLWelcomeChannel(connection)
@@ -59,6 +61,8 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
 
     private val prefixes : SQLPrefixes = SQLPrefixes(connection)
     private val welcomesMessages : SQLWelcomeMessage = SQLWelcomeMessage(connection)
+
+    private val enables : SQLEnables = SQLEnables(connection)
 
     val localTags : SQLLocalTags = SQLLocalTags(connection)
     val globalTags : SQLGlobalTags = SQLGlobalTags(connection)
@@ -188,6 +192,35 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
         commandLimits.addLimit(guild, command.toLowerCase(), limit)
     fun removeLimit(guild: Guild, command: String) = commandLimits.removeLimit(guild, command.toLowerCase())
 
+    fun isRolePersist(guild: Guild) = enables.getStatusFor(guild, SQLEnables.Type.ROLE_PERSIST)
+
+    fun setIsRolePersist(guild: Guild, boolean: Boolean) = enables.setStatusFor(guild, SQLEnables.Type.ROLE_PERSIST, boolean)
+
+    fun getRolePersistence(member: Member) = rolePersist.get(member.guild, member.guild.idLong, member.user.idLong)
+
+    fun addRolePersist(member: Member)
+    {
+        val roleIds = buildString {
+            val roles = member.roles
+            if(roles.size == 0)
+                return
+            if(roles.size == 1)
+            {
+                // Only get the single id
+                append(roles[0].idLong)
+                return@buildString
+            }
+            for(i in 0 until (roles.size-1))
+                append(roles[i].idLong).append("|")
+            append(roles[roles.size-1].idLong)
+        }
+        rolePersist.add(member.guild.idLong, member.user.idLong, roleIds)
+    }
+
+    fun removeRolePersist(member: Member) = rolePersist.remove(member.guild.idLong, member.user.idLong)
+
+    fun removeAllRolePersist(guild: Guild) = rolePersist.removeAll(guild.idLong)
+
     @Suppress("Unused")
     infix fun evaluate(string: String) = try {
         connection prepare string closeAfter { execute() }
@@ -208,6 +241,8 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
 
         ROLES("guild_id long", "role_id long", "type varchar(20)"),
 
+        ROLE_PERSIST("guild_id long", "user_id long", "role_ids varchar(2000)"),
+
         GLOBAL_TAGS("name varchar(50)", "owner_id long", "content varchar(1900)"),
 
         LOCAL_TAGS("name varchar(50)", "guild_id long", "owner_id long", "content varchar(1900)"),
@@ -216,6 +251,8 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
 
         WELCOMES("guild_id long", "welcome varchar(1900)"),
 
-        COMMAND_LIMITS("guild_id long", "command_name varchar(100)", "limit_number int");
+        COMMAND_LIMITS("guild_id long", "command_name varchar(100)", "limit_number int"),
+
+        ENABLES("guild_id long", "enable_type varchar(40)", "status boolean");
     }
 }

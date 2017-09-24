@@ -17,32 +17,44 @@ package me.kgustave.nightfury.listeners
 
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.extensions.muteRole
+import me.kgustave.nightfury.extensions.refreshMutedRole
 import net.dv8tion.jda.core.events.Event
+import net.dv8tion.jda.core.events.ReadyEvent
+import net.dv8tion.jda.core.events.channel.category.CategoryCreateEvent
 import net.dv8tion.jda.core.events.channel.text.TextChannelCreateEvent
 import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent
 import net.dv8tion.jda.core.events.channel.voice.VoiceChannelCreateEvent
-import net.dv8tion.jda.core.events.guild.GuildJoinEvent
-import net.dv8tion.jda.core.events.guild.GuildLeaveEvent
+import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
+import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent
 import net.dv8tion.jda.core.events.role.RoleDeleteEvent
 import net.dv8tion.jda.core.hooks.EventListener
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.TimeUnit
 
 /**
  * @author Kaidan Gustave
  */
 class DatabaseListener(private val manager: DatabaseManager) : EventListener
 {
-
     override fun onEvent(event: Event?) = when(event)
     {
-        is RoleDeleteEvent -> onRoleDelete(event)
-        is TextChannelCreateEvent -> onTextChannelCreate(event)
-        is TextChannelDeleteEvent -> onTextChannelDelete(event)
+        is ReadyEvent              -> onReady(event)
+        is RoleDeleteEvent         -> onRoleDelete(event)
+        is TextChannelCreateEvent  -> onTextChannelCreate(event)
+        is TextChannelDeleteEvent  -> onTextChannelDelete(event)
         is VoiceChannelCreateEvent -> onVoiceChannelCreate(event)
+        is CategoryCreateEvent     -> onCategoryCreate(event)
+        is GuildMemberJoinEvent    -> onGuildMemberJoin(event)
+        is GuildMemberLeaveEvent   -> onGuildMemberLeave(event)
 
         else -> Unit
+    }
+
+    fun onReady(event: ReadyEvent)
+    {
+        event.jda.guilds.forEach {
+            val muted = manager getMutedRole it
+            if(muted!=null)
+                it refreshMutedRole muted
+        }
     }
 
     fun onRoleDelete(event: RoleDeleteEvent)
@@ -118,4 +130,31 @@ class DatabaseListener(private val manager: DatabaseManager) : EventListener
         if(muted!=null)
             event.channel muteRole muted
     }
+
+    fun onCategoryCreate(event: CategoryCreateEvent)
+    {
+        val muted = manager.getMutedRole(event.guild)
+        if(muted!=null)
+            event.category muteRole muted
+    }
+
+    fun onGuildMemberLeave(event: GuildMemberLeaveEvent)
+    {
+        if(manager.isRolePersist(event.guild))
+            manager.addRolePersist(event.member)
+    }
+
+    fun onGuildMemberJoin(event: GuildMemberJoinEvent)
+    {
+        if(manager.isRolePersist(event.guild))
+        {
+            val roles = manager.getRolePersistence(event.member)
+            if(roles.isNotEmpty())
+            {
+                event.guild.controller.addRolesToMember(event.member, roles).queue()
+                manager.removeRolePersist(event.member)
+            }
+        }
+    }
+
 }

@@ -15,7 +15,6 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import club.minnced.kjda.then
 import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.kjdautils.utils.findRoles
@@ -23,6 +22,7 @@ import me.kgustave.kjdautils.menu.*
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.entities.then
 import me.kgustave.nightfury.extensions.giveRole
 import me.kgustave.nightfury.extensions.removeRole
 import me.kgustave.nightfury.extensions.multipleRoles

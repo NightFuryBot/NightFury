@@ -15,11 +15,11 @@
  */
 package me.kgustave.nightfury.commands.dev
 
-import club.minnced.kjda.entities.connectedChannel
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.extensions.connectedChannel
 import net.dv8tion.jda.core.entities.ChannelType
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager

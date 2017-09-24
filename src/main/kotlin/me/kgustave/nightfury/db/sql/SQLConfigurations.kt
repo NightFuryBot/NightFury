@@ -59,3 +59,47 @@ class SQLLimits(val connection: Connection)
         connection prepare removeAllCommandLimits closeAfter { insert(id).execute() }
     } catch (e: SQLException) { SQL.LOG.warn(e) }
 }
+
+class SQLEnables(private val connection: Connection)
+{
+    private fun hasStatusFor(guild: Guild, type: Type) = try {
+        connection prepare "SELECT * FROM enables WHERE guild_id = ? AND enable_type = ? " closeAfter {
+            insert(guild.idLong, type.name) executeQuery {
+                it.next()
+            }
+        }
+    } catch (e: SQLException) {
+        SQL.LOG.warn(e)
+        false
+    }
+
+    fun getStatusFor(guild: Guild, type: Type): Boolean = try {
+        connection prepare "SELECT status FROM enables WHERE guild_id = ? AND enable_type = ?" closeAfter {
+            insert(guild.idLong, type.name) executeQuery {
+                if(it.next())
+                    it.getBoolean("status")
+                else false
+            }
+        }
+    } catch (e: SQLException) {
+        SQL.LOG.warn(e)
+        false
+    }
+
+    fun setStatusFor(guild: Guild, type: Type, status: Boolean)
+    {
+        if(hasStatusFor(guild, type))
+            connection prepare "UPDATE enables SET status = ? WHERE guild_id = ? AND enable_type = ?" closeAfter {
+                insert(status, guild.idLong, type.name).execute()
+            }
+        else
+            connection prepare "INSERT INTO enables (guild_id, enable_type, status) VALUES (?,?,?)" closeAfter {
+                insert(guild.idLong, type.name, status).execute()
+            }
+    }
+
+    enum class Type
+    {
+        ROLE_PERSIST, ANTI_ADS
+    }
+}

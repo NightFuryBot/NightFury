@@ -15,7 +15,6 @@
  */
 package me.kgustave.nightfury
 
-import club.minnced.kjda.*
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Parser
 import com.jagrosh.jdautilities.waiter.EventWaiter
@@ -30,6 +29,7 @@ import me.kgustave.nightfury.commands.other.*
 import me.kgustave.nightfury.commands.standard.*
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.SimpleLog
+import me.kgustave.nightfury.extensions.*
 import me.kgustave.nightfury.jagtag.getMethods
 import me.kgustave.nightfury.listeners.InvisibleTracker
 import net.dv8tion.jda.core.*
@@ -131,7 +131,9 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
                 MemoryCmd(),
                 ModeCmd(),
                 RestartCmd(),
-                ShutdownCmd()
+                ShutdownCmd(),
+
+                EnableCmd()
         )
 
         JDABuilder(AccountType.BOT) buildAsync {

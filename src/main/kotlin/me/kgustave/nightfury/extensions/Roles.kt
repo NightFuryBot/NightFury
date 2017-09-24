@@ -16,7 +16,7 @@
 @file:Suppress("UNUSED")
 package me.kgustave.nightfury.extensions
 
-import club.minnced.kjda.promise
+import me.kgustave.nightfury.entities.promise
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.managers.GuildController
 import net.dv8tion.jda.core.requests.restaction.RoleAction
@@ -24,7 +24,7 @@ import java.awt.Color
 
 infix inline fun GuildController.promiseRole(init: RoleAction.() -> Unit) = createRole() promise(init)
 
-infix inline fun RoleAction.promise(init: RoleAction.() -> Unit) = with(this) { init(); promise() }
+infix inline fun RoleAction.promise(init: RoleAction.() -> Unit) = with(this) { init(); promise }
 
 infix inline fun RoleAction.name(lazy: () -> String?) = setName(lazy())!!
 infix inline fun RoleAction.color(lazy: () -> Color?) = setColor(lazy())!!

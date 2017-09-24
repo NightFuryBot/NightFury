@@ -15,13 +15,13 @@
  */
 package me.kgustave.nightfury.commands.moderator
 
-import club.minnced.kjda.entities.isSelf
-import club.minnced.kjda.then
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.entities.Case
+import me.kgustave.nightfury.entities.then
+import me.kgustave.nightfury.extensions.isSelf
 
 /**
  * @author Kaidan Gustave

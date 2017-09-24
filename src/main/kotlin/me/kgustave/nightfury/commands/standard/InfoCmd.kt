@@ -15,14 +15,13 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import club.minnced.kjda.builders.colorAwt
-import club.minnced.kjda.builders.embed
 import me.kgustave.kjdautils.utils.findMembers
 import me.kgustave.kjdautils.utils.findUsers
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
+import me.kgustave.nightfury.entities.embed
 import me.kgustave.nightfury.extensions.*
 import me.kgustave.nightfury.listeners.InvisibleTracker
 import net.dv8tion.jda.core.OnlineStatus
@@ -112,7 +111,7 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command()
             appendln()
             if(member != null)
             {
-                colorAwt = member.color
+                color { member.color }
                 if(member.nickname != null)
                 {
                     append(BULLET).append("**Nickname:** ${member.nickname}")

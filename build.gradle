@@ -43,17 +43,14 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 6, build: 7)
+def versionObj = new Version(major: 0, minor: 7, build: 0)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
-def dirChar = File.separatorChar
-def jdaVersion = '3.3.0_272'
-def kjdaVersion = 'master-SNAPSHOT'
+def jdaVersion = '3.3.1_280'
 def jdaUtilsVersion = '1.7'
 def kjdaUtilsVersion = '0.5'
-def localLibDir = "${System.getProperty('user.home')}${dirChar}Desktop${dirChar}"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -70,7 +67,6 @@ repositories {
     jcenter()
     mavenCentral()
     maven { url 'https://jitpack.io/' }
-    flatDir { dir "${localLibDir}JagTag0.5" }
 }
 
 dependencies {
@@ -79,7 +75,6 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     compile "net.dv8tion:JDA:$jdaVersion"
-    compile "com.github.JDA-Applications:Kotlin-JDA:$kjdaVersion"
     compile "com.jagrosh:JDA-Utilities:$jdaUtilsVersion"
     compile "com.github.TheMonitorLizard:KJDA-Utilities:$kjdaUtilsVersion"
 
@@ -88,7 +83,7 @@ dependencies {
     compile 'org.jsoup:jsoup:1.10.2'
     compile 'com.google.apis:google-api-services-youtube:v3-rev183-1.22.0'
 
-    compile group: 'com.jagrosh', name: 'JagTag', version: '0.5'
+    compile 'com.jagrosh:JagTag:0.5'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile 'com.github.SvenWoltmann:color-thief-java:v1.1.1'

@@ -15,11 +15,10 @@
  */
 package me.kgustave.nightfury.commands.moderator
 
-import club.minnced.kjda.builders.colorAwt
-import club.minnced.kjda.builders.embed
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
+import me.kgustave.nightfury.entities.embed
 import net.dv8tion.jda.core.Permission
 
 /**
@@ -44,7 +43,7 @@ class SettingsCmd : Command()
                 value = "Settings for ${guild.name} (ID: ${guild.id})"
                 image = guild.iconUrl
             }
-            colorAwt = event.selfMember.color
+            color { event.selfMember.color }
             field {
                 this.name = "Prefixes"
                 this.value = buildString {

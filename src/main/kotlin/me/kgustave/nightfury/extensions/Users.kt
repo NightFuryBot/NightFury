@@ -13,19 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("unused")
 package me.kgustave.nightfury.extensions
 
+import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.Guild
-import net.dv8tion.jda.core.entities.Member
-import net.dv8tion.jda.core.entities.Role
-import net.dv8tion.jda.core.entities.User
-
-/**
- * @author Kaidan Gustave
- */
-val Member.isAdmin: Boolean
-    get() = permissions.contains(Permission.ADMINISTRATOR) || this.isOwner
+import net.dv8tion.jda.core.entities.*
 
 fun Member.kick() = guild.controller.kick(this)!!
 infix fun Member.kick(reason: String) = guild.controller.kick(this, reason)!!
@@ -35,3 +28,23 @@ infix fun Member.removeRole(role: Role) = guild.controller.removeRolesFromMember
 
 fun User.banFrom(guild: Guild, delDays: Int) = guild.controller.ban(this, delDays)!!
 fun User.banFrom(guild: Guild, delDays: Int, reason: String) = guild.controller.ban(this, delDays, reason)!!
+
+// Copied from club.minnced.kjda.entities.KJDAUser
+
+val User.game: Game?
+    get() = mutualGuilds.first().getMember(this).game
+
+val User.status: OnlineStatus
+    get() = mutualGuilds.first().getMember(this).onlineStatus
+
+val User.isSelf: Boolean
+    get() = this is SelfUser
+
+val Member.connectedChannel: VoiceChannel?
+    get() = voiceState.channel
+
+val Member.isConnected: Boolean
+    get() = connectedChannel !== null
+
+val Member.isAdmin: Boolean
+    get() = permissions.contains(Permission.ADMINISTRATOR) || this.isOwner

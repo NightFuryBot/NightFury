@@ -15,12 +15,11 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import club.minnced.kjda.builders.colorAwt
-import club.minnced.kjda.builders.embed
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.entities.embed
 import me.kgustave.nightfury.extensions.ArgumentPatterns
 import me.kgustave.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
@@ -86,9 +85,9 @@ class QuoteCmd : Command()
                 url   = message.author.effectiveAvatarUrl
                 icon  = message.author.effectiveAvatarUrl
             }
-            description { message.rawContent }
+            description {  message.rawContent  }
             time        { message.creationTime }
-            colorAwt = message.member.color
+            color       { message.member.color }
         })
     }
 }

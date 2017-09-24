@@ -15,12 +15,11 @@
  */
 package me.kgustave.nightfury.commands.admin
 
-import club.minnced.kjda.builders.colorAwt
-import club.minnced.kjda.builders.embed
-import club.minnced.kjda.then
 import me.kgustave.kjdautils.utils.findRoles
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.entities.embed
+import me.kgustave.nightfury.entities.then
 import me.kgustave.nightfury.extensions.*
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
@@ -195,7 +194,7 @@ abstract class ModeratorListBaseCmd : Command()
 
         event.reply(embed {
             title { "**Moderators On ${event.guild.name}**" }
-            colorAwt = event.selfMember.color
+            color = event.selfMember.color
             mods.forEach {
                 append("${event.jda.getEmoteById(it.onlineStatus.emoteId).asMention} ")
                 append(it.user.formattedName(true))
@@ -254,7 +253,7 @@ private class ModeratorOnlineCmd : Command()
 
         event.reply(embed {
             title { "**Moderators On ${event.guild.name}**" }
-            colorAwt = event.selfMember.color
+            color = event.selfMember.color
             mods.forEach {
                 append("${event.jda.getEmoteById(it.onlineStatus.emoteId).asMention} ")
                 append(it.user.formattedName(true))

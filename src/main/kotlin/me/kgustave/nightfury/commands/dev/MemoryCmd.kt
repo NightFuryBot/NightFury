@@ -15,11 +15,10 @@
  */
 package me.kgustave.nightfury.commands.dev
 
-import club.minnced.kjda.builders.colorAwt
-import club.minnced.kjda.builders.embed
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
+import me.kgustave.nightfury.entities.embed
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 
@@ -47,7 +46,7 @@ class MemoryCmd : Command()
         event.reply(embed {
             title { "NightFury Runtime Statistics" }
             if(event.isFromType(ChannelType.TEXT))
-                colorAwt = event.selfMember.color
+                color { event.selfMember.color }
             appendln("```ini")
             appendln("[ Current Memory Usage ]     ${(runtime.totalMemory() - runtime.freeMemory()) / mb}mb")
             appendln("[ Free Memory Available ]    ${runtime.freeMemory() / mb}mb")

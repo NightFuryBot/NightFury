@@ -15,11 +15,10 @@
  */
 package me.kgustave.nightfury.commands.admin
 
-import club.minnced.kjda.builders.colorAwt
-import club.minnced.kjda.builders.embed
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.entities.embed
 import net.dv8tion.jda.core.Permission
 
 /**
@@ -130,7 +129,7 @@ private class PrefixListCmd : Command() {
         else event.reply(embed {
             title = "Custom prefixes for **${event.guild.name}**"
             prefixes.forEach { prefix -> append("`$prefix`\n") }
-            colorAwt = event.selfMember.color
+            color  { event.selfMember.color }
             footer { value = "Total ${prefixes.size}"}
         })
     }
