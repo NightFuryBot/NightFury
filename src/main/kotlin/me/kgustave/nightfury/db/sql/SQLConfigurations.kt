@@ -37,27 +37,27 @@ class SQLLimits(val connection: Connection)
         connection prepare getCommandLimit closeAfter {
             insert(guild.idLong, command) executeQuery { if(it.next()) it.getInt("limit_number") else 0 }
         }
-    } catch (e: SQLException) { SQL.LOG.warn(e); 0 }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e); 0 }
 
     fun addLimit(guild: Guild, command: String, limit: Int) : Unit = try {
         connection prepare addCommandLimit closeAfter { insert(guild.idLong, command, limit).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn(e) }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun setLimit(guild: Guild, command: String, limit: Int) : Unit = try {
         connection prepare setCommandLimit closeAfter { insert(limit, guild.idLong, command).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn(e) }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun removeLimit(guild: Guild, command: String) = removeLimit(guild.idLong, command)
 
     fun removeLimit(id: Long, command: String) : Unit = try {
         connection prepare removeCommandLimit closeAfter { insert(id, command).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn(e) }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun removeAllLimits(guild: Guild) = removeAllLimits(guild.idLong)
 
     fun removeAllLimits(id: Long) : Unit = try {
         connection prepare removeAllCommandLimits closeAfter { insert(id).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn(e) }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
 }
 
 class SQLEnables(private val connection: Connection)
@@ -69,7 +69,7 @@ class SQLEnables(private val connection: Connection)
             }
         }
     } catch (e: SQLException) {
-        SQL.LOG.warn(e)
+        SQL.LOG.warn("SQLException",e)
         false
     }
 
@@ -82,7 +82,7 @@ class SQLEnables(private val connection: Connection)
             }
         }
     } catch (e: SQLException) {
-        SQL.LOG.warn(e)
+        SQL.LOG.warn("SQLException",e)
         false
     }
 

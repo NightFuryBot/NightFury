@@ -21,7 +21,6 @@ import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
-import me.kgustave.nightfury.entities.SimpleLog
 import me.kgustave.nightfury.extensions.ArgumentPatterns
 import me.kgustave.nightfury.listeners.*
 import me.kgustave.nightfury.resources.*
@@ -43,6 +42,8 @@ import net.dv8tion.jda.core.requests.Requester
 import okhttp3.*
 import org.json.JSONObject
 import org.json.JSONTokener
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -86,8 +87,7 @@ class Client internal constructor
 
     companion object
     {
-        private val log = SimpleLog.getLog("Client")
-        private infix fun log(e : Exception) = log.log(e)
+        private val log: Logger = LoggerFactory.getLogger("Client")
     }
 
     //////////////////////
@@ -192,8 +192,7 @@ class Client internal constructor
                 cleanSchedule()
                 System.gc()
             } catch(e : Exception) {
-                Client.log.info("Failed to clear caches!")
-                Client log e
+                log.error("Failed to clear caches!", e)
             }
         }, 0, 1, TimeUnit.HOURS)
 
@@ -389,8 +388,7 @@ class Client internal constructor
 
             override fun onFailure(call: Call, e: IOException)
             {
-                Client.log.fatal("Failed to send information to bots.discord.pw")
-                Client log e
+                log.error("Failed to send information to bots.discord.pw",e)
             }
         })
 
@@ -404,8 +402,7 @@ class Client internal constructor
             override fun onResponse(call: Call, response: Response) = response.close()
 
             override fun onFailure(call: Call, e: IOException) {
-                Client.log.fatal("Failed to send information to discordbots.org")
-                Client log e
+                log.error("Failed to send information to discordbots.org",e)
             }
         })
 
@@ -430,8 +427,7 @@ class Client internal constructor
                 this.totalGuilds = total
             }
         } catch (e: Exception) {
-            Client.log.fatal("Failed to retrieve bot shard information from bots.discord.pw")
-            Client log e
+            log.error("Failed to retrieve bot shard information from bots.discord.pw",e)
         }
     }
 

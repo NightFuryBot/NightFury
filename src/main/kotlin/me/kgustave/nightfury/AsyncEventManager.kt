@@ -45,8 +45,7 @@ class AsyncEventManager : IEventManager
                 try {
                     it.onEvent(event)
                 } catch (e: Throwable) {
-                    NightFury.LOG.fatal("One of the EventListeners caught an exception:")
-                    NightFury.LOG.log(e)
+                    NightFury.LOG.error("One of the EventListeners caught an exception:", e)
                 }
             }
         }

@@ -20,7 +20,6 @@ import me.kgustave.nightfury.Client
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.NightFury
-import me.kgustave.nightfury.entities.SimpleLog
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 
 /**
@@ -45,10 +44,10 @@ interface CommandListener
 
             override fun onException(event: CommandEvent, command: Command, exception: Throwable)
             {
-                NightFury.LOG.fatal("The CommandListener caught an Exception!")
-                NightFury.LOG.fatal("Command: ${command.name}")
+                NightFury.LOG.error("The CommandListener caught an Exception!")
+                NightFury.LOG.error("Command: ${command.name}")
                 if(exception.message != null)
-                    NightFury.LOG.fatal(exception.message)
+                    NightFury.LOG.error(exception.message)
             }
         }),
 
@@ -65,36 +64,33 @@ interface CommandListener
 
             override fun onException(event: CommandEvent, command: Command, exception: Throwable)
             {
-                NightFury.LOG.fatal("The CommandListener caught an Exception!")
+                NightFury.LOG.error("The CommandListener caught an Exception!")
                 if(exception.message != null)
-                    NightFury.LOG.fatal(exception.message)
+                    NightFury.LOG.error(exception.message)
             }
         }),
 
         DEBUG("debug", object : CommandListener
         {
-            private val debug: SimpleLog = SimpleLog.getLog("Debug")
-
             override fun onCommandCall(event: CommandEvent, command: Command)
             {
-                debug.info("Call to Command \"${command.name}\"")
+                NightFury.LOG.debug("Call to Command \"${command.name}\"")
             }
 
             override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?)
             {
                 if(msg != null) event.reply(msg)
-                debug.warn("Terminated Command \"${command.name}\" with message: \"$msg\"")
+                NightFury.LOG.debug("Terminated Command \"${command.name}\" with message: \"$msg\"")
             }
 
             override fun onCommandCompleted(event: CommandEvent, command: Command)
             {
-                debug.info("Completed Command \"${command.name}\"")
+                NightFury.LOG.debug("Completed Command \"${command.name}\"")
             }
 
             override fun onException(event: CommandEvent, command: Command, exception: Throwable)
             {
-                debug.fatal("Exception Caught for Command \"${command.name}\"")
-                debug.log(exception)
+                NightFury.LOG.debug("Exception Caught for Command \"${command.name}\"",exception)
             }
         });
 

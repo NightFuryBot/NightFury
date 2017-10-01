@@ -57,6 +57,7 @@ abstract class SQLChannel(connection: Connection, type: String) : SQLSingleton<G
 
 class SQLIgnoredChannels(connection: Connection) : SQLChannels(connection, "ignored")
 class SQLModeratorLog(connection: Connection) : SQLChannel(connection, "modlog")
+class SQLStarboard(connection: Connection) : SQLChannel(connection, "starboard")
 
 private val CHANNELS = "channels"      // Table Name
 private val GUILD_ID = "guild_id"      // Long

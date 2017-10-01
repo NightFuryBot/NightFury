@@ -23,7 +23,7 @@ import me.kgustave.nightfury.NoBaseExecutionCommand
 /**
  * @author Kaidan Gustave
  */
-class EnableCmd : NoBaseExecutionCommand()
+class ToggleCmd : NoBaseExecutionCommand()
 {
     init
     {
@@ -32,11 +32,11 @@ class EnableCmd : NoBaseExecutionCommand()
         help = "Toggles sensitive server functions. [BETA]"
         category = Category.SERVER_OWNER
         guildOnly = true
-        children = arrayOf(EnableRolePersistCmd())
+        children = arrayOf(ToggleRolePersistCmd())
     }
 }
 
-private class EnableRolePersistCmd : Command()
+private class ToggleRolePersistCmd : Command()
 {
     init
     {

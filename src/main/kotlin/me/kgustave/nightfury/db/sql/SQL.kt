@@ -15,7 +15,8 @@
  */
 package me.kgustave.nightfury.db.sql
 
-import me.kgustave.nightfury.entities.SimpleLog
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -24,7 +25,7 @@ import java.sql.ResultSet
  * @author Kaidan Gustave
  */
 object SQL {
-    val LOG : SimpleLog = SimpleLog.getLog("SQL")
+    val LOG : Logger = LoggerFactory.getLogger("SQL")
 }
 
 fun PreparedStatement.insert(vararg args: Any) : PreparedStatement {

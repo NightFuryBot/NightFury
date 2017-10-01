@@ -15,11 +15,11 @@
  */
 package me.kgustave.nightfury.api
 
-import me.kgustave.nightfury.entities.SimpleLog
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONTokener
+import org.slf4j.LoggerFactory
 
 /**
  * @author Kaidan Gustave
@@ -29,7 +29,7 @@ class E621API : AbstractAPICache<JSONArray>()
     private companion object
     {
         private val BASE_URL = "https://e621.net/post/index.json?"
-        private val LOG = SimpleLog.getLog("E621")
+        private val LOG = LoggerFactory.getLogger("E621")
     }
 
     override val hoursToDecay : Long = 1
@@ -60,8 +60,7 @@ class E621API : AbstractAPICache<JSONArray>()
                         }
                     }
         } catch (e : Exception) {
-            LOG.warn("Failed to retrieve from e621.net!")
-            LOG.log(e)
+            LOG.warn("Failed to retrieve from e621.net!",e)
             return null
         }
     }

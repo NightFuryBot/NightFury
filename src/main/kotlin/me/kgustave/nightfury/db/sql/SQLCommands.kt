@@ -38,7 +38,7 @@ class SQLCustomCommands(val connection: Connection)
                 insert(guild.idLong) executeQuery { while(it.next()) all.add(it.getString("name")) }
             }
         } catch (e : SQLException) {
-            SQL.LOG.warn(e)
+            SQL.LOG.warn("SQLException",e)
         }
         return all
     }
@@ -47,21 +47,21 @@ class SQLCustomCommands(val connection: Connection)
         connection prepare getContent closeAfter {
             insert(name, guild.idLong) executeQuery { if(it.next()) it.getString("content")?:"" else "" }
         }
-    } catch (e : SQLException) { SQL.LOG.warn(e); "" }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e); "" }
 
     fun add(name: String, content: String, guild: Guild) : Unit = try {
         connection prepare(add) closeAfter { insert(name, content, guild.idLong).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn(e) }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun remove(name: String, guild: Guild) = remove(name, guild.idLong)
 
     fun remove(name: String, id: Long) : Unit = try {
         connection prepare(remove) closeAfter { insert(name, id).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn(e) }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun removeAll(guild: Guild) = removeAll(guild.idLong)
 
     fun removeAll(id: Long) : Unit = try {
         connection prepare(removeAll) closeAfter { insert(id).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn(e) }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
 }

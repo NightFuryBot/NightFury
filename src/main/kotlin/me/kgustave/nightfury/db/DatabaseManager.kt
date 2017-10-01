@@ -56,6 +56,7 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
     private val modLog : SQLModeratorLog = SQLModeratorLog(connection)
     private val ignoredChannels : SQLIgnoredChannels = SQLIgnoredChannels(connection)
     private val welcomeChannels : SQLWelcomeChannel = SQLWelcomeChannel(connection)
+    private val starboards : SQLStarboard = SQLStarboard(connection)
 
     private val cases : SQLCases = SQLCases(connection)
 
@@ -88,7 +89,7 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
             return@top true
         }
     } catch (e : SQLException) {
-        SQL.LOG.warn(e)
+        SQL.LOG.warn("SQLException",e)
         return@top false
     }
 
@@ -135,6 +136,14 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
     else
         modLog.set(channel.guild.idLong, channel.idLong)
     infix fun resetModLog(guild: Guild) = modLog.reset(guild.idLong)
+
+    infix fun hasStarboard(guild: Guild) = starboards.has(guild.idLong)
+    infix fun getStarboard(guild: Guild) = starboards.get(guild, guild.idLong)
+    infix fun setStarboard(channel: TextChannel) = if(getStarboard(channel.guild)!=null)
+        starboards.update(channel.idLong, channel.guild.idLong)
+    else
+        starboards.set(channel.guild.idLong, channel.idLong)
+    infix fun resetStarboard(guild: Guild) = starboards.reset(guild.idLong)
 
     infix fun isIgnoredChannel(channel: TextChannel) : Boolean {
         val ignored = getIgnoredChannels(channel.guild)
@@ -228,7 +237,7 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
 
     fun shutdown() = try {
         connection.close()
-    } catch (e: SQLException) { SQL.LOG.warn(e) }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
 
     enum class TableData(vararg val parameters: String)
     {

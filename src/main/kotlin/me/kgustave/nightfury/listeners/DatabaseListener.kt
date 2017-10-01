@@ -95,6 +95,9 @@ class DatabaseListener(private val manager: DatabaseManager) : EventListener
             event.channel muteRole muted
     }
 
+    // If the guild has a type of channel and it equals the deleted channel, then it's removed
+    // if the type of channel is null, but the database contains info regarding that type, it
+    // is also removed
     fun onTextChannelDelete(event: TextChannelDeleteEvent)
     {
         // ModLog Deleted
@@ -120,6 +123,18 @@ class DatabaseListener(private val manager: DatabaseManager) : EventListener
         } else {
             if(manager.hasWelcome(event.guild)) {
                 manager.resetWelcome(event.guild)
+            }
+        }
+
+        // Starboard Deleted
+        val starboard = manager.getStarboard(event.guild)
+        if(starboard != null)  {
+            if(event.channel == starboard) {
+                manager.resetStarboard(event.guild)
+            }
+        } else {
+            if(manager.hasStarboard(event.guild)) {
+                manager.resetStarboard(event.guild)
             }
         }
     }

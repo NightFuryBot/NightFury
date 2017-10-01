@@ -15,8 +15,8 @@
  */
 package me.kgustave.nightfury.api
 
-import me.kgustave.nightfury.entities.SimpleLog
 import org.jsoup.Jsoup
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -31,7 +31,7 @@ class GoogleImageAPI : AbstractAPICache<List<String>>()
 
     companion object {
         private val URL = "https://www.google.com/search?site=imghp&tbm=isch&source=hp&biw=1680&bih=940&q=%s&safe=active"
-        private val LOG : SimpleLog = SimpleLog.getLog("Google Image")
+        private val LOG = LoggerFactory.getLogger("Google Image")
         private val ENCODING = "UTF-8"
         private val USER_AGENT =
                 "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36"
@@ -43,9 +43,9 @@ class GoogleImageAPI : AbstractAPICache<List<String>>()
         if(cached!=null)
             return cached
         val request = try {
-            String.format(URL, URLEncoder.encode(query, ENCODING))
+            URL.format(URLEncoder.encode(query, ENCODING))
         } catch (e: UnsupportedOperationException) {
-            LOG.fatal(e)
+            LOG.error("Error processing request: $e")
             return@search null
         }
         val result = ArrayList<String>()
@@ -62,13 +62,13 @@ class GoogleImageAPI : AbstractAPICache<List<String>>()
 
                             result += URLDecoder.decode(node.substring(frontIndex, node.indexOf("\",", frontIndex)), ENCODING)
                         } catch (e: UnsupportedOperationException) {
-                            LOG.fatal("An exception was thrown while decoding an image URL: $e")
+                            LOG.error("An exception was thrown while decoding an image URL: $e")
                         } catch (e: IndexOutOfBoundsException) {
-                            LOG.fatal("An exception was thrown due to improper indexing: $e")
+                            LOG.error("An exception was thrown due to improper indexing: $e")
                         }
                     }
         } catch (e: IOException) {
-            LOG.fatal(e)
+            LOG.error("Encountered an IOException: $e")
             return@search null
         }
         addToCache(query, result)

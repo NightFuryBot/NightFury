@@ -18,7 +18,7 @@ package me.kgustave.nightfury.api
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.youtube.YouTube
-import me.kgustave.nightfury.entities.SimpleLog
+import org.slf4j.LoggerFactory
 import java.io.IOException
 
 /**
@@ -28,7 +28,7 @@ class YouTubeAPI(apiKey : String) : AbstractAPICache<List<String>>()
 {
     private companion object
     {
-        private val ytLog = SimpleLog.getLog("YouTube")
+        private val ytLog = LoggerFactory.getLogger("YouTube")
         private var maxSearchResults = 20L
     }
 
@@ -41,7 +41,7 @@ class YouTubeAPI(apiKey : String) : AbstractAPICache<List<String>>()
         search = try {
             youtube.search().list("id,snippet")
         } catch (e : IOException) {
-            ytLog.fatal("Failed to initialize search: $e")
+            ytLog.error("Failed to initialize search: $e")
             null
         }
 
@@ -69,7 +69,7 @@ class YouTubeAPI(apiKey : String) : AbstractAPICache<List<String>>()
         val response = try {
             search.execute()
         } catch (e : IOException) {
-            ytLog.fatal("Search failure: $e")
+            ytLog.error("Search failure: $e")
             return null
         }
         response.items.stream().forEach { results.add(it.id.videoId) }

@@ -15,8 +15,8 @@
  */
 package me.kgustave.nightfury.api
 
-import me.kgustave.nightfury.entities.SimpleLog
 import org.jsoup.Jsoup
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -30,7 +30,7 @@ class GoogleAPI : AbstractAPICache<List<String>>()
     private companion object
     {
         private val URL_FORMAT : String = "https://www.google.com/search?q=%s&num=10"
-        private val LOG : SimpleLog = SimpleLog.getLog("Google")
+        private val LOG = LoggerFactory.getLogger("Google")
         private val ENCODING = "UTF-8"
         private val USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
     }
@@ -43,9 +43,9 @@ class GoogleAPI : AbstractAPICache<List<String>>()
         if(cached!=null)
             return cached
         val request: String = try {
-            String.format(URL_FORMAT, URLEncoder.encode(query, ENCODING))
+            URL_FORMAT.format(URLEncoder.encode(query, ENCODING))
         } catch (e: UnsupportedOperationException) {
-            LOG.fatal(e)
+            LOG.error("Error processing request: $e")
             return@search null
         }
         val result : List<String> = try {
@@ -61,7 +61,7 @@ class GoogleAPI : AbstractAPICache<List<String>>()
                     .filter { it.isNotEmpty() && it != "/settings/ads/preferences?hl=en" }
                     .toList()
         } catch (e: IOException) {
-            LOG.fatal(e)
+            LOG.error("Encountered an IOException: $e")
             return@search null
         }
         addToCache(query, result)

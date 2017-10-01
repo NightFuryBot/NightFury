@@ -147,7 +147,7 @@ class KEmbedBuilder internal constructor() : Appendable
         return this
     }
 
-    infix inline fun color(lazy: () -> Color): KEmbedBuilder
+    infix inline fun color(lazy: () -> Color?): KEmbedBuilder
     {
         color = lazy()
         return this

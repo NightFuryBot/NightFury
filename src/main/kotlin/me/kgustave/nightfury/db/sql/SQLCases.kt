@@ -57,5 +57,5 @@ class SQLCases(connection: Connection) : SQLCollection<Guild, Case>(connection)
         connection prepare "UPDATE cases SET reason = ? WHERE guild_id = ? AND number = ?" closeAfter {
             insert(case.reason, case.guildId, case.number).execute()
         }
-    } catch (e : SQLException) { SQL.LOG.warn(e) }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
 }

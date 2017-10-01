@@ -28,28 +28,28 @@ import me.kgustave.nightfury.commands.dev.*
 import me.kgustave.nightfury.commands.other.*
 import me.kgustave.nightfury.commands.standard.*
 import me.kgustave.nightfury.db.DatabaseManager
-import me.kgustave.nightfury.entities.SimpleLog
 import me.kgustave.nightfury.extensions.*
 import me.kgustave.nightfury.jagtag.getMethods
 import me.kgustave.nightfury.listeners.InvisibleTracker
+import me.kgustave.nightfury.listeners.StarboardListener
 import net.dv8tion.jda.core.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
 import java.util.logging.Level
-import java.util.logging.Logger
 
 fun main(args: Array<String>?)
 {
     NightFury.LOG.info("Starting NightFury...")
 
-    Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
+    java.util.logging.Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
 
     try {
         NightFury()
     } catch(e : IOException) {
-        NightFury.LOG.fatal("Failed to get configurations!")
-        NightFury.LOG.log(e)
+        NightFury.LOG.error("Failed to get configurations!",e)
     }
 }
 
@@ -62,7 +62,7 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
     {
         val version : String = this::class.java.`package`.implementationVersion?:"BETA"
         val github : String = "https://github.com/TheMonitorLizard/NightFury/"
-        val LOG: SimpleLog = SimpleLog.getLog("NightFury")
+        val LOG: Logger = LoggerFactory.getLogger("NightFury")
 
         fun shutdown(exit: Int)
         {
@@ -85,6 +85,7 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
 
         val parser : Parser = JagTag.newDefaultBuilder().addMethods(getMethods()).build()
 
+        val starboard = StarboardListener(manager)
         val invisTracker = InvisibleTracker()
 
         val client = Client(
@@ -124,6 +125,9 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
                 ModLogCmd(),
                 PrefixCmd(),
                 WelcomeCmd(),
+                StarboardCmd(),
+
+                ToggleCmd(),
 
                 BashCmd(),
                 EvalCmd(),
@@ -131,15 +135,14 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
                 MemoryCmd(),
                 ModeCmd(),
                 RestartCmd(),
-                ShutdownCmd(),
-
-                EnableCmd()
+                ShutdownCmd()
         )
 
         JDABuilder(AccountType.BOT) buildAsync {
             manager  { AsyncEventManager() }
             listener { client }
             listener { invisTracker }
+            listener { starboard }
             token    { config.token }
             status   { OnlineStatus.DO_NOT_DISTURB }
             game     { "Starting Up..." }

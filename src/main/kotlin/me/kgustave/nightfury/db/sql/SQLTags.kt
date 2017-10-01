@@ -37,28 +37,28 @@ class SQLGlobalTags(val connection: Connection)
     fun isTag(name: String) = try {
         connection prepare isTag closeAfter { insert(name) executeQuery { it.next() } }
     } catch (e : SQLException) {
-        SQL.LOG.warn(e)
+        SQL.LOG.warn("SQLException",e)
         false
     }
 
     fun addTag(name: String, ownerId: Long, content: String) : Unit = try {
         connection prepare addTag closeAfter { insert(name, ownerId, content).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn(e) }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun editTag(newContent: String, name: String, ownerId: Long) : Unit = try {
         connection prepare editTag closeAfter { insert(newContent, name, ownerId).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn(e) }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun deleteTag(name: String, ownerId: Long) : Unit = try {
         connection prepare deleteTag closeAfter { insert(name, ownerId).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn(e) }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun getOriginalName(name: String) = try {
         connection prepare getTagName closeAfter {
             insert(name) executeQuery { if(it.next()) it.getString("name")?:"" else "" }
         }
     } catch (e : SQLException) {
-        SQL.LOG.warn(e)
+        SQL.LOG.warn("SQLException",e)
         ""
     }
 
@@ -67,7 +67,7 @@ class SQLGlobalTags(val connection: Connection)
             insert(name) executeQuery { if(it.next()) it.getString("content")?:"" else "" }
         }
     } catch (e : SQLException) {
-        SQL.LOG.warn(e)
+        SQL.LOG.warn("SQLException",e)
         ""
     }
 
@@ -76,7 +76,7 @@ class SQLGlobalTags(val connection: Connection)
             insert(name) executeQuery { if(it.next()) it.getLong("owner_id") else 0L }
         }
     } catch (e : SQLException) {
-        SQL.LOG.warn(e)
+        SQL.LOG.warn("SQLException",e)
         0L
     }
 
@@ -87,7 +87,7 @@ class SQLGlobalTags(val connection: Connection)
                 insert(userid) executeQuery { while(it.next()) names.add(it.getString("name")) }
             }
         } catch (e : SQLException) {
-            SQL.LOG.warn(e)
+            SQL.LOG.warn("SQLException",e)
         }
         return names
     }
@@ -115,46 +115,46 @@ class SQLLocalTags(val connection: Connection)
     fun isTag(name: String, guild: Guild) = try {
         connection prepare isTag closeAfter { insert(name, guild.idLong) executeQuery { it.next() } }
     } catch (e : SQLException) {
-        SQL.LOG.warn(e)
+        SQL.LOG.warn("SQLException",e)
         false
     }
 
     fun addTag(name: String, ownerId: Long, content: String, guild: Guild) : Unit = try {
         connection prepare addTag closeAfter { insert(name, guild.idLong, ownerId, content).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn(e) }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun editTag(newContent: String, name: String, ownerId: Long, guild: Guild) : Unit = try {
         connection prepare editTag closeAfter { insert(newContent, name, ownerId, guild.idLong).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn(e) }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun deleteTag(name: String, ownerId: Long, guild: Guild) : Unit = try {
         connection prepare deleteTag closeAfter { insert(name, ownerId, guild.idLong).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn(e) }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun deleteAllTags(guild: Guild) = deleteAllTags(guild.idLong)
 
     fun deleteAllTags(id: Long) : Unit = try {
         connection prepare deleteAllTags closeAfter { insert(id).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn(e) }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun getOriginalName(name: String, guild: Guild) = try {
         connection prepare getTagName closeAfter {
             insert(name, guild.idLong) executeQuery { if(it.next()) it.getString("name")?:"" else "" }
         }
-    } catch (e : SQLException) { SQL.LOG.warn(e); "" }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e); "" }
 
     fun getTagContent(name: String, guild: Guild) = try {
         connection prepare getTagContent closeAfter {
             insert(name, guild.idLong) executeQuery { if(it.next()) it.getString("content")?:"" else "" }
         }
-    } catch (e : SQLException) { SQL.LOG.warn(e); "" }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e); "" }
 
     fun getTagOwnerId(name: String, guild: Guild) = try {
         connection prepare getTagOwnerId closeAfter {
             insert(name, guild.idLong) executeQuery { if(it.next()) it.getLong("owner_id") else 0L }
         }
     } catch (e : SQLException) {
-        SQL.LOG.warn(e)
+        SQL.LOG.warn("SQLException",e)
         0L
     }
 
@@ -165,7 +165,7 @@ class SQLLocalTags(val connection: Connection)
                 insert(guild.idLong) executeQuery { while(it.next()) names.add(it.getString("name")) }
             }
         } catch (e : SQLException) {
-            SQL.LOG.warn(e)
+            SQL.LOG.warn("SQLException",e)
         }
         return names
     }
@@ -177,7 +177,7 @@ class SQLLocalTags(val connection: Connection)
                 insert(userid, guild.idLong) executeQuery { while(it.next()) names.add(it.getString("name")) }
             }
         } catch (e : SQLException) {
-            SQL.LOG.warn(e)
+            SQL.LOG.warn("SQLException",e)
         }
         return names
     }
@@ -187,5 +187,5 @@ class SQLLocalTags(val connection: Connection)
             // Overrides have an owner ID of 1L (likely won't have issues with this)
             insert(newContent, 1L, name, originalOwnerId, guild.idLong).execute()
         }
-    } catch (e : SQLException) { SQL.LOG.warn(e) }
+    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
 }

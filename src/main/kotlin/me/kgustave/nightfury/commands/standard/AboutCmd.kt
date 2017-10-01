@@ -18,12 +18,12 @@ package me.kgustave.nightfury.commands.standard
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.NightFury
-import me.kgustave.nightfury.entities.SimpleLog
 import me.kgustave.nightfury.entities.embed
 import me.kgustave.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.JDAInfo
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
+import org.slf4j.LoggerFactory
 
 /**
  * @author Kaidan Gustave
@@ -55,7 +55,7 @@ class AboutCmd(vararg val permissions : Permission) : Command()
                 isPublic = info.isBotPublic
                 if(isPublic) oauthLink = info.getInviteUrl(perms)
             } catch (e: Exception) {
-                SimpleLog.getLog("OAuth2").fatal("Could not generate invite link: $e")
+                LoggerFactory.getLogger("OAuth2").error("Could not generate invite link: $e")
             }
         }
         val embed = embed {

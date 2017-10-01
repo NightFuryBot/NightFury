@@ -34,21 +34,21 @@ abstract class SQLSingleton<in E, out T>(val connection: Connection)
 
     fun has(vararg  args : Any) = try {
         connection prepare getStatement closeAfter { insert(*args) executeQuery { it.next() } }
-    } catch (e: SQLException) { SQL.LOG.warn(e); false }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e); false }
 
     fun get(env: E, vararg args: Any) = try {
         connection prepare getStatement closeAfter { insert(*args) executeQuery { get(it, env) } }
-    } catch (e: SQLException) { SQL.LOG.warn(e); null }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e); null }
 
     fun set(vararg args: Any) : Unit = try {
         connection prepare setStatement closeAfter { insert(*args).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn(e) }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun update(vararg args: Any) : Unit = try {
         connection prepare updateStatement closeAfter { insert(*args).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn(e) }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun reset(vararg args: Any) : Unit = try {
         connection prepare resetStatement closeAfter { insert(*args).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn(e) }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
 }

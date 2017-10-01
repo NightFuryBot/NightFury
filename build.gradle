@@ -70,21 +70,31 @@ repositories {
 }
 
 dependencies {
+    // Kotlin
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.14'
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
+    // JDA
     compile "net.dv8tion:JDA:$jdaVersion"
     compile "com.jagrosh:JDA-Utilities:$jdaUtilsVersion"
     compile "com.github.TheMonitorLizard:KJDA-Utilities:$kjdaUtilsVersion"
 
+    // h2
     compile 'com.h2database:h2:1.4.196'
 
+    // APIs
     compile 'org.jsoup:jsoup:1.10.2'
     compile 'com.google.apis:google-api-services-youtube:v3-rev183-1.22.0'
 
+    // JagTag
     compile 'com.jagrosh:JagTag:0.5'
 
+    // Logging
+    compile "org.slf4j:slf4j-api:1.7.25"
+    compile 'ch.qos.logback:logback-classic:1.2.3'
+
+    // Testing
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile 'com.github.SvenWoltmann:color-thief-java:v1.1.1'
 }

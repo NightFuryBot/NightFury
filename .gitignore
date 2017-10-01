@@ -2,6 +2,7 @@
 .idea
 /out/
 /src/test/
+/src/main/resources/
 
 # Gradle Files
 /.gradle/
@@ -18,8 +19,6 @@ testConfig.txt
 
 # Misc Files
 /wiki/
-/Extensions/
-/scripts/
 /bash/
 /backup/
 

@@ -19,7 +19,7 @@ import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.annotations.MustHaveArguments
-import me.kgustave.nightfury.entities.SimpleLog
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.io.InputStreamReader
 import java.io.BufferedReader
@@ -61,9 +61,8 @@ class BashCmd : Command() {
         } catch (e: IOException) {
             return event.reply("I wasn't able to find the command `${event.args}`!")
         } catch (e: Exception) {
-            SimpleLog.getLog("Bash").apply {
-                warn("An unknown error occurred!")
-                log(e)
+            LoggerFactory.getLogger("Bash").apply {
+                warn("An unknown error occurred!",e)
             }
             return event.replyError("An unknown error occurred!")
         }
@@ -71,7 +70,7 @@ class BashCmd : Command() {
         try {
             return event.reply("Input: ```\n${event.args}``` Output: \n```\n$finalOutput```")
         } catch (e: IllegalArgumentException) {
-            SimpleLog.getLog("Bash").info("Input: ${event.args}\nOutput: $finalOutput")
+            LoggerFactory.getLogger("Bash").info("Input: ${event.args}\nOutput: $finalOutput")
             event.reply("Command output too long! Output sent in console.")
         }
 

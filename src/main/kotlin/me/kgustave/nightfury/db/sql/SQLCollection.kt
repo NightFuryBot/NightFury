@@ -34,17 +34,17 @@ abstract class SQLCollection<in E, out T>(val connection: Connection)
 
     fun get(env: E, vararg args: Any) : Set<T> = try {
         connection prepare getStatement closeAfter { insert(*args) executeQuery { get(it, env) } }
-    } catch (e: SQLException) { SQL.LOG.warn(e); emptySet() }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e); emptySet() }
 
     fun add(vararg args: Any) : Unit = try {
         connection prepare addStatement closeAfter { insert(*args).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn(e) }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun remove(vararg args: Any) : Unit  = try {
         connection prepare removeStatement closeAfter { insert(*args).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn(e) }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
 
     fun removeAll(vararg args: Any) : Unit = try {
         connection prepare removeAllStatement closeAfter { insert(*args).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn(e) }
+    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
 }
