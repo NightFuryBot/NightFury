@@ -21,6 +21,7 @@ import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.entities.Case
 import me.kgustave.nightfury.entities.then
+import me.kgustave.nightfury.resources.ArgumentPatterns
 import me.kgustave.nightfury.extensions.isSelf
 
 /**
@@ -43,16 +44,16 @@ class ReasonCmd : Command()
                 ?: return event.replyError("The moderator log channel has not been set!")
         if(event.args.isEmpty())
             return event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix, name))
-        val parts = event.args.split(Regex("\\s+"),2)
+        val parts = event.args.split(ArgumentPatterns.commandArgs,2)
         val case : Case
         val number : Int
         val reason : String
         // Only one argument or first argument is not a number
         if(parts.size==1 || !(parts[0] matches Regex("\\d{1,5}")))
         {
-            case = event.client.manager.getFirstCaseMatching(event.guild, {
-                it.modId == event.author.idLong && it.reason == Case.default_case_reason
-            }).takeIf { it.number != 0 } ?: return event.replyError("You have no outstanding cases!")
+            val cases = event.client.manager.getCasesByUser(event.member).takeIf { it.isNotEmpty() }
+                    ?: return event.replyError("You have no outstanding cases!")
+            case = cases[0]
             number = case.number
             reason = event.args
         }
@@ -64,7 +65,8 @@ class ReasonCmd : Command()
                             "Specify a case number lower than the latest case number!")
                 else this
             }
-            case = event.client.manager.getCaseMatching(event.guild, { it.number == number })
+            case = event.client.manager.getCaseNumber(event.guild, number)
+                    ?: return event.replyError("An error occurred getting case number $number!")
             reason = parts[1].trim()
         }
 

@@ -73,8 +73,7 @@ private class WelcomeSetCmd : Command()
 
         if(!channel.canTalk()) return event.replyError("I cannot speak in the channel you specified!")
 
-        event.manager.setWelcomeChannel(channel)
-        event.manager.setWelcomeMessage(event.guild, args[1])
+        event.manager.setWelcome(channel, args[1])
         event.replySuccess("Successfully set welcome message for this server!")
         event.invokeCooldown()
     }

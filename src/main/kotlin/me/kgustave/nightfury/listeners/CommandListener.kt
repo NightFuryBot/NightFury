@@ -48,6 +48,7 @@ interface CommandListener
                 NightFury.LOG.error("Command: ${command.name}")
                 if(exception.message != null)
                     NightFury.LOG.error(exception.message)
+                NightFury.LOG.debug("Full Stacktrace", exception)
             }
         }),
 

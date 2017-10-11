@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("unused")
 package me.kgustave.nightfury
 
 import com.jagrosh.jagtag.Parser
@@ -21,7 +20,7 @@ import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
-import me.kgustave.nightfury.extensions.ArgumentPatterns
+import me.kgustave.nightfury.resources.ArgumentPatterns
 import me.kgustave.nightfury.listeners.*
 import me.kgustave.nightfury.resources.*
 import net.dv8tion.jda.core.JDA
@@ -49,7 +48,6 @@ import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.functions
@@ -81,7 +79,6 @@ class Client internal constructor
 
     private val executor  : ScheduledExecutorService                  = Executors.newSingleThreadScheduledExecutor()
     private val cooldowns : MutableMap<String, OffsetDateTime>        = HashMap()
-    private val scheduled : MutableMap<String, ScheduledFuture<*>>    = HashMap()
     private val uses      : MutableMap<String, Int>                   = HashMap()
     private val callCache : FixedSizeCache<Long, MutableSet<Message>> = FixedSizeCache(300)
 
@@ -121,27 +118,7 @@ class Client internal constructor
         cooldowns.keys.stream().filter { cooldowns[it]!!.isBefore(now) }.toList().forEach { cooldowns.remove(it) }
     }
 
-    fun hasFuture(key: String) : Boolean
-    {
-        synchronized(scheduled) { return scheduled.containsKey(key.toLowerCase()) }
-    }
-
-    fun saveFuture(key: String, future: ScheduledFuture<*>)
-    {
-        synchronized(scheduled) { scheduled.put(key.toLowerCase(),future) }
-    }
-
-    fun cancelFuture(key: String)
-    {
-        synchronized(scheduled) { scheduled[key.toLowerCase()]?.cancel(false) }
-        removeFuture(key)
-    }
-
-    fun removeFuture(key: String)
-    {
-        synchronized(scheduled) { scheduled.remove(key.toLowerCase()) }
-    }
-
+    @Suppress("unused")
     fun getUsesFor(command: Command) : Int
     {
         synchronized(uses) { return uses.getOrDefault(command.name, 0) }
@@ -156,17 +133,26 @@ class Client internal constructor
     //      EVENTS      //
     //////////////////////
 
-    override fun onEvent(event: Event?) = when(event)
-    {
-        is ReadyEvent           -> onReady(event)
-        is GuildJoinEvent       -> onGuildJoin(event)
-        is GuildLeaveEvent      -> onGuildLeave(event)
-        is MessageReceivedEvent -> onMessageReceived(event)
-        is MessageDeleteEvent   -> onMessageDelete(event)
-        is ShutdownEvent        -> onShutdown(event)
-        is GuildMemberJoinEvent -> onGuildMemberJoin(event)
+    override fun onEvent(event: Event?) {
+        when(event)
+        {
+            is MessageReceivedEvent -> onMessageReceived(event)
+            is MessageDeleteEvent   -> onMessageDelete(event)
+            is GuildMemberJoinEvent -> onGuildMemberJoin(event)
+            is ReadyEvent           -> onReady(event)
 
-        else -> Unit
+            is GuildJoinEvent       -> {
+                if(event.guild.selfMember.joinDate.plusMinutes(5).isAfter(OffsetDateTime.now()))
+                {
+                    if(event.guild.isGood) updateStats(event.jda)
+                    else event.guild.leave().queue()
+                }
+            }
+            is GuildLeaveEvent      -> updateStats(event.jda)
+            is ShutdownEvent        -> onShutdown(event)
+
+            else -> Unit
+        }
     }
 
     fun onReady(event: ReadyEvent)
@@ -189,27 +175,12 @@ class Client internal constructor
             try {
                 clearAPICaches()
                 cleanCooldowns()
-                cleanSchedule()
                 System.gc()
             } catch(e : Exception) {
                 log.error("Failed to clear caches!", e)
             }
         }, 0, 1, TimeUnit.HOURS)
 
-        updateStats(event.jda)
-    }
-
-    fun onGuildJoin(event: GuildJoinEvent)
-    {
-        if(event.guild.selfMember.joinDate.plusMinutes(5).isAfter(OffsetDateTime.now()))
-        {
-            if(event.guild.isGood) updateStats(event.jda)
-            else event.guild.leave().queue()
-        }
-    }
-
-    fun onGuildLeave(event: GuildLeaveEvent)
-    {
         updateStats(event.jda)
     }
 
@@ -232,10 +203,12 @@ class Client internal constructor
             event.guild != null -> // From Guild without default prefix
             {
                 val prefixes = manager.getPrefixes(event.guild)
-                if(prefixes.isNotEmpty()) {
-                    val prefix = prefixes.stream().filter { rawContent.startsWith(it, true) }?.findFirst()
-                    if(prefix!=null && prefix.isPresent) {
-                        prefixUsed = prefix.get()
+                if(prefixes.isNotEmpty())
+                {
+                    val prefix = prefixes.find { rawContent.startsWith(it, true) }
+                    if(prefix!=null)
+                    {
+                        prefixUsed = prefix
                         parts = rawContent.substring(prefixUsed.length).trim().split(ArgumentPatterns.commandArgs, 2)
                     } else return
                 } else return
@@ -244,8 +217,8 @@ class Client internal constructor
             else -> return // No match, not a command call
         }
 
-        val name : String = parts[0]
-        val args : String = if(parts.size == 2) parts[1] else ""
+        val name = parts[0]
+        val args = if(parts.size == 2) parts[1] else ""
         if(listener.checkCall(event, this, name, args))
         {
             val command = commands[name]
@@ -255,14 +228,16 @@ class Client internal constructor
                 listener.onCommandCall(commandEvent, command)
                 return command.run(commandEvent)
             }
-            val customCommandContent = manager.customCommands.getContentFor(name,event.guild)
-            if(event.isFromType(ChannelType.TEXT) && customCommandContent.isNotEmpty())
+            if(event.isFromType(ChannelType.TEXT))
             {
-                return commandEvent.reply(parser.clear().put("user", event.author)
-                        .put("guild", event.guild)
-                        .put("channel", event.textChannel)
-                        .put("args", args)
-                        .parse(customCommandContent))
+                val customCommandContent = manager.customCommands.getContentFor(name,event.guild)
+                if(customCommandContent.isNotEmpty())
+                    return commandEvent.reply(parser.clear()
+                            .put("user", event.author)
+                            .put("guild", event.guild)
+                            .put("channel", event.textChannel)
+                            .put("args", args)
+                            .parse(customCommandContent))
             }
         }
     }
@@ -273,14 +248,11 @@ class Client internal constructor
             return
         synchronized(callCache)
         {
-            if(callCache.contains(event.messageIdLong))
-            {
-                val messages = callCache[event.messageIdLong]?:return
-                if(messages.size > 1 && event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_MANAGE))
-                    event.textChannel.deleteMessages(messages).queue({},{})
-                else if(messages.size == 1)
-                    messages.forEach { it.delete().queue({},{}) }
-            }
+            val messages = callCache[event.messageIdLong]?:return
+            if(messages.size > 1 && event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_MANAGE))
+                event.textChannel.deleteMessages(messages).queue({},{})
+            else if(messages.size == 1)
+                messages.forEach { it.delete().queue({},{}) }
         }
     }
 
@@ -295,7 +267,7 @@ class Client internal constructor
     fun onGuildMemberJoin(event: GuildMemberJoinEvent)
     {
         // If there's no welcome channel then we just return.
-        val welcomeChannel = manager getWelcomeChannel event.guild ?:return
+        val welcomeChannel = manager.getWelcomeChannel(event.guild)?:return
 
         // We can't even send messages to the channel so we return
         if(!welcomeChannel.canTalk()) return
@@ -311,7 +283,7 @@ class Client internal constructor
                 .put("guild", event.guild)
                 .put("channel", welcomeChannel)
                 .put("user", event.user)
-                .parse(manager getWelcomeMessage event.guild)
+                .parse(manager.getWelcomeMessage(event.guild))
 
         // Too long or empty means we can't send, so we just return because it'll break otherwise
         if(message.isEmpty() || message.length>2000) return
@@ -338,7 +310,7 @@ class Client internal constructor
             {
                 val toStore = HashSet<Message>()
                 toStore.add(message)
-                callCache.add(id, toStore)
+                callCache[id] = toStore
             }
         }
     }
@@ -349,15 +321,6 @@ class Client internal constructor
 
     private inline val Guild.isGood : Boolean
         inline get() = members.stream().filter { it.user.isBot }.count()<=30 || getMemberById(devId)!=null
-
-    private fun cleanSchedule()
-    {
-        synchronized(scheduled)
-        {
-            scheduled.keys.stream().filter { scheduled[it]!!.isDone || scheduled[it]!!.isCancelled }
-                    .toList().forEach { scheduled.remove(it) }
-        }
-    }
 
     private fun clearAPICaches()
     {

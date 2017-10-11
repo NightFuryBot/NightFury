@@ -17,7 +17,7 @@ package me.kgustave.nightfury
 
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
-import me.kgustave.nightfury.extensions.ArgumentPatterns
+import me.kgustave.nightfury.resources.ArgumentPatterns
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import java.util.function.BiConsumer
@@ -168,8 +168,7 @@ abstract class Command
             }
         }
 
-        if(devOnly && !event.isDev)
-            return
+        if(devOnly && !event.isDev) return
 
         if(category!=null && !category!!.test(event)) return
 
@@ -217,15 +216,16 @@ abstract class Command
             if(remaining > 0)
             {
                 val error = event.cooldownError
-                return event terminate "${event.client.warning} That command is on cooldown for $remaining more seconds${
-                                        if (error.isEmpty()) "!" else " $error"}!"
+                return event terminate "${event.client.warning} That command is on cooldown " +
+                        "for $remaining more seconds${if (error.isEmpty()) "!" else " $error"}!"
             }
         }
 
         this::class.annotations.forEach {
             if(it is AutoInvokeCooldown && key!=null)
                 event.client.applyCooldown(key, cooldown)
-            if(event.args.isEmpty() && it is MustHaveArguments) {
+            if(event.args.isEmpty() && it is MustHaveArguments)
+            {
                 return if(it.error.isNotEmpty())
                     event.replyError(TOO_FEW_ARGS_ERROR.format(it.error))
                 else
@@ -240,6 +240,7 @@ abstract class Command
         } catch (e: Throwable) {
             event.client.listener.onException(event, this, e)
         }
+
         event.client.incrementUses(this)
     }
 
@@ -256,14 +257,20 @@ abstract class Command
 
     fun CommandEvent.modSearch() : Pair<Long, String?>?
     {
-        val targetId = ArgumentPatterns.targetIDWithReason.matcher(args)
-        val targetMention = ArgumentPatterns.targetMentionWithReason.matcher(args)
+        val targetId = ArgumentPatterns.targetIDWithReason.matchEntire(args)
+        val targetMention = ArgumentPatterns.targetMentionWithReason.matchEntire(args)
 
-        return when {
-            targetId.matches()      -> Pair(targetId.group(1).trim().toLong(), targetId.group(2)?.trim())
-            targetMention.matches() -> Pair(targetMention.group(1).trim().toLong(), targetMention.group(2)?.trim())
-            else                    -> { replyError(INVALID_ARGS_HELP.format(client.prefix, name)); null }
+        val groups = when
+        {
+            targetId != null -> targetId.groupValues
+            targetMention != null -> targetMention.groupValues
+            else -> {
+                replyError(INVALID_ARGS_HELP.format(client.prefix, name))
+                return null
+            }
         }
+
+        return Pair(groups[1].trim().toLong(), groups[2].trim().takeIf { it.isNotEmpty() })
     }
 
     fun CommandEvent.invokeCooldown()
@@ -273,7 +280,8 @@ abstract class Command
     }
 
     internal val CommandEvent.cooldownKey
-        get() = when (cooldownScope) {
+        get() = when (cooldownScope)
+        {
             CooldownScope.USER -> cooldownScope.genKey(name, author.idLong)
             CooldownScope.USER_GUILD ->
                 if(event.guild != null) cooldownScope.genKey(name, author.idLong, guild.idLong)
@@ -302,10 +310,13 @@ enum class Category(val title: String, private val predicate: (CommandEvent) -> 
 {
     // Primary Hierarchy
     MONITOR("Developer", { it.isDev }),
-    SERVER_OWNER("Server Owner", { MONITOR test it || it.member.isOwner }),
+
+    SERVER_OWNER("Server Owner", { MONITOR test it || (it.isFromType(ChannelType.TEXT) && it.member.isOwner) }),
+
     ADMIN("Administrator", {
         SERVER_OWNER test it || (it.isFromType(ChannelType.TEXT) && it.member.hasPermission(Permission.ADMINISTRATOR))
     }),
+
     MODERATOR("Moderator", {
         ADMIN test it || (it.isFromType(ChannelType.TEXT) && with(it.manager.getModRole(it.guild)) {
             this!=null && it.member.roles.contains(this)

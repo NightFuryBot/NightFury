@@ -17,9 +17,8 @@ package me.kgustave.nightfury.db.sql
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.sql.Connection
 import java.sql.PreparedStatement
-import java.sql.ResultSet
+import java.sql.SQLException
 
 /**
  * @author Kaidan Gustave
@@ -28,20 +27,46 @@ object SQL {
     val LOG : Logger = LoggerFactory.getLogger("SQL")
 }
 
-fun PreparedStatement.insert(vararg args: Any) : PreparedStatement {
-    args.forEachIndexed { index: Int, any: Any ->
-        when (any) {
-            is String -> setString(index + 1, any)
-            is Long -> setLong(index + 1, any)
-            is Int -> setInt(index + 1, any)
-            is Boolean -> setBoolean(index + 1, any)
-        }
-    }
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Long): T {
+    setLong(index, value)
     return this
 }
 
-infix fun Connection.prepare(sql: String) : PreparedStatement = prepareStatement(sql)
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: String): T {
+    setString(index, value)
+    return this
+}
 
-infix inline fun <R> PreparedStatement.closeAfter(lazy: PreparedStatement.() -> R) = use(lazy)
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Int): T {
+    setInt(index, value)
+    return this
+}
 
-infix inline fun <R> PreparedStatement.executeQuery(lazy: (ResultSet) -> R) = executeQuery().use(lazy)
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Boolean): T {
+    setBoolean(index, value)
+    return this
+}
+
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Enum<*>): T {
+    setString(index, value.name)
+    return this
+}
+
+inline fun <reified T : AutoCloseable, R> using(
+        closeable: T,
+        onError: String = "An SQLException was thrown",
+        block: T.() -> R
+): R? = try {
+    closeable.use(block)
+} catch (e: SQLException) {
+    SQL.LOG.error(onError, e)
+    null
+}
+
+inline fun <reified T: AutoCloseable, R> using(
+        closeable: T,
+        default: R,
+        onError: String = "An SQLException was thrown",
+        block: T.() -> R?
+): R = using(closeable, onError, block)?:default
+

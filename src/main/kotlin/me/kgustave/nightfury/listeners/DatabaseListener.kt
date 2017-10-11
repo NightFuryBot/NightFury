@@ -125,18 +125,6 @@ class DatabaseListener(private val manager: DatabaseManager) : EventListener
                 manager.resetWelcome(event.guild)
             }
         }
-
-        // Starboard Deleted
-        val starboard = manager.getStarboard(event.guild)
-        if(starboard != null)  {
-            if(event.channel == starboard) {
-                manager.resetStarboard(event.guild)
-            }
-        } else {
-            if(manager.hasStarboard(event.guild)) {
-                manager.resetStarboard(event.guild)
-            }
-        }
     }
 
     fun onVoiceChannelCreate(event: VoiceChannelCreateEvent)

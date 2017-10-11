@@ -17,77 +17,92 @@ package me.kgustave.nightfury.db.sql
 
 import net.dv8tion.jda.core.entities.Guild
 import java.sql.Connection
-import java.sql.SQLException
 
 /**
  * @author Kaidan Gustave
  */
-@Suppress("RedundantUnitReturnType")
 class SQLGlobalTags(val connection: Connection)
 {
-    private val isTag              = "SELECT * FROM global_tags WHERE LOWER(name) = LOWER(?)"
-    private val addTag             = "INSERT INTO global_tags (name, owner_id, content) VALUES (?, ?, ?)"
-    private val editTag            = "UPDATE global_tags SET content = ? WHERE LOWER(name) = LOWER(?) AND owner_id = ?"
-    private val deleteTag          = "DELETE FROM global_tags WHERE LOWER(name) = LOWER(?) AND owner_id = ?"
-    private val getTagName         = "SELECT name FROM global_tags WHERE LOWER(name) = LOWER(?)"
-    private val getTagContent      = "SELECT content FROM global_tags WHERE LOWER(name) = LOWER(?)"
-    private val getTagOwnerId      = "SELECT owner_id FROM global_tags WHERE LOWER(name) = LOWER(?)"
-    private val getAll             = "SELECT name FROM global_tags WHERE owner_id = ?"
+    private val isTag         = "SELECT * FROM GLOBAL_TAGS WHERE LOWER(NAME) = LOWER(?)"
+    private val addTag        = "INSERT INTO GLOBAL_TAGS (NAME, OWNER_ID, CONTENT) VALUES (?, ?, ?)"
+    private val editTag       = "UPDATE GLOBAL_TAGS SET CONTENT = ? WHERE LOWER(NAME) = LOWER(?) AND OWNER_ID = ?"
+    private val deleteTag     = "DELETE FROM GLOBAL_TAGS WHERE LOWER(NAME) = LOWER(?) AND OWNER_ID = ?"
+    private val getTagName    = "SELECT NAME FROM GLOBAL_TAGS WHERE LOWER(NAME) = LOWER(?)"
+    private val getTagContent = "SELECT CONTENT FROM GLOBAL_TAGS WHERE LOWER(NAME) = LOWER(?)"
+    private val getTagOwnerId = "SELECT OWNER_ID FROM GLOBAL_TAGS WHERE LOWER(NAME) = LOWER(?)"
+    private val getAll        = "SELECT NAME FROM GLOBAL_TAGS WHERE OWNER_ID = ?"
 
-    fun isTag(name: String) = try {
-        connection prepare isTag closeAfter { insert(name) executeQuery { it.next() } }
-    } catch (e : SQLException) {
-        SQL.LOG.warn("SQLException",e)
-        false
-    }
-
-    fun addTag(name: String, ownerId: Long, content: String) : Unit = try {
-        connection prepare addTag closeAfter { insert(name, ownerId, content).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
-
-    fun editTag(newContent: String, name: String, ownerId: Long) : Unit = try {
-        connection prepare editTag closeAfter { insert(newContent, name, ownerId).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
-
-    fun deleteTag(name: String, ownerId: Long) : Unit = try {
-        connection prepare deleteTag closeAfter { insert(name, ownerId).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
-
-    fun getOriginalName(name: String) = try {
-        connection prepare getTagName closeAfter {
-            insert(name) executeQuery { if(it.next()) it.getString("name")?:"" else "" }
+    fun isTag(name: String): Boolean {
+        return using(connection.prepareStatement(isTag), default = false)
+        {
+            this[1] = name
+            using(executeQuery()) { next() }
         }
-    } catch (e : SQLException) {
-        SQL.LOG.warn("SQLException",e)
-        ""
     }
 
-    fun getTagContent(name: String) = try {
-        connection prepare getTagContent closeAfter {
-            insert(name) executeQuery { if(it.next()) it.getString("content")?:"" else "" }
+    fun addTag(name: String, ownerId: Long, content: String) {
+        using(connection.prepareStatement(addTag))
+        {
+            this[1] = name
+            this[2] = ownerId
+            this[3] = content
+            execute()
         }
-    } catch (e : SQLException) {
-        SQL.LOG.warn("SQLException",e)
-        ""
     }
 
-    fun getTagOwnerId(name: String) = try {
-        connection prepare getTagOwnerId closeAfter {
-            insert(name) executeQuery { if(it.next()) it.getLong("owner_id") else 0L }
+    fun editTag(newContent: String, name: String, ownerId: Long) {
+        using(connection.prepareStatement(editTag))
+        {
+            this[1] = newContent
+            this[2] = name
+            this[3] = ownerId
+            execute()
         }
-    } catch (e : SQLException) {
-        SQL.LOG.warn("SQLException",e)
-        0L
     }
 
-    fun getAllTags(userid: Long) : Set<String> {
+    fun deleteTag(name: String, ownerId: Long) {
+        using(connection.prepareStatement(deleteTag))
+        {
+            this[1] = name
+            this[2] = ownerId
+            execute()
+        }
+    }
+
+    fun getOriginalName(name: String): String {
+        return using(connection.prepareStatement(getTagName), default = "")
+        {
+            this[1] = name
+            using(executeQuery()) { if(next()) getString("NAME")?: "" else "" }
+        }
+    }
+
+    fun getTagContent(name: String): String {
+        return using(connection.prepareStatement(getTagContent), default = "")
+        {
+            this[1] = name
+            using(executeQuery()) { if(next()) getString("CONTENT")?:"" else "" }
+        }
+    }
+
+    fun getTagOwnerId(name: String): Long {
+        return using(connection.prepareStatement(getTagOwnerId), default = 0L)
+        {
+            this[1] = name
+            using(executeQuery()) { if(next()) getLong("OWNER_ID") else 0L }
+        }
+    }
+
+    fun getAllTags(userId: Long) : Set<String> {
         val names = HashSet<String>()
-        try {
-            connection prepare getAll closeAfter {
-                insert(userid) executeQuery { while(it.next()) names.add(it.getString("name")) }
+        using(connection.prepareStatement(getAll))
+        {
+            this[1] = userId
+            using(executeQuery())
+            {
+                while(next())
+                    names += getString("NAME")
             }
-        } catch (e : SQLException) {
-            SQL.LOG.warn("SQLException",e)
         }
         return names
     }
@@ -96,96 +111,126 @@ class SQLGlobalTags(val connection: Connection)
 /**
  * @author Kaidan Gustave
  */
-@Suppress("RedundantUnitReturnType")
-class SQLLocalTags(val connection: Connection)
+class SQLLocalTags(private val connection: Connection)
 {
-    private val isTag              = "SELECT * FROM local_tags WHERE LOWER(name) = LOWER(?) AND guild_id = ?"
-    private val addTag             = "INSERT INTO local_tags (name, guild_id, owner_id, content) VALUES (?, ?, ?, ?)"
-    private val editTag            = "UPDATE local_tags SET content = ? WHERE LOWER(name) = LOWER(?) AND owner_id = ? AND guild_id = ?"
-    private val deleteTag          = "DELETE FROM local_tags WHERE LOWER(name) = LOWER(?) AND owner_id = ? AND guild_id = ?"
-    private val deleteAllTags      = "DELETE FROM local_tags WHERE guild_id = ?"
-    private val getTagName         = "SELECT name FROM local_tags WHERE LOWER(name) = LOWER(?) AND guild_id = ?"
-    private val getTagContent      = "SELECT content FROM local_tags WHERE LOWER(name) = LOWER(?) AND guild_id = ?"
-    private val getTagOwnerId      = "SELECT owner_id FROM local_tags WHERE LOWER(name) = LOWER(?) AND guild_id = ?"
-    private val getAll             = "SELECT name FROM local_tags WHERE owner_id = ? AND guild_id = ?"
+    private val isTag          = "SELECT * FROM LOCAL_TAGS WHERE LOWER(NAME) = LOWER(?) AND GUILD_ID = ?"
+    private val addTag         = "INSERT INTO LOCAL_TAGS (NAME, GUILD_ID, OWNER_ID, CONTENT) VALUES (?, ?, ?, ?)"
+    private val editTag        = "UPDATE LOCAL_TAGS SET CONTENT = ? WHERE LOWER(NAME) = LOWER(?) AND OWNER_ID = ? AND GUILD_ID = ?"
+    private val deleteTag      = "DELETE FROM LOCAL_TAGS WHERE LOWER(NAME) = LOWER(?) AND OWNER_ID = ? AND GUILD_ID = ?"
+    private val getTagName     = "SELECT NAME FROM LOCAL_TAGS WHERE LOWER(NAME) = LOWER(?) AND GUILD_ID = ?"
+    private val getTagContent  = "SELECT CONTENT FROM LOCAL_TAGS WHERE LOWER(NAME) = LOWER(?) AND GUILD_ID = ?"
+    private val getTagOwnerId  = "SELECT OWNER_ID FROM LOCAL_TAGS WHERE LOWER(NAME) = LOWER(?) AND GUILD_ID = ?"
+    private val getAllForGuild = "SELECT NAME FROM LOCAL_TAGS WHERE GUILD_ID = ?"
+    private val getAll         = "SELECT NAME FROM LOCAL_TAGS WHERE OWNER_ID = ? AND GUILD_ID = ?"
+    private val overrideTag    = "UPDATE LOCAL_TAGS SET CONTENT = ?, OWNER_ID = ? WHERE LOWER(NAME) = LOWER(?) AND OWNER_ID = ? AND GUILD_ID = ?"
 
-    private val overrideTag        = "UPDATE local_tags SET content = ?, owner_id = ? " +
-                                     "WHERE LOWER(name) = LOWER(?) AND owner_id = ? AND guild_id = ?"
-
-    fun isTag(name: String, guild: Guild) = try {
-        connection prepare isTag closeAfter { insert(name, guild.idLong) executeQuery { it.next() } }
-    } catch (e : SQLException) {
-        SQL.LOG.warn("SQLException",e)
-        false
+    fun isTag(name: String, guild: Guild): Boolean {
+        return using(connection.prepareStatement(isTag), default = false)
+        {
+            this[1] = name
+            this[2] = guild.idLong
+            using(executeQuery()) { next() }
+        }
     }
 
-    fun addTag(name: String, ownerId: Long, content: String, guild: Guild) : Unit = try {
-        connection prepare addTag closeAfter { insert(name, guild.idLong, ownerId, content).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
-
-    fun editTag(newContent: String, name: String, ownerId: Long, guild: Guild) : Unit = try {
-        connection prepare editTag closeAfter { insert(newContent, name, ownerId, guild.idLong).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
-
-    fun deleteTag(name: String, ownerId: Long, guild: Guild) : Unit = try {
-        connection prepare deleteTag closeAfter { insert(name, ownerId, guild.idLong).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
-
-    fun deleteAllTags(guild: Guild) = deleteAllTags(guild.idLong)
-
-    fun deleteAllTags(id: Long) : Unit = try {
-        connection prepare deleteAllTags closeAfter { insert(id).execute() }
-    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
-
-    fun getOriginalName(name: String, guild: Guild) = try {
-        connection prepare getTagName closeAfter {
-            insert(name, guild.idLong) executeQuery { if(it.next()) it.getString("name")?:"" else "" }
+    fun addTag(name: String, ownerId: Long, content: String, guild: Guild) {
+        using(connection.prepareStatement(addTag))
+        {
+            this[1] = name
+            this[2] = guild.idLong
+            this[3] = ownerId
+            this[4] = content
+            execute()
         }
-    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e); "" }
-
-    fun getTagContent(name: String, guild: Guild) = try {
-        connection prepare getTagContent closeAfter {
-            insert(name, guild.idLong) executeQuery { if(it.next()) it.getString("content")?:"" else "" }
-        }
-    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e); "" }
-
-    fun getTagOwnerId(name: String, guild: Guild) = try {
-        connection prepare getTagOwnerId closeAfter {
-            insert(name, guild.idLong) executeQuery { if(it.next()) it.getLong("owner_id") else 0L }
-        }
-    } catch (e : SQLException) {
-        SQL.LOG.warn("SQLException",e)
-        0L
     }
 
+    fun editTag(newContent: String, name: String, ownerId: Long, guild: Guild) {
+        using(connection.prepareStatement(editTag))
+        {
+            this[1] = newContent
+            this[2] = name
+            this[3] = ownerId
+            this[4] = guild.idLong
+            execute()
+        }
+    }
+
+    fun deleteTag(name: String, ownerId: Long, guild: Guild) {
+        using(connection.prepareStatement(deleteTag))
+        {
+            this[1] = name
+            this[2] = ownerId
+            this[3] = guild.idLong
+            execute()
+        }
+    }
+
+    fun getOriginalName(name: String, guild: Guild): String {
+        return using(connection.prepareStatement(getTagName), default = "")
+        {
+            this[1] = name
+            this[2] = guild.idLong
+            using(executeQuery()) { if(next()) getString("NAME")?:"" else "" }
+        }
+    }
+
+    fun getTagContent(name: String, guild: Guild): String {
+        return using(connection.prepareStatement(getTagContent), default = "")
+        {
+            this[1] = name
+            this[2] = guild.idLong
+            using(executeQuery()) { if(next()) getString("CONTENT")?:"" else "" }
+        }
+    }
+
+    fun getTagOwnerId(name: String, guild: Guild): Long {
+        return using(connection.prepareStatement(getTagOwnerId), default = 0L)
+        {
+            this[1] = name
+            this[2] = guild.idLong
+            using(executeQuery()) { if(next()) getLong("OWNER_ID") else 0L }
+        }
+    }
+
+    @Suppress("UNUSED")
     fun getAllTags(guild: Guild) : Set<String> {
         val names = HashSet<String>()
-        try {
-            connection prepare "SELECT names FROM local_tags WHERE guild_id = ?" closeAfter {
-                insert(guild.idLong) executeQuery { while(it.next()) names.add(it.getString("name")) }
+        using(connection.prepareStatement(getAllForGuild))
+        {
+            this[1] = guild.idLong
+            using(executeQuery())
+            {
+                while(next())
+                    names += getString("NAME")
             }
-        } catch (e : SQLException) {
-            SQL.LOG.warn("SQLException",e)
         }
         return names
     }
 
-    fun getAllTags(userid: Long, guild: Guild) : Set<String> {
+    fun getAllTags(userId: Long, guild: Guild) : Set<String> {
         val names = HashSet<String>()
-        try {
-            connection prepare getAll closeAfter {
-                insert(userid, guild.idLong) executeQuery { while(it.next()) names.add(it.getString("name")) }
+        using(connection.prepareStatement(getAll))
+        {
+            this[1] = userId
+            this[2] = guild.idLong
+            using(executeQuery())
+            {
+                while(next())
+                    names += getString("NAME")
             }
-        } catch (e : SQLException) {
-            SQL.LOG.warn("SQLException",e)
         }
         return names
     }
 
-    fun overrideTag(newContent: String, name: String, originalOwnerId: Long, guild: Guild) : Unit = try {
-        connection prepare overrideTag closeAfter {
-            // Overrides have an owner ID of 1L (likely won't have issues with this)
-            insert(newContent, 1L, name, originalOwnerId, guild.idLong).execute()
+    fun overrideTag(newContent: String, name: String, originalOwnerId: Long, guild: Guild) {
+        using(connection.prepareStatement(overrideTag))
+        {
+            this[1] = newContent
+            this[2] = 1L
+            this[3] = name
+            this[4] = originalOwnerId
+            this[5] = guild.idLong
+            execute()
         }
-    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
+    }
 }

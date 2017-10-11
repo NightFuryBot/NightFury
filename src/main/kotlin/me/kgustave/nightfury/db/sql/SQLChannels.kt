@@ -18,48 +18,109 @@ package me.kgustave.nightfury.db.sql
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.TextChannel
 import java.sql.Connection
-import java.sql.ResultSet
 
 /**
  * @author Kaidan Gustave
  */
-abstract class SQLChannels(connection: Connection, type: String) : SQLCollection<Guild, TextChannel>(connection) {
+abstract class SQLChannel(private val connection: Connection, type: String)
+{
+    private val get    = "SELECT CHANNEL_ID FROM CHANNELS WHERE GUILD_ID = ? AND TYPE = '$type'"
+    private val add    = "INSERT INTO CHANNELS (GUILD_ID, CHANNEL_ID, TYPE) VALUES (?, ?, '$type')"
+    private val set    = "UPDATE CHANNELS SET CHANNEL_ID = ? WHERE TYPE = '$type'"
+    private val delete = "DELETE FROM CHANNELS WHERE GUILD_ID = ? AND TYPE = '$type'"
 
-    override val getStatement = "SELECT $CHANNEL_ID FROM $CHANNELS WHERE $GUILD_ID = ? AND $TYPE = '$type'"
-    override val addStatement = "INSERT INTO $CHANNELS ($GUILD_ID, $CHANNEL_ID, $TYPE) VALUES (?, ?, '$type')"
-    override val removeStatement = "DELETE FROM $CHANNELS WHERE $GUILD_ID = ? AND $CHANNEL_ID = ? AND $TYPE = '$type'"
-    override val removeAllStatement = "DELETE FROM $CHANNELS WHERE $GUILD_ID = ? AND $TYPE = '$type'"
+    fun hasChannel(guild: Guild): Boolean = getChannel(guild) != null
 
-    override fun get(results: ResultSet, env: Guild): Set<TextChannel>
-    {
-        val channels = HashSet<TextChannel>()
-        while (results.next())
+    fun getChannel(guild: Guild): TextChannel? {
+        return using(connection.prepareStatement(get))
         {
-            val channel = env.getTextChannelById(results.getLong(CHANNEL_ID))
-            if(channel != null)
-                channels.add(channel)
+            this[1] = guild.idLong
+            using(executeQuery())
+            {
+                if(next())
+                    guild.getTextChannelById(getLong("CHANNEL_ID"))
+                else null
+            }
         }
-        return channels
+    }
+
+    fun setChannel(channel: TextChannel) {
+        if(hasChannel(channel.guild))
+        {
+            using(connection.prepareStatement(set))
+            {
+                this[1] = channel.idLong
+                execute()
+            }
+        }
+        else
+        {
+            using(connection.prepareStatement(add))
+            {
+                this[1] = channel.guild.idLong
+                this[2] = channel.idLong
+                execute()
+            }
+        }
+    }
+
+    fun deleteChannel(guild: Guild) {
+        using(connection.prepareStatement(delete))
+        {
+            this[1] = guild.idLong
+            execute()
+        }
     }
 }
 
-abstract class SQLChannel(connection: Connection, type: String) : SQLSingleton<Guild, TextChannel>(connection) {
+abstract class SQLChannels(private val connection: Connection, type: String)
+{
+    private val isChan = "SELECT * FROM CHANNELS WHERE GUILD_ID = ? AND CHANNEL_ID = ? AND TYPE = '$type'"
+    private val get    = "SELECT CHANNEL_ID FROM CHANNELS WHERE GUILD_ID = ? AND TYPE = '$type'"
+    private val add    = "INSERT INTO CHANNELS (GUILD_ID, CHANNEL_ID, TYPE) VALUES (?, ?, '$type')"
+    private val delete = "DELETE FROM CHANNELS WHERE GUILD_ID = ? AND CHANNEL_ID = ? AND TYPE = '$type'"
 
-    override val getStatement = "SELECT $CHANNEL_ID FROM $CHANNELS WHERE $GUILD_ID = ? AND $TYPE = '$type'"
-    override val setStatement = "INSERT INTO $CHANNELS ($GUILD_ID, $CHANNEL_ID, $TYPE) VALUES (?, ?, '$type')"
-    override val updateStatement = "UPDATE $CHANNELS SET $CHANNEL_ID = ? WHERE $TYPE = '$type'"
-    override val resetStatement = "DELETE FROM $CHANNELS WHERE $GUILD_ID = ? AND $TYPE = '$type'"
+    fun isChannel(channel: TextChannel): Boolean {
+        return using(connection.prepareStatement(isChan), default = false)
+        {
+            this[1] = channel.guild.idLong
+            this[2] = channel.idLong
+            using(executeQuery()) { next() }
+        }
+    }
 
-    override fun get(results: ResultSet, env: Guild) = if(results.next())
-        env.getTextChannelById(results.getLong(CHANNEL_ID))
-    else null
+    fun getChannels(guild: Guild): Set<TextChannel> {
+        val set = HashSet<TextChannel>()
+        using(connection.prepareStatement(get))
+        {
+            this[1] = guild.idLong
+            using(executeQuery())
+            {
+                while(next())
+                    set += (guild.getTextChannelById(getLong("CHANNEL_ID"))?:continue)
+            }
+        }
+        return set
+    }
+
+    fun addChannel(channel: TextChannel) {
+        using(connection.prepareStatement(add))
+        {
+            this[1] = channel.guild.idLong
+            this[2] = channel.idLong
+            execute()
+        }
+    }
+
+    fun deleteChannel(channel: TextChannel) {
+        using(connection.prepareStatement(delete))
+        {
+            this[1] = channel.guild.idLong
+            this[2] = channel.idLong
+            execute()
+        }
+    }
 }
 
-class SQLIgnoredChannels(connection: Connection) : SQLChannels(connection, "ignored")
-class SQLModeratorLog(connection: Connection) : SQLChannel(connection, "modlog")
-class SQLStarboard(connection: Connection) : SQLChannel(connection, "starboard")
-
-private val CHANNELS = "channels"      // Table Name
-private val GUILD_ID = "guild_id"      // Long
-private val CHANNEL_ID = "channel_id"  // Long
-private val TYPE = "type"              // varchar(20)
+class ModeratorLog(connection: Connection) : SQLChannel(connection, "modlog")
+class IgnoredChannels(connection: Connection) : SQLChannels(connection, "ignored")

@@ -25,6 +25,7 @@ import net.dv8tion.jda.core.Permission
 /**
  * @author Kaidan Gustave
  */
+@Suppress("unused")
 class StarboardCmd : NoBaseExecutionCommand()
 {
     init
@@ -64,7 +65,7 @@ private class StarboardSetCmd : Command()
         if(tcs.size > 1)
             return event.replyError(tcs.multipleTextChannels(event.args))
 
-        event.manager.setStarboard(tcs[0])
+        //event.manager.setStarboard(tcs[0])
 
         event.replySuccess("Successfully set ${tcs[0].asMention} as this server's Starboard!")
     }

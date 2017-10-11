@@ -41,12 +41,7 @@ class FixedSizeCache<K : Any, V>(size: Int) : MutableMap<K, V>
     override val size : Int
         get() = map.size
 
-    operator fun plusAssign(pair: Pair<K, V>) { put(pair) }
-
-    fun add(key: K, value: V) { put(key, value) }
-    fun contains(key: K) : Boolean = map.containsKey(key)
-
-    fun put(pair: Pair<K, V>) = put(pair.first, pair.second)
+    operator fun set(key: K, value: V) { put(key, value) }
 
     override fun clear()
     {

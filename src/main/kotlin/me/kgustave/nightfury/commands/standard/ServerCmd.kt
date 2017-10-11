@@ -172,7 +172,7 @@ private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Comma
                 val lastTimeTyping = invisTracker.getLastTimeTyping(user)
                 if(lastTimeTyping!=null)
                 {
-                    append(event.jda.getEmoteById(getEmoteIdFor(OnlineStatus.INVISIBLE)).asMention)
+                    append(event.jda.getEmoteById(OnlineStatus.INVISIBLE.emoteId).asMention)
                     append(" *${OnlineStatus.INVISIBLE.name}* (Last seen $lastTimeTyping minutes ago)")
                 }
                 else

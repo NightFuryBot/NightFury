@@ -18,47 +18,108 @@ package me.kgustave.nightfury.db.sql
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Role
 import java.sql.Connection
-import java.sql.ResultSet
 
-/**
- * @author Kaidan Gustave
- */
-abstract class SQLRoles(connection: Connection, type: String) : SQLCollection<Guild, Role>(connection)
+abstract class SQLRoles(private val connection: Connection, type: String)
 {
-    override val getStatement = "SELECT $ROLE_ID FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
-    override val addStatement = "INSERT INTO $ROLES ($GUILD_ID, $ROLE_ID, $TYPE) VALUES (?, ?, '$type')"
-    override val removeStatement = "DELETE FROM $ROLES WHERE $GUILD_ID = ? AND $ROLE_ID = ? AND $TYPE = '$type'"
-    override val removeAllStatement = "DELETE FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
+    private val isRole = "SELECT * FROM ROLES WHERE GUILD_ID = ? AND ROLE_ID = ?"
+    private val get    = "SELECT ROLE_ID FROM ROLES WHERE GUILD_ID = ? AND TYPE = '$type'"
+    private val add    = "INSERT INTO ROLES (GUILD_ID, ROLE_ID, TYPE) VALUES (?, ?, '$type')"
+    private val delete = "DELETE FROM ROLES WHERE GUILD_ID = ? AND ROLE_ID = ? AND TYPE = '$type'"
 
-    override fun get(results: ResultSet, env: Guild) : Set<Role>
-    {
-        val roles = HashSet<Role>()
-        while (results.next())
+    fun isRole(role: Role): Boolean {
+        return using(connection.prepareStatement(isRole), default = false)
         {
-            val role = env.getRoleById(results.getLong(ROLE_ID))
-            if(role != null)
-                roles.add(role)
+            this[1] = role.guild.idLong
+            this[2] = role.idLong
+            using(executeQuery()) { next() }
         }
-        return roles
+    }
+
+    fun getRoles(guild: Guild): Set<Role> {
+        val set = HashSet<Role>()
+        using(connection.prepareStatement(get))
+        {
+            this[1] = guild.idLong
+            using(executeQuery())
+            {
+                while(next())
+                    set += (guild.getRoleById(getLong("ROLE_ID"))?:continue)
+            }
+        }
+        return set
+    }
+
+    fun addRole(role: Role) {
+        using(connection.prepareStatement(add))
+        {
+            this[1] = role.guild.idLong
+            this[2] = role.idLong
+            execute()
+        }
+    }
+
+    fun deleteRole(role: Role) {
+        using(connection.prepareStatement(delete))
+        {
+            this[1] = role.guild.idLong
+            this[2] = role.idLong
+            execute()
+        }
     }
 }
 
-abstract class SQLRole(connection: Connection, type: String) : SQLSingleton<Guild, Role>(connection)
+abstract class SQLRole(private val connection: Connection, type: String)
 {
-    override val getStatement = "SELECT $ROLE_ID FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
-    override val setStatement = "INSERT INTO $ROLES ($GUILD_ID, $ROLE_ID, $TYPE) VALUES (?, ?, '$type')"
-    override val updateStatement = "UPDATE $ROLES SET $ROLE_ID = ? WHERE $GUILD_ID = ? AND $TYPE = '$type'"
-    override val resetStatement = "DELETE FROM $ROLES WHERE $GUILD_ID = ? AND $TYPE = '$type'"
+    private val get    = "SELECT ROLE_ID FROM ROLES WHERE GUILD_ID = ? AND TYPE = '$type'"
+    private val add    = "INSERT INTO ROLES (GUILD_ID, ROLE_ID, TYPE) VALUES (?, ?, '$type')"
+    private val set    = "UPDATE ROLES SET ROLE_ID = ? WHERE TYPE = '$type'"
+    private val delete = "DELETE FROM ROLES WHERE GUILD_ID = ? AND TYPE = '$type'"
 
-    override fun get(results: ResultSet, env: Guild) = if(results.next()) env.getRoleById(results.getLong(ROLE_ID)) else null
+    fun hasRole(guild: Guild): Boolean = getRole(guild) != null
+
+    fun getRole(guild: Guild): Role? {
+        return using(connection.prepareStatement(get))
+        {
+            this[1] = guild.idLong
+            using(executeQuery())
+            {
+                if(next())
+                    guild.getRoleById(getLong("ROLE_ID"))
+                else null
+            }
+        }
+    }
+
+    fun setRole(role: Role) {
+        if(hasRole(role.guild))
+        {
+            using(connection.prepareStatement(set))
+            {
+                this[1] = role.idLong
+                execute()
+            }
+        }
+        else
+        {
+            using(connection.prepareStatement(add))
+            {
+                this[1] = role.guild.idLong
+                this[2] = role.idLong
+                execute()
+            }
+        }
+    }
+
+    fun deleteRole(guild: Guild) {
+        using(connection.prepareStatement(delete))
+        {
+            this[1] = guild.idLong
+            execute()
+        }
+    }
 }
 
-class SQLRoleMe(connection: Connection) : SQLRoles(connection,"roleme")
-class SQLColorMe(connection: Connection) : SQLRoles(connection,"colorme")
-class SQLModeratorRole(connection: Connection) : SQLRole(connection, "moderator")
-class SQLMutedRole(connection: Connection) : SQLRole(connection, "muted")
-
-private val ROLES = "roles"         // Table Name
-private val GUILD_ID = "guild_id"   // Long
-private val ROLE_ID = "role_id"     // Long
-private val TYPE = "type"           // varchar(20)
+class RoleMe(connection: Connection) : SQLRoles(connection, "roleme")
+class ColorMe(connection: Connection) : SQLRoles(connection, "colorme")
+class ModeratorRole(connection: Connection) : SQLRole(connection, "moderator")
+class MutedRole(connection: Connection) : SQLRole(connection, "muted")

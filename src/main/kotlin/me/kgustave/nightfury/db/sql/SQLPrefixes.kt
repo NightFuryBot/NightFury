@@ -22,19 +22,67 @@ import java.sql.ResultSet
 /**
  * @author Kaidan Gustave
  */
-class SQLPrefixes(connection: Connection) : SQLCollection<Guild, String>(connection)
+@Suppress("unused")
+class SQLPrefixes(private val connection: Connection)
 {
-    override val getStatement = "SELECT prefix FROM prefixes WHERE guild_id = ?"
-    override val addStatement = "INSERT INTO prefixes (guild_id, prefix) VALUES (?, ?)"
-    override val removeStatement = "DELETE FROM prefixes WHERE guild_id = ? AND LOWER(prefix) = LOWER(?)"
-    override val removeAllStatement = "DELETE FROM prefixes WHERE guild_id = ?"
+    private val isPrefix  = "SELECT LOWER(PREFIX) FROM PREFIXES WHERE GUILD_ID = ? AND LOWER(PREFIX) = LOWER(?)"
+    private val get       = "SELECT LOWER(PREFIX) FROM PREFIXES WHERE GUILD_ID = ?"
+    private val add       = "INSERT INTO PREFIXES (GUILD_ID, PREFIX) VALUES (?, ?)"
+    private val remove    = "DELETE FROM PREFIXES WHERE GUILD_ID = ? AND LOWER(PREFIX) = LOWER(?)"
+    private val removeAll = "DELETE FROM PREFIXES WHERE GUILD_ID = ?"
 
-    override fun get(results: ResultSet, env: Guild): Set<String> {
-        val prefixes = HashSet<String>()
-        while (results.next())
+    fun isPrefix(guild: Guild, prefix: String) = isPrefix(guild.idLong, prefix)
+    fun isPrefix(guildId: Long, prefix: String): Boolean {
+        return using(connection.prepareStatement(isPrefix),
+                default = false)
         {
-            prefixes.add(results.getString("prefix"))
+            this[1] = guildId
+            this[2] = prefix
+            using(executeQuery()) { next() }
+        }
+    }
+
+    fun getPrefixes(guild: Guild): Set<String> = getPrefixes(guild.idLong)
+    fun getPrefixes(guildId: Long): Set<String> {
+        val prefixes = HashSet<String>()
+        using(connection.prepareStatement(get))
+        {
+            this[1] = guildId
+            using(executeQuery())
+            {
+                while(next())
+                    prefixes += getString("PREFIX")
+            }
         }
         return prefixes
+    }
+
+    fun addPrefix(guild: Guild, prefix: String) = addPrefix(guild.idLong, prefix)
+    fun addPrefix(guildId: Long, prefix: String) {
+        using(connection.prepareStatement(add))
+        {
+            this[1] = guildId
+            this[2] = prefix.toLowerCase()
+            execute()
+        }
+    }
+
+    fun removePrefix(guild: Guild, prefix: String) = removePrefix(guild.idLong, prefix)
+    fun removePrefix(guildId: Long, prefix: String) {
+        using(connection.prepareStatement(remove))
+        {
+            this[1] = guildId
+            this[2] = prefix
+            execute()
+        }
+    }
+
+    fun removeAllPrefixes(guild: Guild) = removeAllPrefixes(guild.idLong)
+    fun removeAllPrefixes(guildId: Long) {
+        using(connection.prepareStatement(removeAll))
+        {
+            this[1] = guildId
+            execute()
+        }
     }
 }

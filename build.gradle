@@ -43,7 +43,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 7, build: 0)
+def versionObj = new Version(major: 0, minor: 7, build: 1)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
@@ -91,7 +91,6 @@ dependencies {
     compile 'com.jagrosh:JagTag:0.5'
 
     // Logging
-    compile "org.slf4j:slf4j-api:1.7.25"
     compile 'ch.qos.logback:logback-classic:1.2.3'
 
     // Testing
@@ -132,8 +131,6 @@ shadowJar {
 
     // Unimplemented Internals
     exclude('me.kgustave.nightfury.listeners.AntiAdsListener**')
-    exclude('me.kgustave.nightfury.db.sql.SQLListing**')
-    exclude('me.kgustave.nightfury.db.sql.SQLShards**')
 
     manifest {
         attributes 'Manifest-Version' : "${versionObj.major}.${versionObj.minor}"

@@ -21,6 +21,8 @@ testConfig.txt
 /wiki/
 /bash/
 /backup/
+*.sql
+*.kts
 
 # Images
 *.gif

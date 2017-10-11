@@ -53,7 +53,7 @@ class HelpCmd : Command() {
                     .append("` - ").append(c.help).append("\n")
         }
         event.jda.retrieveUserById(event.client.devId).queue({
-            b.append("\nFor additional help contact**")
+            b.append("\nFor additional help contact **")
                     .append(it.name).append("**#").append(it.discriminator)
                     .append(" or join ").append(event.client.server)
             if(event.isFromType(ChannelType.TEXT))

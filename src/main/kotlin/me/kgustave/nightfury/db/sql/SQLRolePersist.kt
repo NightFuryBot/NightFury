@@ -16,27 +16,63 @@
 package me.kgustave.nightfury.db.sql
 
 import net.dv8tion.jda.core.entities.Guild
+import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.Role
 import java.sql.Connection
-import java.sql.ResultSet
 
 /**
  * @author Kaidan Gustave
  */
-class SQLRolePersist(connection: Connection) : SQLCollection<Guild, Role>(connection)
+class SQLRolePersist(private val connection: Connection)
 {
-    override val getStatement = "SELECT role_ids FROM role_persist WHERE guild_id = ? AND user_id = ?"
-    override val addStatement = "INSERT INTO role_persist (guild_id, user_id, role_ids) VALUES (?, ?, ?)"
-    override val removeStatement = "DELETE FROM role_persist WHERE guild_id = ? AND user_id = ?"
-    override val removeAllStatement = "DELETE FROM role_persist WHERE guild_id = ?"
+    private val get = "SELECT ROLE_IDS FROM ROLE_PERSIST WHERE GUILD_ID = ? AND USER_ID = ?"
+    private val add = "INSERT INTO ROLE_PERSIST (GUILD_ID, USER_ID, ROLE_IDS) VALUES (?, ?, ?)"
+    private val remove = "DELETE FROM ROLE_PERSIST WHERE GUILD_ID = ? AND USER_ID = ?"
+    private val removeAll = "DELETE FROM ROLE_PERSIST WHERE GUILD_ID = ?"
 
-    override fun get(results: ResultSet, env: Guild): Set<Role>
-    {
+    fun getRolePersist(member: Member): Set<Role> {
         val set = HashSet<Role>()
-        if(results.next())
-            results.getString("role_ids")
-                    .split(Regex("\\|"))
-                    .mapNotNullTo(set) { env.getRoleById(it) }
+        using(connection.prepareStatement(get))
+        {
+            this[1] = member.guild.idLong
+            this[2] = member.user.idLong
+
+            using(executeQuery())
+            {
+                if(next())
+                    getString("ROLE_IDS").split(Regex("\\|")).mapNotNullTo(set) { member.guild.getRoleById(it) }
+            }
+        }
         return set
+    }
+
+    fun setRolePersist(member: Member) {
+        if(getRolePersist(member).isNotEmpty())
+            removeRolePersist(member)
+
+        using(connection.prepareStatement(add))
+        {
+            this[1] = member.guild.idLong
+            this[2] = member.user.idLong
+            this[3] = member.roles.joinToString(separator = "|") { it.idLong.toString() }
+            execute()
+        }
+    }
+
+    fun removeRolePersist(member: Member) {
+        using(connection.prepareStatement(remove))
+        {
+            this[1] = member.guild.idLong
+            this[2] = member.user.idLong
+            execute()
+        }
+    }
+
+    fun removeAllRolePersist(guild: Guild) {
+        using(connection.prepareStatement(removeAll))
+        {
+            this[1] = guild.idLong
+            execute()
+        }
     }
 }

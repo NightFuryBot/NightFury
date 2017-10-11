@@ -23,7 +23,7 @@ import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.api.GoogleImageAPI
 import me.kgustave.nightfury.extensions.embed
 import me.kgustave.nightfury.extensions.message
-import me.kgustave.nightfury.extensions.randomNextInt
+import me.kgustave.nightfury.resources.Algorithms
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 
@@ -56,7 +56,7 @@ class ImageCmd(private val api: GoogleImageAPI) : Command()
                         embed  {
                             if(event.isFromType(ChannelType.TEXT))
                                 color { event.member.color }
-                            image { results[0 randomNextInt (results.size * .25).toInt()] }
+                            image { Algorithms.selectResultURL(query, results) }
                         }
                     })
                 }

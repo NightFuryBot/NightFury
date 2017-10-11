@@ -115,7 +115,7 @@ infix inline fun AuditLogPaginationAction.limit(lazy: () -> Int) : AuditLogPagin
 
 infix inline fun AuditLogPaginationAction.action(lazy: () -> ActionType) : AuditLogPaginationAction = type(lazy())
 
-fun MessageHistory.past(number: Int, breakIf: suspend (List<Message>) -> Boolean = { false },
+fun MessageHistory.past(number: Int, breakIf: (List<Message>) -> Boolean = { false },
         catch: (Throwable) -> Unit = { throw it }, block: suspend (MutableList<Message>) -> Unit
 ) = launch(CommonPool) {
     require(number > 0) { "Cannot retrieve less than one past message!" }

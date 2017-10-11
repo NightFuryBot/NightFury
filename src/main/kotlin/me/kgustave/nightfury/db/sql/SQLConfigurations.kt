@@ -17,84 +17,102 @@ package me.kgustave.nightfury.db.sql
 
 import net.dv8tion.jda.core.entities.Guild
 import java.sql.Connection
-import java.sql.SQLException
 
 /**
  * @author Kaidan Gustave
  */
 @Suppress("RedundantUnitReturnType")
-class SQLLimits(val connection: Connection)
+class SQLLimits(private val connection: Connection)
 {
-    private val getCommandLimit = "SELECT limit_number FROM command_limits WHERE guild_id = ? AND LOWER(command_name) = LOWER(?)"
-    private val addCommandLimit = "INSERT INTO command_limits (guild_id, command_name, limit_number) VALUES (?, ?, ?)"
-    private val setCommandLimit = "UPDATE command_limits SET limit_number = ? WHERE guild_id = ? AND LOWER(command_name) = LOWER(?)"
-    private val removeCommandLimit = "DELETE FROM command_limits WHERE guild_id = ? AND LOWER(command_name) = LOWER(?)"
-    private val removeAllCommandLimits = "DELETE FROM command_limits WHERE guild_id = ?"
+    private val get = "SELECT LIMIT_NUMBER FROM COMMAND_LIMITS WHERE GUILD_ID = ? AND LOWER(COMMAND_NAME) = LOWER(?)"
+    private val add = "INSERT INTO COMMAND_LIMITS (GUILD_ID, COMMAND_NAME, LIMIT_NUMBER) VALUES (?, ?, ?)"
+    private val set = "UPDATE COMMAND_LIMITS SET LIMIT_NUMBER = ? WHERE GUILD_ID = ? AND LOWER(COMMAND_NAME) = LOWER(?)"
+    private val remove = "DELETE FROM COMMAND_LIMITS WHERE GUILD_ID = ? AND LOWER(COMMAND_NAME) = LOWER(?)"
 
     fun hasLimit(guild: Guild, command: String) = getLimit(guild, command) != 0
 
-    fun getLimit(guild: Guild, command: String) = try {
-        connection prepare getCommandLimit closeAfter {
-            insert(guild.idLong, command) executeQuery { if(it.next()) it.getInt("limit_number") else 0 }
+    fun getLimit(guild: Guild, command: String): Int {
+        return using(connection.prepareStatement(get), default = 0)
+        {
+            this[1] = guild.idLong
+            this[2] = command
+            using(executeQuery(), default = 0) { if(next()) getInt("LIMIT_NUMBER") else 0 }
         }
-    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e); 0 }
+    }
 
-    fun addLimit(guild: Guild, command: String, limit: Int) : Unit = try {
-        connection prepare addCommandLimit closeAfter { insert(guild.idLong, command, limit).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
+    fun setLimit(guild: Guild, command: String, limit: Int) {
+        if(hasLimit(guild, command))
+        {
+            using(connection.prepareStatement(set))
+            {
+                this[1] = limit
+                this[2] = guild.idLong
+                this[3] = command
+                execute()
+            }
+        }
+        else
+        {
+            using(connection.prepareStatement(add))
+            {
+                this[1] = guild.idLong
+                this[2] = command
+                this[3] = limit
+                execute()
+            }
+        }
+    }
 
-    fun setLimit(guild: Guild, command: String, limit: Int) : Unit = try {
-        connection prepare setCommandLimit closeAfter { insert(limit, guild.idLong, command).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
-
-    fun removeLimit(guild: Guild, command: String) = removeLimit(guild.idLong, command)
-
-    fun removeLimit(id: Long, command: String) : Unit = try {
-        connection prepare removeCommandLimit closeAfter { insert(id, command).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
-
-    fun removeAllLimits(guild: Guild) = removeAllLimits(guild.idLong)
-
-    fun removeAllLimits(id: Long) : Unit = try {
-        connection prepare removeAllCommandLimits closeAfter { insert(id).execute() }
-    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
+    fun removeLimit(guild: Guild, command: String) {
+        using(connection.prepareStatement(remove))
+        {
+            this[1] = guild.idLong
+            this[2] = command
+            execute()
+        }
+    }
 }
 
 class SQLEnables(private val connection: Connection)
 {
-    private fun hasStatusFor(guild: Guild, type: Type) = try {
-        connection prepare "SELECT * FROM enables WHERE guild_id = ? AND enable_type = ? " closeAfter {
-            insert(guild.idLong, type.name) executeQuery {
-                it.next()
-            }
+    private val has = "SELECT * FROM ENABLES WHERE GUILD_ID = ? AND ENABLE_TYPE = ?"
+    private val get = "SELECT STATUS FROM ENABLES WHERE GUILD_ID = ? AND ENABLE_TYPE = ?"
+    private val set = "UPDATE ENABLES SET STATUS = ? WHERE GUILD_ID = ? AND ENABLE_TYPE = ?"
+    private val add = "INSERT INTO ENABLES (GUILD_ID, ENABLE_TYPE, STATUS) VALUES (?,?,?)"
+
+    fun hasStatusFor(guild: Guild, type: Type): Boolean {
+        return using(connection.prepareStatement(has), default = false)
+        {
+            this[1] = guild.idLong
+            this[2] = type
+            using(executeQuery()) { next() }
         }
-    } catch (e: SQLException) {
-        SQL.LOG.warn("SQLException",e)
-        false
     }
 
-    fun getStatusFor(guild: Guild, type: Type): Boolean = try {
-        connection prepare "SELECT status FROM enables WHERE guild_id = ? AND enable_type = ?" closeAfter {
-            insert(guild.idLong, type.name) executeQuery {
-                if(it.next())
-                    it.getBoolean("status")
-                else false
-            }
+    fun getStatusFor(guild: Guild, type: Type): Boolean {
+        return using(connection.prepareStatement(get), default = false)
+        {
+            this[1] = guild.idLong
+            this[2] = type
+            using(executeQuery()) { if(next()) getBoolean("STATUS") else false }
         }
-    } catch (e: SQLException) {
-        SQL.LOG.warn("SQLException",e)
-        false
     }
 
     fun setStatusFor(guild: Guild, type: Type, status: Boolean)
     {
         if(hasStatusFor(guild, type))
-            connection prepare "UPDATE enables SET status = ? WHERE guild_id = ? AND enable_type = ?" closeAfter {
-                insert(status, guild.idLong, type.name).execute()
+            using(connection.prepareStatement(set))
+            {
+                this[1] = status
+                this[2] = guild.idLong
+                this[3] = type
             }
         else
-            connection prepare "INSERT INTO enables (guild_id, enable_type, status) VALUES (?,?,?)" closeAfter {
-                insert(guild.idLong, type.name, status).execute()
+            using(connection.prepareStatement(add))
+            {
+                this[1] = guild.idLong
+                this[2] = type
+                this[3] = status
             }
     }
 

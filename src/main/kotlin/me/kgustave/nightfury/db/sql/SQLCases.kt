@@ -18,44 +18,115 @@ package me.kgustave.nightfury.db.sql
 import me.kgustave.nightfury.entities.Case
 import me.kgustave.nightfury.entities.LogAction
 import net.dv8tion.jda.core.entities.Guild
+import net.dv8tion.jda.core.entities.User
 import java.sql.Connection
-import java.sql.ResultSet
-import java.sql.SQLException
 
 /**
  * @author Kaidan Gustave
  */
-class SQLCases(connection: Connection) : SQLCollection<Guild, Case>(connection)
+class SQLCases(private val connection: Connection)
 {
-    override val getStatement = "SELECT * FROM cases WHERE guild_id = ?"
-    override val addStatement =
-            "INSERT INTO cases (number, guild_id, message_id, mod_id, target_id, is_on_user, action, reason) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-    override val removeStatement = "" // Unused
-    override val removeAllStatement = "DELETE FROM cases WHERE guild_id = ?"
+    private val get = "SELECT * FROM CASES WHERE GUILD_ID = ?"
+    private val getByUser = "SELECT * FROM CASES WHERE GUILD_ID = ? AND MOD_ID = ? ORDER BY NUMBER DESC"
+    private val getNumber = "SELECT * FROM CASES WHERE GUILD_ID = ? AND NUMBER = ?"
+    private val add = "INSERT INTO CASES (NUMBER, GUILD_ID, MESSAGE_ID, MOD_ID, TARGET_ID, IS_ON_USER, ACTION, REASON) "+
+                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    private val update = "UPDATE CASES SET REASON = ? WHERE GUILD_ID = ? AND NUMBER = ?"
 
-    override fun get(results: ResultSet, env: Guild): Set<Case>
-    {
-        val cases = HashSet<Case>()
-        while (results.next())
+    fun getCases(guild: Guild): List<Case> {
+        val list = ArrayList<Case>()
+        using(connection.prepareStatement(get))
         {
-            val case = Case()
-            case.number = results.getInt("number")
-            case.guildId = results.getLong("guild_id")
-            case.messageId = results.getLong("message_id")
-            case.modId = results.getLong("mod_id")
-            case.targetId = results.getLong("target_id")
-            case.isOnUser = results.getBoolean("is_on_user")
-            case.action = LogAction.getActionByAct(results.getString("action"))
-            case.reason = results.getString("reason")
-            cases.add(case)
+            this[1] = guild.idLong
+
+            using(executeQuery())
+            {
+                while(next())
+                    list += Case().apply {
+                        number = getInt("NUMBER")
+                        guildId = getLong("GUILD_ID")
+                        messageId = getLong("MESSAGE_ID")
+                        modId = getLong("MOD_ID")
+                        targetId = getLong("TARGET_ID")
+                        isOnUser = getBoolean("IS_ON_USER")
+                        action = LogAction.getActionByAct(getString("ACTION"))
+                        reason = getString("REASON")
+                    }
+            }
         }
-        return cases
+        return list
     }
 
-    fun updateCase(case: Case) = try {
-        connection prepare "UPDATE cases SET reason = ? WHERE guild_id = ? AND number = ?" closeAfter {
-            insert(case.reason, case.guildId, case.number).execute()
+    fun getCaseNumber(guild: Guild, number: Int): Case? {
+        return using(connection.prepareStatement(getNumber))
+        {
+            this[1] = guild.idLong
+            this[2] = number
+
+            using(executeQuery())
+            {
+                if(next()) {
+                    Case().apply {
+                        this.number = getInt("NUMBER")
+                        this.guildId = getLong("GUILD_ID")
+                        this.messageId = getLong("MESSAGE_ID")
+                        this.modId = getLong("MOD_ID")
+                        this.targetId = getLong("TARGET_ID")
+                        this.isOnUser = getBoolean("IS_ON_USER")
+                        this.action = LogAction.getActionByAct(getString("ACTION"))
+                        this.reason = getString("REASON")
+                    }
+                } else null
+            }
         }
-    } catch (e : SQLException) { SQL.LOG.warn("SQLException",e) }
+    }
+
+    fun getCasesByUser(guild: Guild, user: User): List<Case> {
+        val list = ArrayList<Case>()
+        using(connection.prepareStatement(getByUser))
+        {
+            this[1] = guild.idLong
+            this[2] = user.idLong
+            using(executeQuery())
+            {
+                list += Case().apply {
+                    this.number = getInt("NUMBER")
+                    this.guildId = getLong("GUILD_ID")
+                    this.messageId = getLong("MESSAGE_ID")
+                    this.modId = getLong("MOD_ID")
+                    this.targetId = getLong("TARGET_ID")
+                    this.isOnUser = getBoolean("IS_ON_USER")
+                    this.action = LogAction.getActionByAct(getString("ACTION"))
+                    this.reason = getString("REASON")
+                }
+            }
+        }
+        return list
+    }
+
+    fun addCase(case: Case) {
+        using(connection.prepareStatement(add))
+        {
+            this[1] = case.number
+            this[2] = case.guildId
+            this[3] = case.messageId
+            this[4] = case.modId
+            this[5] = case.targetId
+            this[6] = case.isOnUser
+            this[7] = case.action
+            this[8] = case.reason
+
+            execute()
+        }
+    }
+
+    fun updateCase(case: Case) {
+        using(connection.prepareStatement(update))
+        {
+            this[1] = case.reason
+            this[2] = case.guildId
+            this[3] = case.number
+            execute()
+        }
+    }
 }

@@ -31,7 +31,6 @@ import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.extensions.*
 import me.kgustave.nightfury.jagtag.getMethods
 import me.kgustave.nightfury.listeners.InvisibleTracker
-import me.kgustave.nightfury.listeners.StarboardListener
 import net.dv8tion.jda.core.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -85,7 +84,6 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
 
         val parser : Parser = JagTag.newDefaultBuilder().addMethods(getMethods()).build()
 
-        val starboard = StarboardListener(manager)
         val invisTracker = InvisibleTracker()
 
         val client = Client(
@@ -125,7 +123,6 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
                 ModLogCmd(),
                 PrefixCmd(),
                 WelcomeCmd(),
-                StarboardCmd(),
 
                 ToggleCmd(),
 
@@ -142,7 +139,6 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
             manager  { AsyncEventManager() }
             listener { client }
             listener { invisTracker }
-            listener { starboard }
             token    { config.token }
             status   { OnlineStatus.DO_NOT_DISTURB }
             game     { "Starting Up..." }

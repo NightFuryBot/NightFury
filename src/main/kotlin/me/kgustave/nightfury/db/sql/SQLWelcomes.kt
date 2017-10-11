@@ -16,20 +16,61 @@
 package me.kgustave.nightfury.db.sql
 
 import net.dv8tion.jda.core.entities.Guild
+import net.dv8tion.jda.core.entities.TextChannel
 import java.sql.Connection
 import java.sql.ResultSet
 
 /**
  * @author Kaidan Gustave
  */
-class SQLWelcomeMessage(connection: Connection) : SQLSingleton<Guild, String>(connection)
+class SQLWelcomes(private val connection: Connection)
 {
-    override val getStatement = "SELECT welcome FROM welcomes WHERE guild_id = ?"
-    override val setStatement = "INSERT INTO welcomes (guild_id, welcome) VALUES (?, ?)"
-    override val updateStatement = "UPDATE welcomes SET welcome = ? WHERE guild_id = ?"
-    override val resetStatement = "DELETE FROM welcomes WHERE guild_id = ?"
+    /*
+     * GUILD_ID | CHANNEL_ID | MESSAGE
+     */
+    private val getMessage = "SELECT MESSAGE FROM WELCOMES WHERE GUILD_ID = ?"
+    private val getChannel = "SELECT CHANNEL_ID FROM WELCOMES WHERE GUILD_ID = ?"
+    private val setWelcome = "INSERT INTO WELCOMES (GUILD_ID, CHANNEL_ID, MESSAGE) VALUES(?,?,?)"
+    private val removeWelcome = "DELETE FROM WELCOMES WHERE GUILD_ID = ?"
 
-    override fun get(results: ResultSet, env: Guild): String? = if(results.next()) results.getString("welcome") else null
+    fun hasWelcome(guild: Guild): Boolean = getChannel(guild) == null
+
+    fun getMessage(guild: Guild): String? {
+        return using(connection.prepareStatement(getMessage))
+        {
+            this[1] = guild.idLong
+            using(executeQuery()) { if(next()) getString("MESSAGE") else null }
+        }
+    }
+
+    fun getChannel(guild: Guild): TextChannel? {
+        return using(connection.prepareStatement(getChannel))
+        {
+            this[1] = guild.idLong
+            using(executeQuery())
+            {
+                if(next())
+                    guild.getTextChannelById(getLong("CHANNEL_ID"))
+                else null
+            }
+        }
+    }
+
+    fun setWelcome(channel: TextChannel, message: String) {
+        using(connection.prepareStatement(setWelcome))
+        {
+            this[1] = channel.guild.idLong
+            this[2] = channel.idLong
+            this[3] = message
+            execute()
+        }
+    }
+
+    fun removeWelcome(guild: Guild) {
+        using(connection.prepareStatement(removeWelcome))
+        {
+            this[1] = guild.idLong
+            execute()
+        }
+    }
 }
-
-class SQLWelcomeChannel(connection: Connection) : SQLChannel(connection, "welcomes")
