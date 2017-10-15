@@ -428,10 +428,13 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
 
         with(builder)
         {
+            clearItems()
             text        { -> "Tags owned by ${user.formattedName(true)}" }
-            if(localTags.isNotEmpty())
-                items   { addAll(localTags) }
-            items       { addAll(globalTags) }
+            items {
+                if(localTags.isNotEmpty())
+                    addAll(localTags)
+                addAll(globalTags)
+            }
             finalAction { event.linkMessage(it); it.removeMenuReactions() }
             user        { event.author }
             displayIn   { event.channel }

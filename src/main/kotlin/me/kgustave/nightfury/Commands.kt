@@ -17,10 +17,9 @@ package me.kgustave.nightfury
 
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
-import me.kgustave.nightfury.resources.ArgumentPatterns
+import me.kgustave.nightfury.resources.Arguments
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
-import java.util.function.BiConsumer
 
 /**
  * @author Kaidan Gustave
@@ -48,7 +47,7 @@ abstract class Command
     var category: Category? = null
         protected set
 
-    var helpBiConsumer: BiConsumer<CommandEvent, Command> = defaultSubHelp
+    var helpBiConsumer: (CommandEvent, Command) -> Unit = DefaultSubHelp
         protected set
 
     var botPermissions: Array<Permission> = emptyArray()
@@ -81,76 +80,77 @@ abstract class Command
         val TOO_FEW_ARGS_ERROR = "**Too Few Arguments!**\n%s"
         val TOO_FEW_ARGS_HELP = "**Too Few Arguments!**\n$SEE_HELP"
 
-        private val defaultSubHelp = BiConsumer<CommandEvent, Command> {_,_ ->}
-
-        infix fun standardSubHelp(explanation: String?) : BiConsumer<CommandEvent, Command>
+        private object DefaultSubHelp : (CommandEvent, Command) -> Unit
         {
-            return BiConsumer {event, command ->
-                val b = StringBuilder()
-                val aliases = command.aliases
-                val help = command.help
-                val arguments = command.arguments
-                val children = command.children
-                val ownerId = event.client.devId
-                val serverInvite = event.client.server
-                b.append("Available help for **${command.name} command** in " +
-                        "${if(event.isFromType(ChannelType.PRIVATE)) "DM" else "<#" + event.channel.id + ">"}\n")
+            override fun invoke(p1: CommandEvent, p2: Command) {}
+            override fun equals(other: Any?) = other is DefaultSubHelp
+        }
 
-                b.append("\n**Usage:** `")
-                        .append(event.client.prefix)
-                        .append((if(command.fullname!="null") command.fullname else command.name).toLowerCase())
-                        .append(if(arguments.isNotEmpty()) " $arguments`" else "`")
-                        .append("\n")
+        infix fun standardSubHelp(explanation: String?): (CommandEvent, Command) -> Unit = { event, command ->
+            val b = StringBuilder()
+            val aliases = command.aliases
+            val help = command.help
+            val arguments = command.arguments
+            val children = command.children
+            val ownerId = event.client.devId
+            val serverInvite = event.client.server
+            b.append("Available help for **${command.name} command** in " +
+                    "${if(event.isFromType(ChannelType.PRIVATE)) "DM" else "<#" + event.channel.id + ">"}\n")
 
-                if(aliases.isNotEmpty())
-                {
-                    b.append("\n**Alias${if(aliases.size>1) "es" else ""}:** `")
-                    for(i in aliases.indices) {
-                        b.append("${aliases[i]}`")
-                        if(i != aliases.size - 1)
-                            b.append(", `")
-                    }
-                    b.append("\n")
+            b.append("\n**Usage:** `")
+                    .append(event.client.prefix)
+                    .append((if(command.fullname!="null") command.fullname else command.name).toLowerCase())
+                    .append(if(arguments.isNotEmpty()) " $arguments`" else "`")
+                    .append("\n")
+
+            if(aliases.isNotEmpty())
+            {
+                b.append("\n**Alias${if(aliases.size>1) "es" else ""}:** `")
+                for(i in aliases.indices) {
+                    b.append("${aliases[i]}`")
+                    if(i != aliases.size - 1)
+                        b.append(", `")
                 }
-
-                if(help != "no help available")
-                    b.append("\n$help\n")
-                if(explanation != null)
-                    b.append("\n$explanation\n")
-
-                if(children.isNotEmpty())
-                {
-                    b.append("\n**Sub-Commands:**\n\n")
-                    var cat : Category? = null
-                    for(c in children) {
-                        if(cat!=c.category) {
-                            if(!c.category!!.test(event))
-                                continue
-                            cat = c.category
-                            if(cat!=null)
-                                b.append("\n__${cat.title}__\n\n")
-                        }
-                        b.append("`").append(event.client.prefix).append(c.fullname.toLowerCase())
-                                .append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
-                                .append("` - ").append(c.help).append("\n")
-                    }
-                }
-
-                val owner = event.jda.getUserById(ownerId)
-                if(owner != null)
-                    b.append("\n\nFor additional help, contact **")
-                            .append(owner.name)
-                            .append("**#")
-                            .append(owner.discriminator)
-                            .append(" or join his support server ")
-                            .append(serverInvite)
-                else
-                    b.append("\n\nFor additional help, join my support server ")
-                            .append(serverInvite)
-                if(event.isFromType(ChannelType.TEXT))
-                    event.reactSuccess()
-                event.replyInDm(b.toString())
+                b.append("\n")
             }
+
+            if(help != "no help available")
+                b.append("\n$help\n")
+            if(explanation != null)
+                b.append("\n$explanation\n")
+
+            if(children.isNotEmpty())
+            {
+                b.append("\n**Sub-Commands:**\n\n")
+                var cat : Category? = null
+                for(c in children) {
+                    if(cat!=c.category) {
+                        if(!c.category!!.test(event))
+                            continue
+                        cat = c.category
+                        if(cat!=null)
+                            b.append("\n__${cat.title}__\n\n")
+                    }
+                    b.append("`").append(event.client.prefix).append(c.fullname.toLowerCase())
+                            .append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
+                            .append("` - ").append(c.help).append("\n")
+                }
+            }
+
+            val owner = event.jda.getUserById(ownerId)
+            if(owner != null)
+                b.append("\n\nFor additional help, contact **")
+                        .append(owner.name)
+                        .append("**#")
+                        .append(owner.discriminator)
+                        .append(" or join his support server ")
+                        .append(serverInvite)
+            else
+                b.append("\n\nFor additional help, join my support server ")
+                        .append(serverInvite)
+            if(event.isFromType(ChannelType.TEXT))
+                event.reactSuccess()
+            event.replyInDm(b.toString())
         }
     }
 
@@ -158,7 +158,7 @@ abstract class Command
     {
         if(children.isNotEmpty() && event.args.isNotEmpty())
         {
-            val parts = event.args.split(ArgumentPatterns.commandArgs, 2)
+            val parts = event.args.split(Arguments.commandArgs, 2)
             children.forEach {
                 if(it.isForCommand(parts[0]))
                 {
@@ -173,8 +173,8 @@ abstract class Command
         if(category!=null && !category!!.test(event)) return
 
         if(event.args.startsWith("help",true))
-            if(helpBiConsumer !== defaultSubHelp)
-                return helpBiConsumer.accept(event, this)
+            if(helpBiConsumer != DefaultSubHelp)
+                return helpBiConsumer(event, this)
 
         if(guildOnly && !event.isFromType(ChannelType.TEXT))
             return event terminate "${event.client.error} This command cannot be used in Direct messages"
@@ -257,8 +257,8 @@ abstract class Command
 
     fun CommandEvent.modSearch() : Pair<Long, String?>?
     {
-        val targetId = ArgumentPatterns.targetIDWithReason.matchEntire(args)
-        val targetMention = ArgumentPatterns.targetMentionWithReason.matchEntire(args)
+        val targetId = Arguments.targetIDWithReason.matchEntire(args)
+        val targetMention = Arguments.targetMentionWithReason.matchEntire(args)
 
         val groups = when
         {
@@ -279,16 +279,19 @@ abstract class Command
         this.client.applyCooldown(key, cooldown)
     }
 
+
     internal val CommandEvent.cooldownKey
-        get() = when (cooldownScope)
+        get() = when(cooldownScope)
         {
             CooldownScope.USER -> cooldownScope.genKey(name, author.idLong)
             CooldownScope.USER_GUILD ->
-                if(event.guild != null) cooldownScope.genKey(name, author.idLong, guild.idLong)
+                if(event.isFromType(ChannelType.TEXT))
+                    cooldownScope.genKey(name, author.idLong, guild.idLong)
                 else CooldownScope.USER_CHANNEL.genKey(name, author.idLong, channel.idLong)
             CooldownScope.USER_CHANNEL -> cooldownScope.genKey(name, author.idLong, channel.idLong)
             CooldownScope.GUILD ->
-                if(event.guild != null) cooldownScope.genKey(name, guild.idLong)
+                if(event.isFromType(ChannelType.TEXT))
+                    cooldownScope.genKey(name, guild.idLong)
                 else CooldownScope.CHANNEL.genKey(name, channel.idLong)
             CooldownScope.CHANNEL -> cooldownScope.genKey(name, channel.idLong)
             CooldownScope.GLOBAL -> cooldownScope.genKey(name, 0L)
@@ -324,6 +327,8 @@ enum class Category(val title: String, private val predicate: (CommandEvent) -> 
     }),
 
     // Other Categories
+
+    MUSIC("Music", { MONITOR test it || (it.isFromType(ChannelType.TEXT) && it.manager.musicWhitelist.isGuild(it.guild)) }),
     NSFW("NSFW", { MONITOR test it || (it.isFromType(ChannelType.TEXT) && it.textChannel.isNSFW) });
 
     infix fun test(event: CommandEvent) = predicate.invoke(event)

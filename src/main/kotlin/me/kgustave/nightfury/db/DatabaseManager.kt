@@ -28,11 +28,7 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
     val connection : Connection
 
     init {
-        try {
-            Class.forName("org.h2.Driver").newInstance()
-        } catch (e: Exception) {
-            throw e
-        }
+        Class.forName("org.h2.Driver").newInstance()
 
         connection = DriverManager.getConnection(url, user, pass) // Create the connection
 
@@ -70,7 +66,9 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
 
     val commandLimits = SQLLimits(connection)
 
-    private infix fun Connection.createTable(data: TableData) : Boolean= top@ try {
+    val musicWhitelist = SQLMusicWhitelist(connection)
+
+    private infix fun Connection.createTable(data: TableData): Boolean = top@ try {
         if(this hasTableNamed data.name)
             return@top true
         else {
@@ -91,7 +89,8 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
         return@top false
     }
 
-    private infix fun Connection.hasTableNamed(name: String) = metaData.getTables(null, null, name, null).use { it.next() }
+    private infix fun Connection.hasTableNamed(name: String) =
+            metaData.getTables(null, null, name, null).use { it.next() }
 
     infix fun isRoleMe(role: Role) = roleMe.isRole(role)
     infix fun getRoleMes(guild: Guild) = roleMe.getRoles(guild)
@@ -153,15 +152,10 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
     fun removeRolePersist(member: Member) = rolePersist.removeRolePersist(member)
     fun removeAllRolePersist(guild: Guild) = rolePersist.removeAllRolePersist(guild)
 
-    @Suppress("Unused")
-    fun evaluate(string: String) = try {
-        using(connection.prepareStatement(string)) { execute() }
-    } catch (e: SQLException) { throw e }
+    @[Suppress("Unused") Throws(SQLException::class)]
+    fun evaluate(string: String) = using(connection.prepareStatement(string)) { execute() }
 
-
-    fun shutdown() = try {
-        connection.close()
-    } catch (e: SQLException) { SQL.LOG.warn("SQLException",e) }
+    fun shutdown() = try { connection.close() } catch (e: SQLException) { SQL.LOG.warn("SQLException", e) }
 
     enum class TableData(vararg val parameters: String)
     {
@@ -186,6 +180,8 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
 
         COMMAND_LIMITS("GUILD_ID BIGINT", "COMMAND_NAME VARCHAR(100)", "LIMIT_NUMBER INT"),
 
-        ENABLES("GUILD_ID BIGINT", "ENABLE_TYPE VARCHAR(40)", "STATUS BOOLEAN");
+        ENABLES("GUILD_ID BIGINT", "ENABLE_TYPE VARCHAR(40)", "STATUS BOOLEAN"),
+
+        GUILDS("GUILD_ID BIGINT", "TYPE VARCHAR(20)");
     }
 }

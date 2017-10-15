@@ -20,7 +20,7 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.MustHaveArguments
-import me.kgustave.nightfury.resources.ArgumentPatterns
+import me.kgustave.nightfury.resources.Arguments
 import me.kgustave.nightfury.extensions.past
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Message
@@ -88,7 +88,7 @@ class CleanCmd : Command()
         var args = event.args
 
         // Reason
-        val reasonMatcher = ArgumentPatterns.reasonPattern.matchEntire(args)
+        val reasonMatcher = Arguments.reasonPattern.matchEntire(args)
         val reason : String? = if(reasonMatcher!=null) {
             val groups = reasonMatcher.groupValues
             args = groups[1]
@@ -105,13 +105,13 @@ class CleanCmd : Command()
 
         // Mentions
         event.message.mentionedUsers.forEach { ids.add(it.idLong) }
-        args = args.replace(ArgumentPatterns.userMention, "").trim()
+        args = args.replace(Arguments.userMention, "").trim()
 
         // Raw ID's
-        val idsMatcher = ArgumentPatterns.discordID.findAll(args)
+        val idsMatcher = Arguments.discordID.findAll(args)
         for(res in idsMatcher)
             ids.add(res.groupValues[1].trim().toLong())
-        args = args.replace(ArgumentPatterns.discordID, "").trim()
+        args = args.replace(Arguments.discordID, "").trim()
 
         // Bots Flag
         val bots = if(args.contains("bots", true)) {

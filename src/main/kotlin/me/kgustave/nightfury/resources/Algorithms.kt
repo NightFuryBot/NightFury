@@ -33,7 +33,7 @@ object Algorithms
             return results[0]
 
         // If there is more than 2 spaces, divide the results by the number of them
-        val spaces = query.split(ArgumentPatterns.commandArgs).size
+        val spaces = query.split(Arguments.commandArgs).size
         if(spaces > 2)
             index /= spaces - 1
 

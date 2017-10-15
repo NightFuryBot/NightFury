@@ -43,13 +43,13 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 7, build: 1)
+def versionObj = new Version(major: 0, minor: 7, build: 2)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
 def jdaVersion = '3.3.1_280'
-def jdaUtilsVersion = '1.7'
+def jdaUtilsVersion = '1.8'
 def kjdaUtilsVersion = '0.5'
 
 sourceCompatibility = 1.8
@@ -79,6 +79,7 @@ dependencies {
     compile "net.dv8tion:JDA:$jdaVersion"
     compile "com.jagrosh:JDA-Utilities:$jdaUtilsVersion"
     compile "com.github.TheMonitorLizard:KJDA-Utilities:$kjdaUtilsVersion"
+    compile 'com.sedmelluq:lavaplayer:1.2.44'
 
     // h2
     compile 'com.h2database:h2:1.4.196'

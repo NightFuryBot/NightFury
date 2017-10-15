@@ -17,7 +17,6 @@ package me.kgustave.nightfury.db.sql
 
 import net.dv8tion.jda.core.entities.Guild
 import java.sql.Connection
-import java.sql.ResultSet
 
 /**
  * @author Kaidan Gustave
@@ -25,16 +24,15 @@ import java.sql.ResultSet
 @Suppress("unused")
 class SQLPrefixes(private val connection: Connection)
 {
-    private val isPrefix  = "SELECT LOWER(PREFIX) FROM PREFIXES WHERE GUILD_ID = ? AND LOWER(PREFIX) = LOWER(?)"
-    private val get       = "SELECT LOWER(PREFIX) FROM PREFIXES WHERE GUILD_ID = ?"
+    private val isPrefix  = "SELECT PREFIX FROM PREFIXES WHERE GUILD_ID = ? AND LOWER(PREFIX) = LOWER(?)"
+    private val get       = "SELECT PREFIX FROM PREFIXES WHERE GUILD_ID = ?"
     private val add       = "INSERT INTO PREFIXES (GUILD_ID, PREFIX) VALUES (?, ?)"
     private val remove    = "DELETE FROM PREFIXES WHERE GUILD_ID = ? AND LOWER(PREFIX) = LOWER(?)"
     private val removeAll = "DELETE FROM PREFIXES WHERE GUILD_ID = ?"
 
     fun isPrefix(guild: Guild, prefix: String) = isPrefix(guild.idLong, prefix)
     fun isPrefix(guildId: Long, prefix: String): Boolean {
-        return using(connection.prepareStatement(isPrefix),
-                default = false)
+        return using(connection.prepareStatement(isPrefix), default = false)
         {
             this[1] = guildId
             this[2] = prefix

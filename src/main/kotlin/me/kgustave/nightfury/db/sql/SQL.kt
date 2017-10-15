@@ -47,6 +47,11 @@ inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Bool
     return this
 }
 
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Short): T {
+    setShort(index, value)
+    return this
+}
+
 inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Enum<*>): T {
     setString(index, value.name)
     return this

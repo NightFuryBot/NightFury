@@ -25,12 +25,17 @@ import me.kgustave.nightfury.api.YouTubeAPI
 import me.kgustave.nightfury.commands.admin.*
 import me.kgustave.nightfury.commands.moderator.*
 import me.kgustave.nightfury.commands.dev.*
+import me.kgustave.nightfury.commands.music.PlayCmd
+import me.kgustave.nightfury.commands.music.QueueCmd
+import me.kgustave.nightfury.commands.music.SkipCmd
+import me.kgustave.nightfury.commands.music.StopCmd
 import me.kgustave.nightfury.commands.other.*
 import me.kgustave.nightfury.commands.standard.*
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.extensions.*
 import me.kgustave.nightfury.jagtag.getMethods
 import me.kgustave.nightfury.listeners.InvisibleTracker
+import me.kgustave.nightfury.music.MusicManager
 import net.dv8tion.jda.core.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -86,6 +91,8 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
 
         val invisTracker = InvisibleTracker()
 
+        val musicManager = MusicManager()
+
         val client = Client(
                 config.prefix, config.devId, manager,
                 config.success, config.warning, config.error,
@@ -107,6 +114,11 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
                 TagCommand(waiter),
                 YouTubeCmd(yt),
 
+                PlayCmd(musicManager),
+                QueueCmd(waiter, musicManager),
+                SkipCmd(musicManager),
+                StopCmd(musicManager),
+
                 E621Cmd(e621, waiter),
 
                 BanCmd(),
@@ -127,7 +139,7 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
                 ToggleCmd(),
 
                 BashCmd(),
-                EvalCmd(),
+                EvalCmd(musicManager),
                 GuildlistCmd(waiter),
                 MemoryCmd(),
                 ModeCmd(),
@@ -142,7 +154,6 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
             token    { config.token }
             status   { OnlineStatus.DO_NOT_DISTURB }
             game     { "Starting Up..." }
-            audio(false)
         }
     }
 

@@ -27,3 +27,5 @@ inline fun message(builder: MessageBuilder = MessageBuilder(), init: MessageBuil
 
 infix inline fun MessageBuilder.embed(crossinline init: KEmbedBuilder.() -> Unit) : MessageBuilder
         = setEmbed(me.kgustave.nightfury.entities.embed { init() })
+
+infix inline fun <reified M: Message> M.edit(block: () -> String) = apply { editMessage(block()).queue() }

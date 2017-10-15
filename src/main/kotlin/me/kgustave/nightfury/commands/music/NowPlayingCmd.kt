@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.kgustave.nightfury.resources
+package me.kgustave.nightfury.commands.music
 
-object ArgumentPatterns
+/**
+ * @author Kaidan Gustave
+ */
+class NowPlayingCmd
 {
-    val commandArgs = Regex("\\s+")
-    val discordID = Regex("(\\d{17,20})")
-    val userMention = Regex("<@!?(\\d{17,20})>")
-    val reasonPattern = Regex("(^.+)\\s(?:for\\s+)([\\s\\S]+)$", RegexOption.DOT_MATCHES_ALL)
-    val targetIDWithReason = Regex("(\\d{17,20})(?:\\s+(?:for\\s+)?([\\s\\S]+))?")
-    val targetMentionWithReason = Regex("<@!?(\\d{17,20})>(?:\\s+(?:for\\s+)?([\\s\\S]+))?")
 }

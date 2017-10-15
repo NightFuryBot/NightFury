@@ -20,7 +20,7 @@ import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.entities.embed
-import me.kgustave.nightfury.resources.ArgumentPatterns
+import me.kgustave.nightfury.resources.Arguments
 import me.kgustave.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Message
@@ -44,7 +44,7 @@ class QuoteCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val split = event.args.split(ArgumentPatterns.commandArgs)
+        val split = event.args.split(Arguments.commandArgs)
         val channel: TextChannel
         val message: Message
 

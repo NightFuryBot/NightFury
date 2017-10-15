@@ -20,7 +20,7 @@ import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
-import me.kgustave.nightfury.resources.ArgumentPatterns
+import me.kgustave.nightfury.resources.Arguments
 import me.kgustave.nightfury.listeners.*
 import me.kgustave.nightfury.resources.*
 import net.dv8tion.jda.core.JDA
@@ -197,7 +197,7 @@ class Client internal constructor
             rawContent.startsWith(prefix, true) -> // From Anywhere with default prefix
             {
                 prefixUsed = prefix
-                parts = rawContent.substring(prefixUsed.length).trim().split(ArgumentPatterns.commandArgs, 2)
+                parts = rawContent.substring(prefixUsed.length).trim().split(Arguments.commandArgs, 2)
             }
 
             event.guild != null -> // From Guild without default prefix
@@ -209,7 +209,7 @@ class Client internal constructor
                     if(prefix!=null)
                     {
                         prefixUsed = prefix
-                        parts = rawContent.substring(prefixUsed.length).trim().split(ArgumentPatterns.commandArgs, 2)
+                        parts = rawContent.substring(prefixUsed.length).trim().split(Arguments.commandArgs, 2)
                     } else return
                 } else return
             }

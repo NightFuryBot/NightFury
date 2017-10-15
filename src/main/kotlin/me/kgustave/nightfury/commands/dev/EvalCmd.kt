@@ -20,6 +20,7 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.extensions.connectedChannel
+import me.kgustave.nightfury.music.MusicManager
 import net.dv8tion.jda.core.entities.ChannelType
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
@@ -29,7 +30,7 @@ import javax.script.ScriptException
  * @author Kaidan Gustave
  */
 @MustHaveArguments("Specify script to evaluate.")
-class EvalCmd : Command()
+class EvalCmd(val musicManager: MusicManager) : Command()
 {
     internal var engine : ScriptEngine = ScriptEngineManager().getEngineByName("nashorn")
 
@@ -81,6 +82,7 @@ class EvalCmd : Command()
         put("channel", event.channel)
         put("client", event.client)
         put("manager", event.manager)
+        put("musicManager", musicManager)
 
         // GUILD
         if(event.isFromType(ChannelType.TEXT))

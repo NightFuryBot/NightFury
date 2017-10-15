@@ -21,7 +21,6 @@ import java.sql.Connection
 /**
  * @author Kaidan Gustave
  */
-@Suppress("RedundantUnitReturnType")
 class SQLLimits(private val connection: Connection)
 {
     private val get = "SELECT LIMIT_NUMBER FROM COMMAND_LIMITS WHERE GUILD_ID = ? AND LOWER(COMMAND_NAME) = LOWER(?)"
