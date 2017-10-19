@@ -34,7 +34,7 @@ abstract class AbstractAPICache<T>
 
     fun getFromCache(query: String) : T? = synchronized(cache)
     {
-        cache[query.toLowerCase()]?.first
+        cache[query.toLowerCase()]?.takeIf { it.second.plusHours(hoursToDecay).isBefore(OffsetDateTime.now()) }?.first
     }
 
     fun clearCache()

@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("unused")
 package me.kgustave.nightfury.entities
 
 import kotlinx.coroutines.experimental.*
 import net.dv8tion.jda.core.requests.RestAction
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeUnit.MILLISECONDS
 import kotlin.coroutines.experimental.CoroutineContext
 
 // Copied and modified from club.minnced.kjda.RestPromise
@@ -37,16 +34,7 @@ fun<V> RestAction<V?>.onlyIf(condition: Boolean, block: V?.() -> Unit = {}) = if
 
 fun<V> RestAction<V?>.unless(condition: Boolean, block: V?.() -> Unit = {}) = if(!condition) then(block) else promise()
 
-fun<V> RestAction<V?>.prepare(context: CoroutineContext = CommonPool) = async(context, false) { promise() }
-
-fun<V> RestAction<V?>.start(context: CoroutineContext = CommonPool) = launch(context) { queue() }
-
 suspend fun<V> RestAction<V?>.get(context: CoroutineContext = CommonPool) = run(context) { complete() }
-
-suspend fun<V> RestAction<V?>.after(time: Long, unit: TimeUnit = MILLISECONDS, context: CoroutineContext = CommonPool) = run(context) {
-    delay(time, unit)
-    get()
-}
 
 class RestPromise<V>(action: RestAction<V?>)
 {

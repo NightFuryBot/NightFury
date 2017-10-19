@@ -29,7 +29,7 @@ import net.dv8tion.jda.core.Permission
  */
 class QueueCmd(waiter: EventWaiter, musicManager: MusicManager): MusicCmd(musicManager)
 {
-    val pBuilder : PaginatorBuilder = PaginatorBuilder()
+    val pBuilder: PaginatorBuilder = PaginatorBuilder()
             .waitOnSinglePage { false }
             .setFinalAction   { it.clearReactions().queue({},{}) }
             .showPageNumbers  { true }
@@ -41,7 +41,7 @@ class QueueCmd(waiter: EventWaiter, musicManager: MusicManager): MusicCmd(musicM
         this.help = "Shows the full ordered queue of songs."
         this.cooldown = 30
         this.cooldownScope = CooldownScope.USER_GUILD
-        this.botPermissions += arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
+        this.botPermissions = botPermissions + arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
     }
 
     override fun execute(event: CommandEvent)
@@ -57,7 +57,8 @@ class QueueCmd(waiter: EventWaiter, musicManager: MusicManager): MusicCmd(musicM
         pBuilder.clearItems()
         pBuilder.add {
             val currTrack = queue.currentTrack
-            "`->` [${currTrack.member.asMention}] - ${currTrack.info.formattedInfo}" }
+            "`->` [${currTrack.member.asMention}] - ${currTrack.info.formattedInfo}"
+        }
         queue.forEachIndexed { index, track ->
             pBuilder.add { "`${index+1}` [${track.member.asMention}] - ${track.info.formattedInfo}" }
         }

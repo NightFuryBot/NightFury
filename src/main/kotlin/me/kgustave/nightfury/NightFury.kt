@@ -64,8 +64,8 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
 {
     companion object
     {
-        val version : String = this::class.java.`package`.implementationVersion?:"BETA"
-        val github : String = "https://github.com/TheMonitorLizard/NightFury/"
+        val VERSION: String = this::class.java.`package`.implementationVersion?:"BETA"
+        val GITHUB: String = "https://github.com/TheMonitorLizard/NightFury/"
         val LOG: Logger = LoggerFactory.getLogger("NightFury")
 
         fun shutdown(exit: Int)
@@ -75,24 +75,20 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
         }
     }
 
-    init
-    {
+    init {
         val config = Config(file)
         val manager = DatabaseManager(config.dbURL, config.dbUser, config.dbPass)
 
-        val google = GoogleAPI()
         val e621 = E621API()
-        val yt = YouTubeAPI(config.ytApiKey)
+        val google = GoogleAPI()
         val image = GoogleImageAPI()
-
-        val waiter = EventWaiter()
+        val yt = YouTubeAPI(config.ytApiKey)
 
         val parser : Parser = JagTag.newDefaultBuilder().addMethods(getMethods()).build()
 
+        val waiter = EventWaiter()
         val invisTracker = InvisibleTracker()
-
         val musicManager = MusicManager()
-
         val client = Client(
                 config.prefix, config.devId, manager,
                 config.success, config.warning, config.error,
@@ -102,6 +98,7 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
                 AboutCmd(*config.permissions),
                 AvatarCmd(),
                 ColorMeCmd(),
+                EmoteCmd(),
                 GoogleCmd(google),
                 HelpCmd(),
                 ImageCmd(image),
@@ -144,13 +141,15 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
                 MemoryCmd(),
                 ModeCmd(),
                 RestartCmd(),
-                ShutdownCmd()
+                ShutdownCmd(),
+                WhitelistCmd(musicManager)
         )
 
         JDABuilder(AccountType.BOT) buildAsync {
             manager  { AsyncEventManager() }
             listener { client }
             listener { invisTracker }
+            listener { musicManager }
             token    { config.token }
             status   { OnlineStatus.DO_NOT_DISTURB }
             game     { "Starting Up..." }

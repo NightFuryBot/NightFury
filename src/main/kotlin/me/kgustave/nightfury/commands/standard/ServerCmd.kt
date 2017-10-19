@@ -78,13 +78,11 @@ class ServerCmd(waiter: EventWaiter, invisTracker: InvisibleTracker) : Command()
         with(builder)
         {
             choices {
-                choice    { name { "Joins" }      action { children[0].run(event) } }
-                choice    { name { "Moderators" } action { children[1].run(event) } }
-                choice    { name { "Owner" }      action { children[2].run(event) } }
+                choice     { name { "Joins" }      action { children[0].run(event) } }
+                choice     { name { "Moderators" } action { children[1].run(event) } }
+                choice     { name { "Owner" }      action { children[2].run(event) } }
                 if(Category.MODERATOR.test(event))
-                choice    { name { "Settings" }   action { children[3].run(event) } }
-
-
+                    choice { name { "Settings" }   action { children[3].run(event) } }
             }
             user      { event.author }
             color     { event.selfMember.color }

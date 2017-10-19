@@ -47,7 +47,7 @@ inline val OffsetDateTime.readableFormat
 fun noMatch(lookedFor: String, query: String) = "Could not find any $lookedFor matching \"$query\"!"
 
 inline val <T: Enum<*>> T.niceName : String
-    inline get() = run { "${name[0]}}${name.substring(1).toLowerCase()}" }
+    inline get() = run { "${name[0]}${name.substring(1).toLowerCase()}" }
 
 inline val <T: AudioTrackInfo> T.formattedInfo : String
     inline get() = "**${title.filterMassMention()}** `[${formatTrackTime(length)}]`"

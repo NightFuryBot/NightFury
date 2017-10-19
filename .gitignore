@@ -9,6 +9,8 @@
 /build/
 
 # Data Files
+/logs/
+*.log
 config.txt
 testConfig.txt
 *.json

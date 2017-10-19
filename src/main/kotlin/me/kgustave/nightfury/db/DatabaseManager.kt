@@ -182,6 +182,8 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
 
         ENABLES("GUILD_ID BIGINT", "ENABLE_TYPE VARCHAR(40)", "STATUS BOOLEAN"),
 
-        GUILDS("GUILD_ID BIGINT", "TYPE VARCHAR(20)");
+        GUILDS("GUILD_ID BIGINT", "TYPE VARCHAR(20)"),
+
+        MUSIC_SETTINGS("GUILD_ID BIGINT", "VOICE_CHANNEL_ID BIGINT", "TEXT_CHANNEL_ID BIGINT", "NP_IN_TOPIC BOOLEAN");
     }
 }

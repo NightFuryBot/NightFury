@@ -41,7 +41,7 @@ class CustomCommandCmd(waiter: EventWaiter) : NoBaseExecutionCommand()
                         "In addition to this, custom commands use JagTag syntax in " +
                         "order to process syntax structures such as `{@user}` into a " +
                         "user mention. Listings and descriptions for all structures is " +
-                        "available at ${NightFury.github}wiki"
+                        "available at ${NightFury.GITHUB}wiki"
         this.guildOnly = true
         this.category = Category.ADMIN
         this.children = arrayOf(

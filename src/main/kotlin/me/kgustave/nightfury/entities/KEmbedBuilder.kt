@@ -208,13 +208,6 @@ class FieldBuilder : Appendable
     fun append(any: Any?) = append(any.normalize())
 }
 
-var KEmbedBuilder.colorRgb: Int?
-    get() = color?.rgb
-    set(value)
-    {
-        color = if(value == null || 0 <= (value)) null else Color(value)
-    }
-
 internal fun Any?.normalize() = ((this as? IMentionable)?.asMention) ?: this.toString()
 
 fun embed(init: KEmbedBuilder.() -> Unit): MessageEmbed = with (KEmbedBuilder())

@@ -69,7 +69,7 @@ class AboutCmd(vararg val permissions : Permission) : Command()
             appendln("I am a discord bot with many functions from utility, to moderation, to fun commands!")
             appendln("I was written in Kotlin by ${event.jda.retrieveUserById(event.client.devId).complete().formattedName(true)} " +
                     "using the [JDA Library](${JDAInfo.GITHUB}) (${JDAInfo.VERSION}).")
-            appendln("I am at [Version ${NightFury.version}](${NightFury.github}). To see a full list of my commands, type " +
+            appendln("I am at [Version ${NightFury.VERSION}](${NightFury.GITHUB}). To see a full list of my commands, type " +
                     "`${event.client.prefix}help`, or if you require additional assistance, join my [support server](${event.client.server})!")
             if(isPublic)
                 appendln("If you want to invite me to your server, click [here]($oauthLink) or use `${event.client.prefix}invite`!")

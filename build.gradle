@@ -23,9 +23,10 @@ class Version {
 }
 
 buildscript {
-    ext.kotlin_version = '1.1.4-2'
+    ext.kotlin_version = '1.2.0-beta-31'
 
     repositories {
+        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
         mavenCentral()
     }
 
@@ -40,17 +41,20 @@ plugins {
     id "com.github.johnrengelman.shadow" version "2.0.1"
 }
 
+repositories {
+    jcenter()
+    mavenCentral()
+    maven { url 'https://jitpack.io/' }
+    maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
+}
+
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 7, build: 2)
+def versionObj = new Version(major: 0, minor: 7, build: 3)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
-
-def jdaVersion = '3.3.1_280'
-def jdaUtilsVersion = '1.8'
-def kjdaUtilsVersion = '0.5'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -63,12 +67,6 @@ sourceSets {
     }
 }
 
-repositories {
-    jcenter()
-    mavenCentral()
-    maven { url 'https://jitpack.io/' }
-}
-
 dependencies {
     // Kotlin
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
@@ -76,9 +74,9 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     // JDA
-    compile "net.dv8tion:JDA:$jdaVersion"
-    compile "com.jagrosh:JDA-Utilities:$jdaUtilsVersion"
-    compile "com.github.TheMonitorLizard:KJDA-Utilities:$kjdaUtilsVersion"
+    compile "net.dv8tion:JDA:3.3.1_284"
+    compile "com.jagrosh:JDA-Utilities:1.8"
+    compile "com.github.TheMonitorLizard:KJDA-Utilities:0.5"
     compile 'com.sedmelluq:lavaplayer:1.2.44'
 
     // h2
@@ -96,7 +94,6 @@ dependencies {
 
     // Testing
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile 'com.github.SvenWoltmann:color-thief-java:v1.1.1'
 }
 
 jar {
@@ -138,7 +135,11 @@ shadowJar {
     }
 }
 
-kotlin.experimental.coroutines 'enable'
+kotlin {
+    experimental {
+        coroutines 'enable'
+    }
+}
 
 compileJava.options.encoding = 'UTF-8'
 compileKotlin.kotlinOptions.jvmTarget = "1.8"

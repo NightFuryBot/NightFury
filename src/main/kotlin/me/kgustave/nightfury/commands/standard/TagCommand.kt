@@ -48,7 +48,7 @@ class TagCommand(waiter: EventWaiter) : Command()
                         "In addition to this, tags use JagTag syntax in order to " +
                         "process syntax structures such as `{@user}` into a user " +
                         "mention. Listings and descriptions for all structures is " +
-                        "available at ${NightFury.github}wiki"
+                        "available at ${NightFury.GITHUB}wiki"
         this.guildOnly = false
         this.children = arrayOf(
                 TagCreateGlobalCmd(),

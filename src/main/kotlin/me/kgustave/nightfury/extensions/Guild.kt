@@ -120,14 +120,15 @@ fun MessageHistory.past(number: Int, breakIf: (List<Message>) -> Boolean = { fal
 ) = launch(CommonPool) {
     require(number > 0) { "Cannot retrieve less than one past message!" }
 
-    if(number<=100) return@launch block(retrievePast(number).get() ?: mutableListOf())
+    if(number<=100)
+        return@launch block(retrievePast(number).get(context) ?: mutableListOf())
 
     val list = LinkedList<Message>()
     var left = number
 
     while(left > 100)
     {
-        list.addAll(retrievePast(100).complete())
+        list.addAll(retrievePast(100).get(context) ?: break)
         left -= 100
         if(breakIf(list))
         {
@@ -136,11 +137,12 @@ fun MessageHistory.past(number: Int, breakIf: (List<Message>) -> Boolean = { fal
         }
     }
 
-    if(left>0) list.addAll(retrievePast(left).complete())
+    if(left in 1..100)
+        list.addAll(retrievePast(left).get(context) ?: emptyList())
 
     block(list)
 
 }.invokeOnCompletion {
     if(it != null)
         catch(it)
-}.dispose()
+}
