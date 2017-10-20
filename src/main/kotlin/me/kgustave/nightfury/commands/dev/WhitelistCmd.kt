@@ -28,9 +28,9 @@ class WhitelistCmd(private val musicManager: MusicManager) : Command()
     init {
         this.name = "Whitelist"
         this.help = "Whitelists a server by whitelist type."
-        this.category = Category.MONITOR
+        this.category = Category.SHENGAERO
         this.devOnly = true
-        this.guildOnly = false
+        this.guildOnly = true
     }
 
     override fun execute(event: CommandEvent) {

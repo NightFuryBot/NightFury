@@ -31,8 +31,8 @@ class RestartCmd : Command()
         this.name = "Restart"
         this.help = "Restarts NightFury."
         this.devOnly = true
-        this.category = Category.MONITOR
-        this.guildOnly = true
+        this.category = Category.SHENGAERO
+        this.guildOnly = false
     }
 
     override fun execute(event: CommandEvent)

@@ -19,6 +19,7 @@ import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.entities.embed
 import me.kgustave.nightfury.extensions.readableFormat
+import me.kgustave.nightfury.resources.Arguments
 import me.kgustave.nightfury.resources.Emojis
 import net.dv8tion.jda.core.Permission
 
@@ -29,7 +30,6 @@ class EmoteCmd : Command()
 {
     companion object
     {
-        private val emoteRegex = Regex("<:.{2,32}:(\\d{17,21})>")
         private val bullet = "\uD83D\uDD39"
     }
 
@@ -44,7 +44,7 @@ class EmoteCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val args = event.args
-        if(args matches emoteRegex)
+        if(args matches Arguments.emoteRegex)
         {
             val emotes = event.message.emotes
             if(emotes.size < 1)

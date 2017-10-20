@@ -129,6 +129,13 @@ class Client internal constructor
         synchronized(uses) { uses.put(command.name, uses.getOrDefault(command.name, 0)+1) }
     }
 
+    fun searchCommand(query: String): Command?
+    {
+        val splitQuery = query.split(Arguments.commandArgs, 2)
+        return commands.firstOrNull { it.isForCommand(splitQuery[0]) }
+                ?.findChild(if(splitQuery.size > 1) splitQuery[1] else "")
+    }
+
     //////////////////////
     //      EVENTS      //
     //////////////////////

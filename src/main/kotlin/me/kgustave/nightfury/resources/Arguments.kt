@@ -18,6 +18,7 @@ package me.kgustave.nightfury.resources
 object Arguments
 {
     val commandArgs = Regex("\\s+")
+    val emoteRegex = Regex("<:\\S{2,32}:(\\d+)>")
     val discordID = Regex("(\\d{17,20})")
     val userMention = Regex("<@!?(\\d{17,20})>")
     val reasonPattern = Regex("(^.+)\\s(?:for\\s+)([\\s\\S]+)$", RegexOption.DOT_MATCHES_ALL)

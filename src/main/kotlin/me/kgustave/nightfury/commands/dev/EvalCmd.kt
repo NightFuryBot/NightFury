@@ -39,7 +39,7 @@ class EvalCmd(val musicManager: MusicManager) : Command()
         this.help = "Evaluates using a ScriptEngine."
         this.arguments = "[Script]"
         this.devOnly = true
-        this.category = Category.MONITOR
+        this.category = Category.SHENGAERO
         this.guildOnly = false
     }
 

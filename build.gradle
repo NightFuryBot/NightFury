@@ -23,7 +23,7 @@ class Version {
 }
 
 buildscript {
-    ext.kotlin_version = '1.2.0-beta-31'
+    ext.kotlin_version = '1.2.0-beta-88'
 
     repositories {
         maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
@@ -51,7 +51,7 @@ repositories {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-def versionObj = new Version(major: 0, minor: 7, build: 3)
+def versionObj = new Version(major: 0, minor: 7, build: 4)
 group = 'me.kgustave'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"

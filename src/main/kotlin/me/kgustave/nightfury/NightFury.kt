@@ -133,6 +133,7 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
                 PrefixCmd(),
                 WelcomeCmd(),
 
+                LevelCmd(),
                 ToggleCmd(),
 
                 BashCmd(),

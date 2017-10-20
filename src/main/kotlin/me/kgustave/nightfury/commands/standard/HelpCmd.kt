@@ -23,8 +23,8 @@ import net.dv8tion.jda.core.entities.ChannelType
 /**
  * @author Kaidan Gustave
  */
-class HelpCmd : Command() {
-
+class HelpCmd : Command()
+{
     init {
         this.name = "Help"
         this.help = "Gets a list of available commands."
@@ -40,14 +40,17 @@ class HelpCmd : Command() {
             if(event.isFromType(ChannelType.TEXT)) "<#${event.channel.id}>" else "Direct Messages"
         }:**\n\n")
         var cat : Category? = null
-        for(c in commands) {
-            if(cat!=c.category) {
+        for(c in commands)
+        {
+            if(cat!=c.category)
+            {
                 if(!c.category!!.test(event))
                     continue
                 cat = c.category
                 if(cat!=null)
                     b.append("\n__${cat.title}__\n\n")
             }
+
             b.append("`").append(event.client.prefix).append(c.name.toLowerCase())
                     .append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
                     .append("` - ").append(c.help).append("\n")

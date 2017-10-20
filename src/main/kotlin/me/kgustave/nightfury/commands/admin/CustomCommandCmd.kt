@@ -194,7 +194,7 @@ private class CustomCommandListCmd(waiter: EventWaiter) : Command()
         builder.clearItems()
         with(builder)
         {
-            text        { -> "Custom Commands on ${event.guild.name}" }
+            text        { _,_ -> "Custom Commands on ${event.guild.name}" }
             items       { addAll(ccs) }
             finalAction { event.linkMessage(it) }
             user        { event.author }

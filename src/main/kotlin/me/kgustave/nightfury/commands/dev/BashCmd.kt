@@ -35,7 +35,7 @@ class BashCmd : Command() {
         this.aliases = arrayOf("$")
         this.arguments = "[Command] <Flags... <Flag Arguments...>>"
         this.help = "Executes a command in the Ubuntu OS."
-        this.category = Category.MONITOR
+        this.category = Category.SHENGAERO
         this.devOnly = true
         this.guildOnly = false
     }

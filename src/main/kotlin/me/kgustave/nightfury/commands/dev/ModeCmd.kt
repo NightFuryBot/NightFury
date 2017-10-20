@@ -33,7 +33,7 @@ class ModeCmd : Command()
         this.help = "Sets the bots mode."
         this.guildOnly = false
         this.devOnly = true
-        this.category = Category.MONITOR
+        this.category = Category.SHENGAERO
         this.children = arrayOf(ModeLogCmd())
     }
 
@@ -58,7 +58,7 @@ private class ModeLogCmd : Command()
         this.help = "Sets the bots log level."
         this.guildOnly = false
         this.devOnly = true
-        this.category = Category.MONITOR
+        this.category = Category.SHENGAERO
     }
 
     override fun execute(event: CommandEvent)

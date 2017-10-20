@@ -58,7 +58,7 @@ class ServerCmd(waiter: EventWaiter, invisTracker: InvisibleTracker) : Command()
                 ModeratorListBaseCmd.ServerModeratorsCmd(),
                 ServerOwnerCmd(invisTracker),
                 ServerSettingsCmd(),
-                ServerSettingsCmd()
+                ServerStatsCmd()
         )
     }
 
@@ -78,11 +78,9 @@ class ServerCmd(waiter: EventWaiter, invisTracker: InvisibleTracker) : Command()
         with(builder)
         {
             choices {
-                choice     { name { "Joins" }      action { children[0].run(event) } }
-                choice     { name { "Moderators" } action { children[1].run(event) } }
-                choice     { name { "Owner" }      action { children[2].run(event) } }
-                if(Category.MODERATOR.test(event))
-                    choice { name { "Settings" }   action { children[3].run(event) } }
+                for(child in children)
+                    if(event.level test event)
+                        choice { name { child.name } action { child.run(event) } }
             }
             user      { event.author }
             color     { event.selfMember.color }
@@ -242,7 +240,7 @@ private class ServerJoinsCmd(waiter: EventWaiter) : Command()
         val names = joins.map { it.user.formattedName(true) }
         with(builder)
         {
-            text        { -> "Joins for ${event.guild.name}" }
+            text        { _,_ -> "Joins for ${event.guild.name}" }
             items       { addAll(names) }
             finalAction { it.delete().queue() }
             user        { event.author }
@@ -326,16 +324,19 @@ private class ServerStatsCmd : Command()
             title { "Stats for ${event.guild.name}" }
             url   { event.guild.iconUrl }
             thumbnail { event.guild.iconUrl }
+            color { event.member.color }
 
             field {
                 name = "Members"
-                appendln("Owner: ${event.guild.owner.user.formattedName(false)}")
                 appendln("Total: ${event.guild.members.size}")
-                if(event.manager.hasModRole(event.guild)) {
+                if(event.manager.hasModRole(event.guild))
+                {
                     val modRole = event.manager.getModRole(event.guild)
                     appendln("Moderators: ${event.guild.members.filter { it.roles.contains(modRole) }.size}")
                 }
                 appendln("Administrators: ${event.guild.members.filter { it.isAdmin }.size}")
+                appendln("Bots: ${event.guild.members.filter { it.user.isBot }.size}")
+                this.inline = true
             }
 
             field {
@@ -343,6 +344,7 @@ private class ServerStatsCmd : Command()
                 appendln("Total: ${event.guild.textChannels.size}")
                 appendln("Visible: ${event.guild.textChannels.filter { event.member canView it }.size}")
                 appendln("Hidden: ${event.guild.textChannels.filter { it.guild.publicRole canView it }.size}")
+                this.inline = true
             }
 
             field {
@@ -350,13 +352,12 @@ private class ServerStatsCmd : Command()
                 appendln("Total: ${event.guild.voiceChannels.size}")
                 appendln("Unlocked: ${event.guild.voiceChannels.filter { event.member canJoin it }.size}")
                 appendln("Default: ${event.guild.voiceChannels.filter { it.guild.publicRole canJoin it }.size}")
+                this.inline = true
             }
 
             footer {
                 value = "Created ${event.guild.creationTime.readableFormat}"
             }
-
-            time { event.guild.creationTime }
         })
     }
 

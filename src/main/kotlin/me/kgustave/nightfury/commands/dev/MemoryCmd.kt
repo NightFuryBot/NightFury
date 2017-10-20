@@ -35,7 +35,7 @@ class MemoryCmd : Command()
         this.name = "Memory"
         this.help = "Gets NightFury's runtime memory statistics."
         this.devOnly = true
-        this.category = Category.MONITOR
+        this.category = Category.SHENGAERO
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 

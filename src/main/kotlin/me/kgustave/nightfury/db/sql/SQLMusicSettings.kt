@@ -28,9 +28,9 @@ class SQLMusicSettings(private val connection: Connection)
      * GUILD_ID | VOICE_CHANNEL_ID | TEXT_CHANNEL_ID | NP_IN_TOPIC
      */
 
-    val select = "SELECT * FROM MUSIC_SETTINGS WHERE GUILD_ID = ?"
-    val insert = "INSERT INTO MUSIC_SETTINGS(GUILD_ID, VOICE_CHANNEL_ID, TEXT_CHANNEL_ID, NP_IN_TOPIC) VALUES (?,?,?,?)"
-    val update = "UPDATE MUSIC_SETTINGS SET VOICE_CHANNEL_ID = ?, TEXT_CHANNEL_ID = ?, NP_IN_TOPIC = ? WHERE GUILD_ID = ?"
+    private val select = "SELECT * FROM MUSIC_SETTINGS WHERE GUILD_ID = ?"
+    private val insert = "INSERT INTO MUSIC_SETTINGS(GUILD_ID, VOICE_CHANNEL_ID, TEXT_CHANNEL_ID, NP_IN_TOPIC) VALUES (?,?,?,?)"
+    private val update = "UPDATE MUSIC_SETTINGS SET VOICE_CHANNEL_ID = ?, TEXT_CHANNEL_ID = ?, NP_IN_TOPIC = ? WHERE GUILD_ID = ?"
 
     fun hasMusicSettings(guild: Guild): Boolean {
         return using(connection.prepareStatement(select), false)

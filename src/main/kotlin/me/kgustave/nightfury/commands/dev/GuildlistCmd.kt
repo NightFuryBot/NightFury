@@ -32,7 +32,7 @@ class GuildlistCmd(waiter: EventWaiter) : Command()
     init {
         this.name = "Guildlist"
         this.help = "Gets a list of all guilds on this shard."
-        this.category = Category.MONITOR
+        this.category = Category.SHENGAERO
         this.devOnly = true
         this.guildOnly = false
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)

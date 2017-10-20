@@ -47,6 +47,9 @@ abstract class Command
     var category: Category? = null
         protected set
 
+    val defaultLevel: CommandLevel
+        get() = CommandLevel.fromCategory(category)
+
     var helpBiConsumer: (CommandEvent, Command) -> Unit = DefaultSubHelp
         protected set
 
@@ -66,6 +69,7 @@ abstract class Command
         protected set
 
     var fullname: String = "null"
+        get() = if(field == "null") name else field
         protected set
 
     companion object
@@ -73,12 +77,12 @@ abstract class Command
         private val BOT_PERM = "%s I need the %s permission in this %s!"
         private val USER_PERM = "%s You must have the %s permission in this %s to use that!"
 
-        val SEE_HELP = "Use `%s%s help` for more information on this command!"
+        const val SEE_HELP = "Use `%s%s help` for more information on this command!"
 
-        val INVALID_ARGS_ERROR = "**Invalid Arguments!**\n%s"
-        val INVALID_ARGS_HELP = "**Invalid Arguments!**\n$SEE_HELP"
-        val TOO_FEW_ARGS_ERROR = "**Too Few Arguments!**\n%s"
-        val TOO_FEW_ARGS_HELP = "**Too Few Arguments!**\n$SEE_HELP"
+        const val INVALID_ARGS_ERROR = "**Invalid Arguments!**\n%s"
+        const val INVALID_ARGS_HELP = "**Invalid Arguments!**\n$SEE_HELP"
+        const val TOO_FEW_ARGS_ERROR = "**Too Few Arguments!**\n%s"
+        const val TOO_FEW_ARGS_HELP = "**Too Few Arguments!**\n$SEE_HELP"
 
         private object DefaultSubHelp : (CommandEvent, Command) -> Unit
         {
@@ -170,7 +174,14 @@ abstract class Command
 
         if(devOnly && !event.isDev) return
 
-        if(category!=null && !category!!.test(event)) return
+        if(event.isFromType(ChannelType.TEXT))
+        {
+            // Level has been set differently
+            if(!event.level.test(event))
+                return
+        }
+
+        if(category!=null && category!!.canStopRun && !category!!.test(event)) return
 
         if(event.args.startsWith("help",true))
             if(helpBiConsumer != DefaultSubHelp)
@@ -229,8 +240,7 @@ abstract class Command
                 return if(it.error.isNotEmpty())
                     event.replyError(TOO_FEW_ARGS_ERROR.format(it.error))
                 else
-                    event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix,
-                            (if(fullname!="null") fullname else name).toLowerCase()))
+                    event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix, fullname.toLowerCase()))
             }
         }
 
@@ -279,6 +289,8 @@ abstract class Command
         this.client.applyCooldown(key, cooldown)
     }
 
+    val CommandEvent.level: CommandLevel
+        get() = manager.levels.getLevel(guild, this@Command)
 
     internal val CommandEvent.cooldownKey
         get() = when(cooldownScope)
@@ -307,29 +319,76 @@ abstract class Command
         client.listener.onCommandTerminated(this, this@Command, msg)
         client.incrementUses(this@Command)
     }
+
+    fun findChild(args: String): Command?
+    {
+        if(children.isEmpty() || args.isEmpty())
+            return this
+
+        val parts = args.split(Arguments.commandArgs, 2)
+        children.forEach {
+            if(it.isForCommand(parts[0]))
+                return it.findChild(if(parts.size>1) parts[1] else "")
+        }
+
+        return null
+    }
 }
 
-enum class Category(val title: String, private val predicate: (CommandEvent) -> Boolean)
+@Suppress("UNUSED")
+enum class CommandLevel(val rank: Int, private val predicate: (CommandEvent) -> Boolean)
+{
+    SHENGAERO(1, { it.isDev }),
+    SERVER_OWNER(2, { SHENGAERO test it || it.member.isOwner }),
+    ADMIN(3, { SERVER_OWNER test it || it.member.hasPermission(Permission.ADMINISTRATOR) }),
+    MODERATOR(4, { ADMIN test it || with(it.manager.getModRole(it.guild)) { this != null && it.member.roles.contains(this) } }),
+    STANDARD(5, { true });
+
+    infix fun test(event: CommandEvent) = predicate.invoke(event)
+
+    companion object
+    {
+        fun fromCategory(category: Category?) = when(category)
+        {
+            null -> CommandLevel.STANDARD
+            Category.SHENGAERO -> CommandLevel.SHENGAERO
+            Category.SERVER_OWNER -> CommandLevel.SERVER_OWNER
+            Category.ADMIN -> CommandLevel.ADMIN
+            Category.MODERATOR -> CommandLevel.MODERATOR
+            else -> CommandLevel.STANDARD
+        }
+
+        fun fromArguments(args: String) = when(args.toLowerCase())
+        {
+            "owner" -> SERVER_OWNER
+            "admin" -> ADMIN
+            "mod", "mods", "moderator" -> MODERATOR
+            "all", "standard", "public" -> STANDARD
+            else -> null
+        }
+    }
+}
+
+enum class Category(val title: String, private val predicate: (CommandEvent) -> Boolean, val canStopRun: Boolean = false)
 {
     // Primary Hierarchy
-    MONITOR("Developer", { it.isDev }),
+    SHENGAERO("Developer", { it.isDev }),
 
-    SERVER_OWNER("Server Owner", { MONITOR test it || (it.isFromType(ChannelType.TEXT) && it.member.isOwner) }),
+    SERVER_OWNER("Server Owner", { SHENGAERO test it || (it.isFromType(ChannelType.TEXT) && it.member.isOwner) }),
 
-    ADMIN("Administrator", {
-        SERVER_OWNER test it || (it.isFromType(ChannelType.TEXT) && it.member.hasPermission(Permission.ADMINISTRATOR))
-    }),
+    ADMIN("Administrator", { SERVER_OWNER test it || (it.isFromType(ChannelType.TEXT) && it.member.hasPermission(Permission.ADMINISTRATOR)) }),
 
-    MODERATOR("Moderator", {
-        ADMIN test it || (it.isFromType(ChannelType.TEXT) && with(it.manager.getModRole(it.guild)) {
-            this!=null && it.member.roles.contains(this)
-        })
+    MODERATOR("Moderator", { ADMIN test it || (it.isFromType(ChannelType.TEXT) &&
+            with(it.manager.getModRole(it.guild))
+            {
+                this != null && it.member.roles.contains(this)
+            })
     }),
 
     // Other Categories
 
-    MUSIC("Music", { MONITOR test it || (it.isFromType(ChannelType.TEXT) && it.manager.musicWhitelist.isGuild(it.guild)) }),
-    NSFW("NSFW", { MONITOR test it || (it.isFromType(ChannelType.TEXT) && it.textChannel.isNSFW) });
+    MUSIC("Music", { SHENGAERO test it || (it.isFromType(ChannelType.TEXT) && it.manager.musicWhitelist.isGuild(it.guild)) }, true),
+    NSFW("NSFW", { SHENGAERO test it || (it.isFromType(ChannelType.TEXT) && it.textChannel.isNSFW) }, true);
 
     infix fun test(event: CommandEvent) = predicate.invoke(event)
 }

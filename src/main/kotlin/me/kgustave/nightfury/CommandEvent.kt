@@ -16,6 +16,7 @@
 @file:Suppress("unused", "HasPlatformType")
 package me.kgustave.nightfury
 
+import me.kgustave.nightfury.resources.Arguments
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
@@ -195,8 +196,8 @@ class CommandEvent internal constructor(val event: MessageReceivedEvent, args: S
     fun reactWarning() = react(client.warning)
     fun reactError() = react(client.error)
     fun react(string: String) {
-        if(emoteRegex.matches(string)) {
-            val emote = jda.getEmoteById(emoteRegex.replace(string, "$1"))
+        if(Arguments.emoteRegex.matches(string)) {
+            val emote = jda.getEmoteById(Arguments.emoteRegex.replace(string, "$1"))
             if(emote!=null) addReaction(emote)
         }
         else addReaction(string)
@@ -223,7 +224,6 @@ class CommandEvent internal constructor(val event: MessageReceivedEvent, args: S
     {
         private val maxMessages = 3
         private val blockingDM : String = "%s I could not complete the command because you are blocking direct messages!"
-        private val emoteRegex = Regex("<:\\S{2,32}:(\\d+)>")
         fun processMessage(input: String) : ArrayList<String>
         {
             val msgs = ArrayList<String>()

@@ -36,3 +36,9 @@ infix fun Int.randomNextInt(int: Int): Int
 
     return this + (Math.random() * (int - this + 1)).toInt()
 }
+
+// Good for checking if lateinit vars are initialized
+// And who said that checking if a non-null is null was useless?
+@Suppress("SENSELESS_COMPARISON", "UNUSED")
+inline fun <reified T: Any> checkInitialized(any: T) = try {
+    any != null } catch (e: UninitializedPropertyAccessException) { false }

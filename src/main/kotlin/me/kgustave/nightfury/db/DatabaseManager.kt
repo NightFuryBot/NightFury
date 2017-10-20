@@ -68,6 +68,8 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
 
     val musicWhitelist = SQLMusicWhitelist(connection)
 
+    val levels = SQLLevel(connection)
+
     private infix fun Connection.createTable(data: TableData): Boolean = top@ try {
         if(this hasTableNamed data.name)
             return@top true
@@ -184,6 +186,8 @@ class DatabaseManager @Throws(Exception::class) constructor(url: String, user: S
 
         GUILDS("GUILD_ID BIGINT", "TYPE VARCHAR(20)"),
 
-        MUSIC_SETTINGS("GUILD_ID BIGINT", "VOICE_CHANNEL_ID BIGINT", "TEXT_CHANNEL_ID BIGINT", "NP_IN_TOPIC BOOLEAN");
+        MUSIC_SETTINGS("GUILD_ID BIGINT", "VOICE_CHANNEL_ID BIGINT", "TEXT_CHANNEL_ID BIGINT", "NP_IN_TOPIC BOOLEAN"),
+
+        COMMAND_LEVELS("GUILD_ID BIGINT", "COMMAND VARCHAR(200)", "LEVEL VARCHAR(50)");
     }
 }
