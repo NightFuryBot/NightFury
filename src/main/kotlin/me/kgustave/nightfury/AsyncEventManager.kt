@@ -22,6 +22,7 @@ import net.dv8tion.jda.core.hooks.IEventManager
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.concurrent.thread
 
 /**
  * @author Kaidan Gustave

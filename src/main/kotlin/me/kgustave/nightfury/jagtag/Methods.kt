@@ -16,25 +16,22 @@
 package me.kgustave.nightfury.jagtag
 
 import com.jagrosh.jagtag.*
-import me.kgustave.kjdautils.utils.findMembers
-import me.kgustave.kjdautils.utils.findTextChannels
-import me.kgustave.kjdautils.utils.findUsers
-import me.kgustave.nightfury.extensions.multipleMembers
-import me.kgustave.nightfury.extensions.multipleTextChannels
-import me.kgustave.nightfury.extensions.multipleUsers
-import me.kgustave.nightfury.extensions.noMatch
+import me.kgustave.nightfury.extensions.*
+import net.dv8tion.jda.core.EmbedBuilder
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.core.entities.User
+import java.awt.Color
+import java.time.OffsetDateTime
+import java.time.format.DateTimeParseException
 import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
  */
-fun getMethods() : Collection<Method>
-{
-    return arrayListOf(
+val tagMethods: Collection<Method> by lazy {
+    arrayListOf(
             Method("user", ParseFunction { env ->
                 env.get<User>("user").name
             }, ParseBiFunction { env, input ->
@@ -153,7 +150,113 @@ fun getMethods() : Collection<Method>
     )
 }
 
-internal fun userSearch(env: Environment, input: Array<out String>) : User
+val embedMethods: Collection<Method> by lazy {
+    listOf(
+            Method("title", {env, input ->
+                if(input[0].isEmpty())
+                    throw TagErrorException("Invalid title statement!")
+                val parts = input[0].split(Regex("\\|"),limit = 2)
+                env.get<EmbedBuilder>("builder").setTitle(parts[0], if(parts.size>1) parts[1] else null); ""
+            }, false),
+
+            Method("author", {env, input ->
+                if(input[0].isEmpty())
+                    throw TagErrorException("Invalid author statement!")
+                val parts = input[0].split(Regex("\\|"),limit = 3)
+                env.get<EmbedBuilder>("builder").setAuthor(
+                        parts[0],
+                        if(parts.size>1) parts[1] else null,
+                        if(parts.size>2) parts[2] else null
+                ); ""
+            }, false),
+
+            Method("thumbnail", {env, input ->
+                if(input[0].isEmpty())
+                    throw TagErrorException("Invalid thumbnail statement!")
+                env.get<EmbedBuilder>("builder").setThumbnail(input[0]); ""
+            }, false),
+
+            Method("description", {env, input ->
+                if(input[0].isEmpty())
+                    throw TagErrorException("Invalid description statement!")
+                env.get<EmbedBuilder>("builder").setDescription(input[0]); ""
+            }, false),
+
+            Method("field", {env, input ->
+                if(input[0].isEmpty())
+                    throw TagErrorException("Invalid field statement!")
+                val parts = input[0].split(Regex("\\|"),limit = 3)
+                if(parts.size<2)
+                    throw TagErrorException("Invalid field statement!")
+                env.get<EmbedBuilder>("builder").addField(
+                        parts[0],
+                        parts[1],
+                        if(parts.size>2) parts[2].equals("true",true) else true
+                ); ""
+            }, false),
+
+            Method("image", {env, input ->
+                if(input[0].isEmpty())
+                    throw TagErrorException("Invalid image statement!")
+                env.get<EmbedBuilder>("builder").setImage(input[0]); ""
+            }, false),
+
+            Method("color", {env, input ->
+                if(input[0].isEmpty())
+                    throw TagErrorException("Invalid color statement!")
+                val b = env.get<EmbedBuilder>("builder")
+                when(input[0].toLowerCase()){
+                    "red"        -> b.setColor(Color.RED)
+                    "orange"     -> b.setColor(Color.ORANGE)
+                    "yellow"     -> b.setColor(Color.YELLOW)
+                    "green"      -> b.setColor(Color.GREEN)
+                    "cyan"       -> b.setColor(Color.CYAN)
+                    "blue"       -> b.setColor(Color.BLUE)
+                    "magenta"    -> b.setColor(Color.MAGENTA)
+                    "pink"       -> b.setColor(Color.PINK)
+                    "black"      -> b.setColor(Color.decode("#000001"))
+                    "dark_gray",
+                    "dark_grey"  -> b.setColor(Color.DARK_GRAY)
+                    "light_gray",
+                    "light_grey" -> b.setColor(Color.LIGHT_GRAY)
+                    "white"      -> b.setColor(Color.WHITE)
+
+                    "blurple"    -> b.setColor(Color.decode("#7289DA"))
+                    "greyple"    -> b.setColor(Color.decode("#99AAB5"))
+                    "darktheme"  -> b.setColor(Color.decode("#2C2F33"))
+                    else -> {
+                        try {
+                            b.setColor(Color.decode(input[0]))
+                        } catch (e: NumberFormatException) {
+                            throw TagErrorException("Invalid color statement!")
+                        }
+                    }
+                }; ""
+            }, false),
+
+            Method("footer", {env, input ->
+                if(input[0].isEmpty())
+                    throw TagErrorException("Invalid footer statement!")
+                val parts = input[0].split(Regex("\\|"),limit = 2)
+                env.get<EmbedBuilder>("builder").setFooter(parts[0], if(parts.size>1) parts[1] else null); ""
+            }, false),
+
+            Method("timestamp", {env ->
+                env.get<EmbedBuilder>("builder").setTimestamp(OffsetDateTime.now()); ""
+            }, {env, input ->
+                if(input[0].isEmpty())
+                    throw TagErrorException("Invalid timestamp statement!")
+                OffsetDateTime.parse(input[0])
+                try {
+                    env.get<EmbedBuilder>("builder").setTimestamp(OffsetDateTime.parse(input[0]))
+                } catch (e: DateTimeParseException) {
+                    throw TagErrorException("Invalid timestamp statement!")
+                }; ""
+            }, false)
+    )
+}
+
+internal fun userSearch(env: Environment, input: Array<out String>): User
 {
     if(env.contains("guild")) { // is from guild
         with(env.get<Guild>("guild").findMembers(input[0])) {
@@ -174,7 +277,7 @@ internal fun userSearch(env: Environment, input: Array<out String>) : User
     }
 }
 
-internal fun channelSearch(env: Environment, input: Array<out String>) : TextChannel?
+internal fun channelSearch(env: Environment, input: Array<out String>): TextChannel?
 {
     if(!env.contains("guild"))
         return null

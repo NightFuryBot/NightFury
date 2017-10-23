@@ -46,6 +46,8 @@ class InvisibleTracker : EventListener
         }
         if(event is UserTypingEvent)
         {
+            if(event.isPrivate)
+                return
             if(event.member.onlineStatus == OnlineStatus.OFFLINE)
             {
                 synchronized(map)

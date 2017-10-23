@@ -20,6 +20,8 @@ import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.annotations.APICache
 import me.kgustave.nightfury.db.DatabaseManager
 import me.kgustave.nightfury.entities.ModLogger
+import me.kgustave.nightfury.entities.logging.NormalFilter
+import me.kgustave.nightfury.entities.logging.logLevel
 import me.kgustave.nightfury.resources.Arguments
 import me.kgustave.nightfury.listeners.*
 import me.kgustave.nightfury.resources.*
@@ -69,9 +71,17 @@ class Client internal constructor
     var totalGuilds : Int = 0
         private set
 
-    val commands         : CommandMap = CommandMap(*commands)
-    val startTime        : OffsetDateTime = OffsetDateTime.now()
-    val logger           : ModLogger = ModLogger(manager)
+    var mode : CommandListener.Mode = CommandListener.Mode.STANDARD
+        set(value)
+        {
+            NormalFilter.level = value.level.logLevel
+            listener = value.listener
+            field = value
+        }
+
+    val commands         : CommandMap               = CommandMap(*commands)
+    val startTime        : OffsetDateTime           = OffsetDateTime.now()
+    val logger           : ModLogger                = ModLogger(manager)
     val messageCacheSize : Int
         get() = callCache.size
 
@@ -90,12 +100,6 @@ class Client internal constructor
     //////////////////////
     // MEMBER FUNCTIONS //
     //////////////////////
-
-    fun targetListener(name: String)
-    {
-        val l = CommandListener.Mode.typeOf(name)
-        if(l != null) listener = l.listener
-    }
 
     fun getRemainingCooldown(name: String) : Int
     {
@@ -140,20 +144,17 @@ class Client internal constructor
     //      EVENTS      //
     //////////////////////
 
-    override fun onEvent(event: Event?) {
+    override fun onEvent(event: Event?)
+    {
         when(event)
         {
             is MessageReceivedEvent -> onMessageReceived(event)
             is MessageDeleteEvent   -> onMessageDelete(event)
             is GuildMemberJoinEvent -> onGuildMemberJoin(event)
             is ReadyEvent           -> onReady(event)
-
             is GuildJoinEvent       -> {
                 if(event.guild.selfMember.joinDate.plusMinutes(5).isAfter(OffsetDateTime.now()))
-                {
-                    if(event.guild.isGood) updateStats(event.jda)
-                    else event.guild.leave().queue()
-                }
+                    if(event.guild.isGood) updateStats(event.jda) else event.guild.leave().queue()
             }
             is GuildLeaveEvent      -> updateStats(event.jda)
             is ShutdownEvent        -> onShutdown(event)
@@ -162,13 +163,14 @@ class Client internal constructor
         }
     }
 
-    fun onReady(event: ReadyEvent)
+    private fun onReady(event: ReadyEvent)
     {
         event.jda.addEventListener(waiter, DatabaseListener(manager), AutoLoggingListener(manager, logger))
         event.jda.presence.status = OnlineStatus.ONLINE
         event.jda.presence.game = Game.of("Type ${prefix}help")
 
-        Client.log.info("NightFury is Online!")
+        val si = event.jda.shardInfo
+        Client.log.info("${if(si == null) "NightFury" else "[${si.shardId} / ${si.shardTotal - 1}]"} is Online!")
 
         val toLeave = event.jda.guilds.stream().filter { !it.isGood }.toList()
         if(toLeave.isNotEmpty())
@@ -178,33 +180,33 @@ class Client internal constructor
         }
 
         // Clear Caches every hour
-        executor.scheduleAtFixedRate({
-            try {
-                clearAPICaches()
-                cleanCooldowns()
-                System.gc()
-            } catch(e : Exception) {
-                log.error("Failed to clear caches!", e)
-            }
-        }, 0, 1, TimeUnit.HOURS)
+        if(si == null || si.shardId == 0)
+        {
+            executor.scheduleAtFixedRate({
+                try {
+                    clearAPICaches()
+                    cleanCooldowns()
+                } catch(e: Exception) {
+                    log.error("Failed to clear caches!", e)
+                }
+            }, 0, 1, TimeUnit.HOURS)
+        }
 
         updateStats(event.jda)
     }
 
-    fun onMessageReceived(event: MessageReceivedEvent)
+    private fun onMessageReceived(event: MessageReceivedEvent)
     {
         if(event.author.isBot)
             return
         val rawContent = event.message.rawContent.trim()
         val parts: List<String>
-        val prefixUsed: String
 
         when
         {
             rawContent.startsWith(prefix, true) -> // From Anywhere with default prefix
             {
-                prefixUsed = prefix
-                parts = rawContent.substring(prefixUsed.length).trim().split(Arguments.commandArgs, 2)
+                parts = rawContent.substring(prefix.length).trim().split(Arguments.commandArgs, 2)
             }
 
             event.guild != null -> // From Guild without default prefix
@@ -215,10 +217,11 @@ class Client internal constructor
                     val prefix = prefixes.find { rawContent.startsWith(it, true) }
                     if(prefix!=null)
                     {
-                        prefixUsed = prefix
-                        parts = rawContent.substring(prefixUsed.length).trim().split(Arguments.commandArgs, 2)
-                    } else return
-                } else return
+                        parts = rawContent.substring(prefix.length).trim().split(Arguments.commandArgs, 2)
+                    }
+                    else return
+                }
+                else return
             }
 
             else -> return // No match, not a command call
@@ -249,13 +252,13 @@ class Client internal constructor
         }
     }
 
-    fun onMessageDelete(event: MessageDeleteEvent)
+    private fun onMessageDelete(event: MessageDeleteEvent)
     {
         if(!event.isFromType(ChannelType.TEXT))
             return
         synchronized(callCache)
         {
-            val messages = callCache[event.messageIdLong]?:return
+            val messages = callCache[event.messageIdLong] ?: return
             if(messages.size > 1 && event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_MANAGE))
                 event.textChannel.deleteMessages(messages).queue({},{})
             else if(messages.size == 1)
@@ -263,15 +266,21 @@ class Client internal constructor
         }
     }
 
-    fun onShutdown(event: ShutdownEvent)
+    private fun onShutdown(event: ShutdownEvent)
     {
-        val identifier = if(event.jda.shardInfo != null) "Shard: ${event.jda.shardInfo.shardString}" else "JDA"
+        val si = event.jda.shardInfo
+        val identifier = if(si != null) "Shard [${si.shardId} / ${si.shardTotal - 1}]" else "JDA"
+        val cc = event.closeCode
         log.info("$identifier has shutdown.")
-        executor.shutdown()
+        log.debug("Shutdown Info:\n" +
+                  "- Shard ID: ${si?.shardId ?: "0 (No Shard)"}\n" +
+                  "- Close Code: ${if(cc != null) "${cc.code} - ${cc.meaning}" else "${event.code} - Unknown Code!"}\n" +
+                  "- Time: ${event.shutdownTime}")
+        executor.shutdownNow()
         manager.shutdown()
     }
 
-    fun onGuildMemberJoin(event: GuildMemberJoinEvent)
+    private fun onGuildMemberJoin(event: GuildMemberJoinEvent)
     {
         // If there's no welcome channel then we just return.
         val welcomeChannel = manager.getWelcomeChannel(event.guild)?:return
@@ -390,11 +399,17 @@ class Client internal constructor
                 header("Authorization", dBotsKey)
                 header("Content-Type", "application/json")
             }).execute().body()!!.charStream().use {
+                val json = JSONObject(JSONTokener(it))
+
                 var total = 0
-                JSONObject(JSONTokener(it)).getJSONArray("stats").forEach {
-                    total += (it as JSONObject).getInt("server_count")
-                }
-                this.totalGuilds = total
+
+                log.debug("Received JSON from bots.discord.pw:\n${json.toString(2)}")
+
+                json.getJSONArray("stats").mapNotNull {
+                    (it as? JSONObject).takeIf { it?.has("server_count") == true }
+                }.forEach { total += it["server_count"] as Int }
+
+                totalGuilds = total
             }
         } catch (e: Exception) {
             log.error("Failed to retrieve bot shard information from bots.discord.pw",e)
@@ -405,6 +420,6 @@ class Client internal constructor
     {
         val builder = Request.Builder()
         builder.lazy()
-        return this.newCall(builder.build())
+        return newCall(builder.build())
     }
 }
