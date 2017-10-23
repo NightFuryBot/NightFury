@@ -21,13 +21,12 @@ import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame
 import net.dv8tion.jda.core.audio.AudioSendHandler
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.VoiceChannel
-import kotlin.concurrent.thread
 
 /**
  * @author Kaidan Gustave
  */
-class MusicQueue(val voiceChannel: VoiceChannel, val audioPlayer: AudioPlayer, firstTrack: MemberTrack):
-        AudioSendHandler, MutableList<MemberTrack> by ArrayList()
+class MusicQueue(val voiceChannel: VoiceChannel, val audioPlayer: AudioPlayer, firstTrack: MemberTrack): AudioSendHandler,
+MutableList<MemberTrack> by ArrayList()
 {
     private lateinit var lastFrame: AudioFrame
     private val skipping = ArrayList<Long>()
@@ -139,7 +138,7 @@ class MusicQueue(val voiceChannel: VoiceChannel, val audioPlayer: AudioPlayer, f
         // Die
         // Repeat...
         audioPlayer.destroy()
-        thread(start = true) { voiceChannel.guild.audioManager.closeAudioConnection() }
+        MusicManager.threadpool.submit { voiceChannel.guild.audioManager.closeAudioConnection() }
         isDead = true
     }
 }

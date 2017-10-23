@@ -35,6 +35,9 @@ import net.dv8tion.jda.core.events.guild.voice.GuildVoiceSuppressEvent
 import net.dv8tion.jda.core.hooks.EventListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import kotlin.concurrent.thread
 
 /**
  * @author Kaidan Gustave
@@ -44,16 +47,31 @@ class MusicManager : AudioEventListener, EventListener, AudioPlayerManager by De
     companion object
     {
         internal val LOG: Logger = LoggerFactory.getLogger("MusicManager")
+
+        internal val threadpool: ExecutorService by lazy {
+            Executors.newCachedThreadPool {
+                val thread = Thread(it, "AudioCloseThread")
+                thread.isDaemon = true
+                thread
+            }
+        }
+
+        private fun logTrackInfo(track: AudioTrack) =
+                "Title: ${track.info.title} | Length: ${formatTrackTime(track.duration)} | State: ${track.state}"
     }
 
-    private val queueMap : MutableMap<Long, MusicQueue> = HashMap()
+    private val queueMap: MutableMap<Long, MusicQueue> = HashMap()
 
     init
     {
         registerSourceManager(YoutubeAudioSourceManager())
+        threadpool
     }
 
-    fun isPlaying(guild: Guild) = synchronized(queueMap) { queueMap.containsKey(guild.idLong) }
+    fun isPlaying(guild: Guild) = synchronized(queueMap)
+    {
+        queueMap.containsKey(guild.idLong)
+    }
 
     fun stopPlaying(guild: Guild) = synchronized(queueMap)
     {
@@ -88,17 +106,10 @@ class MusicManager : AudioEventListener, EventListener, AudioPlayerManager by De
             queue.queue(tracks[i])
     }
 
-    fun setupPlayer(voiceChannel: VoiceChannel, firstTrack: MemberTrack) = synchronized(queueMap)
+    fun getQueue(guild: Guild): MusicQueue? = synchronized(queueMap)
     {
-        if(queueMap.containsKey(voiceChannel.guild.idLong))
-            throw IllegalArgumentException("Attempted to join a VoiceChannel on a Guild already being handled!")
-        voiceChannel.guild.audioManager.openAudioConnection(voiceChannel)
-        val player = createPlayer()
-        player.addListener(this)
-        queueMap[voiceChannel.guild.idLong] = MusicQueue(voiceChannel, player, firstTrack)
+        queueMap[guild.idLong]
     }
-
-    fun getQueue(guild: Guild): MusicQueue? = synchronized(queueMap) { queueMap[guild.idLong] }
 
     override fun onEvent(event: Event?)
     {
@@ -107,6 +118,12 @@ class MusicManager : AudioEventListener, EventListener, AudioPlayerManager by De
             // Dispose on shutdown
             is ShutdownEvent -> {
                 synchronized(queueMap) { queueMap.forEach { _, u -> u.dispose() } }
+
+                // This threadpool is used exclusively for closing
+                // audio connections. As intended, it should run any
+                // remaining processes on shutdown to prevent leaks.
+                threadpool.shutdownNow().forEach { it.run() }
+
                 shutdown()
             }
 
@@ -119,18 +136,6 @@ class MusicManager : AudioEventListener, EventListener, AudioPlayerManager by De
             is GuildVoiceSuppressEvent -> if(event.isSelf && event.isSuppressed) removeGuild(event.guild.idLong)
         }
     }
-
-    private fun removeGuild(guildId: Long)
-    {
-        synchronized(queueMap)
-        {
-            if(queueMap.contains(guildId))
-                queueMap.remove(guildId)?.dispose()
-        }
-    }
-
-    private inline val <reified E: GenericGuildVoiceEvent> E.isSelf : Boolean
-        get() = member == guild.selfMember
 
     override fun onEvent(event: AudioEvent?)
     {
@@ -153,22 +158,43 @@ class MusicManager : AudioEventListener, EventListener, AudioPlayerManager by De
         }
     }
 
-    fun onTrackFinished(event: TrackEndEvent)
+    private fun setupPlayer(voiceChannel: VoiceChannel, firstTrack: MemberTrack) = synchronized(queueMap)
+    {
+        if(queueMap.containsKey(voiceChannel.guild.idLong))
+            throw IllegalArgumentException("Attempted to join a VoiceChannel on a Guild already being handled!")
+        voiceChannel.guild.audioManager.openAudioConnection(voiceChannel)
+        val player = createPlayer()
+        player.addListener(this)
+        queueMap[voiceChannel.guild.idLong] = MusicQueue(voiceChannel, player, firstTrack)
+    }
+
+    private fun removeGuild(guildId: Long)
+    {
+        synchronized(queueMap)
+        {
+            if(queueMap.contains(guildId))
+                queueMap.remove(guildId)?.dispose()
+        }
+    }
+
+    private fun onTrackFinished(event: TrackEndEvent)
     {
         LOG.debug("Track Finished | ${logTrackInfo(event.track)}")
 
-        val guildQueue = synchronized(queueMap) {
+        val guildQueue = synchronized(queueMap)
+        {
             queueMap[((event.track ?: return).userData as Member).guild.idLong] ?: return
         }
 
         guildQueue.next()
 
         if(guildQueue.isDead)
-            synchronized(queueMap) {
+            synchronized(queueMap)
+            {
                 queueMap.remove(guildQueue.voiceChannel.guild.idLong)
             }
     }
 
-    private fun logTrackInfo(track: AudioTrack) =
-            "Title: ${track.info.title} | Length: ${formatTrackTime(track.duration)} | State: ${track.state}"
+    private inline val <reified E: GenericGuildVoiceEvent> E.isSelf : Boolean
+        get() = member == guild.selfMember
 }
