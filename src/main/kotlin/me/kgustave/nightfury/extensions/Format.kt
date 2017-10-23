@@ -16,7 +16,10 @@
 @file:Suppress("unused")
 package me.kgustave.nightfury.extensions
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo
+import me.kgustave.nightfury.resources.Fraction
+import me.kgustave.nightfury.resources.over
 import net.dv8tion.jda.core.entities.*
 import java.time.OffsetDateTime
 
@@ -51,6 +54,9 @@ inline val <T: Enum<*>> T.niceName : String
 
 inline val <T: AudioTrackInfo> T.formattedInfo : String
     inline get() = "**${title.filterMassMention()}** `[${formatTrackTime(length)}]`"
+
+inline val <T: AudioTrack> T.formatTimeRemaining : Fraction
+    inline get() = (position / 1000.0) over (duration / 1000)
 
 fun formatTrackTime(duration: Long): String
 {

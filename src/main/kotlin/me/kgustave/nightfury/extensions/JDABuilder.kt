@@ -54,7 +54,7 @@ infix inline fun <reified T: JDABuilder> T.audio(lazy: Boolean): T
         = this.setAudioEnabled(lazy) as T
 infix inline fun <reified T: JDABuilder> T.autoReconnect(lazy: Boolean): T
         = this.setAutoReconnect(lazy) as T
-infix inline fun <reified T: JDABuilder> T.websocketSettings(init: WebSocketFactory.() -> Unit): T {
+infix inline fun <reified T: JDABuilder> T.webSocketFactory(init: WebSocketFactory.() -> Unit): T {
     val factory = WebSocketFactory()
     factory.init()
     setWebsocketFactory(factory)
