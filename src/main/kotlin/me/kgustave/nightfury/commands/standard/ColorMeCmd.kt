@@ -15,10 +15,10 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import me.kgustave.kjdautils.utils.findRoles
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.entities.promise
+import me.kgustave.nightfury.extensions.findRoles
 import me.kgustave.nightfury.extensions.multipleRoles
 import me.kgustave.nightfury.extensions.noMatch
 import net.dv8tion.jda.core.Permission

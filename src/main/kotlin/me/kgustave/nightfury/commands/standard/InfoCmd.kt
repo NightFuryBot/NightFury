@@ -15,8 +15,6 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import me.kgustave.kjdautils.utils.findMembers
-import me.kgustave.kjdautils.utils.findUsers
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope

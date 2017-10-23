@@ -15,12 +15,12 @@
  */
 package me.kgustave.nightfury.commands.dev
 
-import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
+import com.jagrosh.jdautilities.menu.Paginator
 import com.jagrosh.jdautilities.waiter.EventWaiter
-import me.kgustave.kjdautils.menu.*
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
+import me.kgustave.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 
@@ -38,7 +38,7 @@ class GuildlistCmd(waiter: EventWaiter) : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    private val builder : PaginatorBuilder = PaginatorBuilder()
+    private val builder : Paginator.Builder = Paginator.Builder()
             .setFinalAction   { it.delete().queue() }
             .waitOnSinglePage { false }
             .useNumberedItems { true }

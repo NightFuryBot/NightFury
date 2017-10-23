@@ -15,11 +15,11 @@
  */
 package me.kgustave.nightfury.commands.moderator
 
-import me.kgustave.kjdautils.utils.findBannedUsers
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.annotations.MustHaveArguments
+import me.kgustave.nightfury.extensions.findBannedUsers
 import me.kgustave.nightfury.extensions.formattedName
 import me.kgustave.nightfury.extensions.multipleUsers
 import me.kgustave.nightfury.extensions.noMatch

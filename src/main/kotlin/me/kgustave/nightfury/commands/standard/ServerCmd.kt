@@ -15,10 +15,9 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import com.jagrosh.jdautilities.menu.orderedmenu.OrderedMenuBuilder
-import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
+import com.jagrosh.jdautilities.menu.OrderedMenu
+import com.jagrosh.jdautilities.menu.Paginator
 import com.jagrosh.jdautilities.waiter.EventWaiter
-import me.kgustave.kjdautils.menu.*
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
@@ -62,7 +61,7 @@ class ServerCmd(waiter: EventWaiter, invisTracker: InvisibleTracker) : Command()
         )
     }
 
-    val builder : OrderedMenuBuilder = OrderedMenuBuilder()
+    val builder : OrderedMenu.Builder = OrderedMenu.Builder()
             .useCancelButton { true }
             .description { "Choose a field to get info on:" }
             .timeout { delay { 20 } }
@@ -226,7 +225,7 @@ private class ServerJoinsCmd(waiter: EventWaiter) : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    val builder : PaginatorBuilder = PaginatorBuilder()
+    val builder : Paginator.Builder = Paginator.Builder()
             .timeout          { delay { 20 } }
             .showPageNumbers  { true }
             .useNumberedItems { true }

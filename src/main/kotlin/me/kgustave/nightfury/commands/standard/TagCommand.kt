@@ -15,11 +15,8 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
+import com.jagrosh.jdautilities.menu.Paginator
 import com.jagrosh.jdautilities.waiter.EventWaiter
-import me.kgustave.kjdautils.utils.findMembers
-import me.kgustave.kjdautils.utils.findUsers
-import me.kgustave.kjdautils.menu.*
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
@@ -367,7 +364,7 @@ private class TagEditCmd : Command()
 @AutoInvokeCooldown
 private class TagListCmd(val waiter: EventWaiter) : Command()
 {
-    val builder : PaginatorBuilder = PaginatorBuilder()
+    val builder : Paginator.Builder = Paginator.Builder()
             .timeout          { delay { 20 } }
             .showPageNumbers  { true }
             .useNumberedItems { true }
@@ -429,7 +426,7 @@ private class TagListCmd(val waiter: EventWaiter) : Command()
         with(builder)
         {
             clearItems()
-            text        { -> "Tags owned by ${user.formattedName(true)}" }
+            text        { _,_-> "Tags owned by ${user.formattedName(true)}" }
             items {
                 if(localTags.isNotEmpty())
                     addAll(localTags)

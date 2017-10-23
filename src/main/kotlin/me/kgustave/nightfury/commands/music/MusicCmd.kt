@@ -38,13 +38,13 @@ import net.dv8tion.jda.core.entities.VoiceChannel
  */
 abstract class MusicCmd(protected val musicManager: MusicManager) : Command()
 {
-    // Extensions for commands
     init {
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)
         this.category = Category.MUSIC
     }
 
+    // Extensions for commands
     protected val Guild.isPlaying : Boolean
         get() = musicManager.isPlaying(this)
 

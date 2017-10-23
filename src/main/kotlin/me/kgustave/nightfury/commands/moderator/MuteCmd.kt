@@ -15,7 +15,6 @@
  */
 package me.kgustave.nightfury.commands.moderator
 
-import me.kgustave.kjdautils.utils.findRoles
 import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent

@@ -15,7 +15,7 @@
  */
 package me.kgustave.nightfury.commands.other
 
-import com.jagrosh.jdautilities.menu.slideshow.SlideshowBuilder
+import com.jagrosh.jdautilities.menu.Slideshow
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.APICache
@@ -87,7 +87,7 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
     private fun generate(array: JSONArray, event: CommandEvent)
     {
         val list = array.toTypedList<JSONObject>()
-        with(SlideshowBuilder())
+        with(Slideshow.Builder())
         {
             setUrls(*list.stream().map { it.getString("file_url") }.toList().toTypedArray())
             setText("Showing results for ${event.args}")

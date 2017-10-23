@@ -15,7 +15,7 @@
  */
 package me.kgustave.nightfury.commands.admin
 
-import me.kgustave.kjdautils.utils.findRoles
+import me.kgustave.nightfury.extensions.findRoles
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.entities.embed

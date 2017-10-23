@@ -15,12 +15,11 @@
  */
 package me.kgustave.nightfury.commands.music
 
-import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
+import com.jagrosh.jdautilities.menu.Paginator
 import com.jagrosh.jdautilities.waiter.EventWaiter
-import me.kgustave.kjdautils.menu.*
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.CooldownScope
-import me.kgustave.nightfury.extensions.formattedInfo
+import me.kgustave.nightfury.extensions.*
 import me.kgustave.nightfury.music.MusicManager
 import net.dv8tion.jda.core.Permission
 
@@ -29,7 +28,7 @@ import net.dv8tion.jda.core.Permission
  */
 class QueueCmd(waiter: EventWaiter, musicManager: MusicManager): MusicCmd(musicManager)
 {
-    val pBuilder: PaginatorBuilder = PaginatorBuilder()
+    val pBuilder: Paginator.Builder = Paginator.Builder()
             .waitOnSinglePage { false }
             .setFinalAction   { it.clearReactions().queue({},{}) }
             .showPageNumbers  { true }

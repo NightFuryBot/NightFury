@@ -15,7 +15,6 @@
  */
 package me.kgustave.nightfury.commands.music
 
-import me.kgustave.nightfury.Category
 import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.music.MusicManager
 

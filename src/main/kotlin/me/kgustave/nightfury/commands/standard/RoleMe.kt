@@ -15,18 +15,13 @@
  */
 package me.kgustave.nightfury.commands.standard
 
-import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
+import com.jagrosh.jdautilities.menu.Paginator
 import com.jagrosh.jdautilities.waiter.EventWaiter
-import me.kgustave.kjdautils.utils.findRoles
-import me.kgustave.kjdautils.menu.*
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.entities.then
-import me.kgustave.nightfury.extensions.giveRole
-import me.kgustave.nightfury.extensions.removeRole
-import me.kgustave.nightfury.extensions.multipleRoles
-import me.kgustave.nightfury.extensions.noMatch
+import me.kgustave.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
 import kotlin.streams.toList
 
@@ -193,7 +188,7 @@ private class RoleMeListCmd(waiter: EventWaiter) : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
     }
 
-    val builder : PaginatorBuilder = PaginatorBuilder()
+    val builder : Paginator.Builder = Paginator.Builder()
             .timeout          { delay { 20 } }
             .showPageNumbers  { true }
             .useNumberedItems { true }
@@ -208,7 +203,7 @@ private class RoleMeListCmd(waiter: EventWaiter) : Command()
                     SEE_HELP.format(event.client.prefix, "RoleMe"))
         with(builder)
         {
-            text        { -> "RoleMe Roles On ${event.guild.name}" }
+            text        { _,_ -> "RoleMe Roles On ${event.guild.name}" }
             items       { addAll(rolemes) }
             finalAction { event.linkMessage(it) }
             user        { event.author }

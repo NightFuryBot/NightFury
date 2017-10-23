@@ -15,15 +15,15 @@
  */
 package me.kgustave.nightfury.commands.admin
 
-import com.jagrosh.jdautilities.menu.pagination.PaginatorBuilder
+import com.jagrosh.jdautilities.menu.Paginator
 import com.jagrosh.jdautilities.waiter.EventWaiter
-import me.kgustave.kjdautils.menu.*
 import me.kgustave.nightfury.*
 import me.kgustave.nightfury.annotations.AutoInvokeCooldown
 import me.kgustave.nightfury.annotations.MustHaveArguments
 import me.kgustave.nightfury.commands.standard.globalTags
 import me.kgustave.nightfury.commands.standard.localTags
 import me.kgustave.nightfury.db.sql.SQLCustomCommands
+import me.kgustave.nightfury.extensions.*
 
 /**
  * @author Kaidan Gustave
@@ -179,7 +179,7 @@ private class CustomCommandListCmd(waiter: EventWaiter) : Command()
         this.cooldownScope = CooldownScope.USER_GUILD
     }
 
-    val builder : PaginatorBuilder = PaginatorBuilder()
+    val builder : Paginator.Builder = Paginator.Builder()
             .waiter           { waiter }
             .timeout          { delay { 20 } }
             .waitOnSinglePage { false }
