@@ -16,6 +16,7 @@
 @file:Suppress("UNUSED_PARAMETER")
 package me.kgustave.nightfury.listeners
 
+import ch.qos.logback.classic.Level
 import me.kgustave.nightfury.Client
 import me.kgustave.nightfury.Command
 import me.kgustave.nightfury.CommandEvent
@@ -33,9 +34,9 @@ interface CommandListener
     fun onCommandCompleted(event: CommandEvent, command: Command) {}
     fun onException(event: CommandEvent, command: Command, exception: Throwable) {}
 
-    enum class Mode(val type: String, val listener: CommandListener)
+    enum class Mode(val type: String, val level: Level, val listener: CommandListener)
     {
-        STANDARD("standard", object : CommandListener
+        STANDARD("standard", Level.INFO, object : CommandListener
         {
             override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?)
             {
@@ -52,7 +53,7 @@ interface CommandListener
             }
         }),
 
-        IDLE("idle", object : CommandListener
+        IDLE("idle", Level.OFF, object : CommandListener
         {
             override fun checkCall(event: MessageReceivedEvent,
                                    client: Client, name: String,
@@ -63,15 +64,10 @@ interface CommandListener
                 if(msg != null) event.reply(msg)
             }
 
-            override fun onException(event: CommandEvent, command: Command, exception: Throwable)
-            {
-                NightFury.LOG.error("The CommandListener caught an Exception!")
-                if(exception.message != null)
-                    NightFury.LOG.error(exception.message)
-            }
+            override fun onException(event: CommandEvent, command: Command, exception: Throwable) {}
         }),
 
-        DEBUG("debug", object : CommandListener
+        DEBUG("debug", Level.DEBUG, object : CommandListener
         {
             override fun onCommandCall(event: CommandEvent, command: Command)
             {

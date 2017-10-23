@@ -15,11 +15,12 @@
  */
 package me.kgustave.nightfury.commands.dev
 
-import ch.qos.logback.classic.Level
-import ch.qos.logback.classic.LoggerContext
-import me.kgustave.nightfury.*
+import me.kgustave.nightfury.Category
+import me.kgustave.nightfury.Command
+import me.kgustave.nightfury.CommandEvent
 import me.kgustave.nightfury.annotations.MustHaveArguments
-import org.slf4j.LoggerFactory
+import me.kgustave.nightfury.extensions.niceName
+import me.kgustave.nightfury.listeners.CommandListener
 
 /**
  * @author Kaidan Gustave
@@ -34,43 +35,12 @@ class ModeCmd : Command()
         this.guildOnly = false
         this.devOnly = true
         this.category = Category.SHENGAERO
-        this.children = arrayOf(ModeLogCmd())
     }
 
     override fun execute(event: CommandEvent)
     {
-        try {
-            event.client.targetListener(event.args)
-            event.replySuccess("Targeted listener `${event.args.toLowerCase()}`!")
-        } catch (e : IllegalArgumentException) {
-            if(e.message!=null) event.replyError(e.message!!)
-            else throw e
-        }
-    }
-}
-
-private class ModeLogCmd : Command()
-{
-    init {
-        this.name = "Log"
-        this.fullname = "Mode Log"
-        this.arguments = "[Info, Debug]"
-        this.help = "Sets the bots log level."
-        this.guildOnly = false
-        this.devOnly = true
-        this.category = Category.SHENGAERO
-    }
-
-    override fun execute(event: CommandEvent)
-    {
-        val level = when {
-            event.args.equals("debug", true) -> Level.DEBUG
-            event.args.equals("info", true) -> Level.INFO
-            else -> return event.replyError("${event.args} is not a valid logger level!")
-        }
-
-        (LoggerFactory.getILoggerFactory() as LoggerContext).loggerList.forEach { it.level = level }
-
-        event.replySuccess("Set log level to ${level.levelStr}")
+        event.client.mode = CommandListener.Mode.typeOf(event.args)
+                ?: return event.replyWarning("Invalid mode!")
+        event.replySuccess("Set mode to `${event.client.mode.niceName}`!")
     }
 }
