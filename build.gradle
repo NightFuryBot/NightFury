@@ -23,7 +23,8 @@ class Version {
 }
 
 buildscript {
-    ext.kotlin_version = '1.2.0-beta-88'
+    ext.kotlin_version = '1.2.0-rc-39'
+    ext.ktor_version = '0.3.3'
 
     repositories {
         maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
@@ -41,13 +42,13 @@ plugins {
     id "com.github.johnrengelman.shadow" version "2.0.1"
 }
 
-apply plugin: 'java'
-apply plugin: 'kotlin'
-
-def versionObj = new Version(major: 0, minor: 7, build: 5)
-group = 'me.kgustave'
+def versionObj = new Version(major: 0, minor: 7, build: 6)
+group = 'xyz.nightfury'
 version = versionObj
 mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -65,17 +66,23 @@ repositories {
     mavenCentral()
     maven { url 'https://jitpack.io/' }
     maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
+    maven { url "http://dl.bintray.com/kotlin/ktor" }
+    maven { url "https://dl.bintray.com/kotlin/kotlinx" }
 }
 
 dependencies {
     // Kotlin
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    compile "org.jetbrains.ktor:ktor-core:$ktor_version"
+    compile "org.jetbrains.ktor:ktor-jetty:$ktor_version"
+    compile "org.jetbrains.ktor:ktor-netty:$ktor_version"
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.14'
 
     // JDA
     compile 'net.dv8tion:JDA:3.3.1_284'
-    compile 'com.github.JDA-Applications:JDA-Utilities:version-major~2.0-SNAPSHOT'
+    compile 'com.github.JDA-Applications:JDA-Utilities:f9a0402'
     compile 'com.sedmelluq:lavaplayer:1.2.44'
 
     // h2
@@ -123,9 +130,7 @@ shadowJar {
 }
 
 kotlin {
-    experimental {
-        coroutines 'enable'
-    }
+    experimental.coroutines = 'ENABLE'
 }
 
 compileJava.options.encoding = 'UTF-8'
