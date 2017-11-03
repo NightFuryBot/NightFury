@@ -4,7 +4,7 @@
 [org]: https://img.shields.io/badge/Organization-NightFuryBot-yellow.svg?style=flat-square
 [website]: https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=NightFury.xyz
 
-[discord-invite]: https://discord.gg/0hMr4ce0tIl3SLv5
+[discord-invite]:  https://discord.gg/XCmwxy8
 [bot-invite]: https://discordapp.com/oauth2/authorize?client_id=263895505145298944&permissions=671211734&scope=bot
 [jda-repo]: https://github.com/DV8FromTheWorld/JDA
 
@@ -37,6 +37,6 @@ Need a list of commands? Just type `|help` and you'll be DM'd a full list of the
 you can use with NightFury!
 
 If you require additional support, take a look at the [wiki](https://github.com/NightFuryBot/NightFury/wiki)
-or join NightFury's [Official Support Server](https://discord.gg/XCmwxy8)!
+or join NightFury's [Official Support Server][discord-invite]!
 
 [![Join Shengaero](https://discordapp.com/api/guilds/301012120613552138/widget.png?style=banner2)][discord-invite]
