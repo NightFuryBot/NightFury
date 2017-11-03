@@ -16,7 +16,7 @@ and other public assistance with achieving the goals we have.
 If you wish to contribute at all, it's important to understand the staging process
 we use.
 
-#### 1) Preparation
+### 1) Preparation
 
 **BEFORE** you fork the bot it would be best to figure out if your contribution
 is going to be welcome or not.
@@ -33,7 +33,7 @@ it is created and maintained by Jetbrains (the creators of Kotlin) and has the h
 quality support for the language across all other development environments out there.
 
 >
-> ##### A Word on Significant Commits
+> #### A Word on Significant Commits
 > Pull Requests are made to the bot that make significant changes to code
 > or documentation.
 >
@@ -43,7 +43,7 @@ quality support for the language across all other development environments out t
 > linked above.
 >
 
-#### 2) Forking
+### 2) Forking
 
 When you fork the bot, you're going to have to set up a proper git-environment
 locally and remotely so that you make proper commits.
@@ -71,7 +71,7 @@ $ git checkout -b command/music-pause upstream/development
 `master`. More on that later.
 
 >
-> ##### How To Name Branches Correctly
+> #### How To Name Branches Correctly
 > Properly named branches are recommended when contributing
 > to help us understand the content of the contribution.
 > 
@@ -96,7 +96,7 @@ $ git checkout -b command/music-pause upstream/development
 > + `branch-name` is the name of the experimental or feature branch.
 > + `description` is a keyword or short phrase (shouldn't be
     more than 10 characters or so) that **accurately** describes
-    the thing you are documenting.
+    the thing you are making changes to.
 >
 > **Note:** creation of `feature` and `experimental` branches is
 > done only by those who have push access to the main repo, or with
@@ -112,7 +112,7 @@ $ git checkout -b command/music-pause upstream/development
 > simply naming it `patch-1` will suffice.
 >
 
-#### 3) Making Changes To Code
+### 3) Making Changes To Code
 
 Changes to code should be made to the branch that will be used for a future
 Pull Request.
@@ -131,7 +131,7 @@ on what you are working on.
 We also have a clear list of changes we will **NEVER** accept under any circumstances
 which can be found [here](https://github.com/NightFuryBot/NightFury/wiki/).
 
-#### 4) Submitting A Pull Request
+### 4) Submitting A Pull Request
 
 Pull requests must be targeted towards the `development` branch, unless explicitly
 told otherwise.
@@ -162,7 +162,7 @@ If you are not sure how the heck this works, I sincerely recommend you read
 [this](https://help.github.com/articles/resolving-a-merge-conflict-using-the-command-line/)
 before you touch any buttons.
 
-#### 5) You're Done!
+### 5) You're Done!
 
 There you have it! You've successfully made a contribution to the bot.
 
@@ -205,6 +205,7 @@ __**A Well Formatted Example**__
 // It : LikeThis()
 
 // Always mark the class with your name
+// if you made it
 /**
  * @author Your Name
  */
@@ -239,7 +240,7 @@ class NightFuryClass<T: Closeable>(val constructorClassProperty: Int,
             field = value
         }
         
-    // Init blocks must ALWAYS come BEFORE class level members.
+    // Init blocks must ALWAYS come AFTER class level members.
     init {
         doSomething()
     }
