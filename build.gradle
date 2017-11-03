@@ -66,18 +66,12 @@ repositories {
     mavenCentral()
     maven { url 'https://jitpack.io/' }
     maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
-    maven { url "http://dl.bintray.com/kotlin/ktor" }
-    maven { url "https://dl.bintray.com/kotlin/kotlinx" }
 }
 
 dependencies {
     // Kotlin
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile "org.jetbrains.ktor:ktor-core:$ktor_version"
-    compile "org.jetbrains.ktor:ktor-jetty:$ktor_version"
-    compile "org.jetbrains.ktor:ktor-netty:$ktor_version"
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.14'
 
     // JDA
