@@ -42,16 +42,14 @@ plugins {
     id "com.github.johnrengelman.shadow" version "2.0.1"
 }
 
-def versionObj = new Version(major: 0, minor: 7, build: 6)
+def versionObj = new Version(major: 0, minor: 7, build: 7)
 group = 'xyz.nightfury'
 version = versionObj
-mainClassName = "${group}.${rootProject.name.toLowerCase()}.${rootProject.name}Kt"
 
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+mainClassName = "${group}.${rootProject.name}Kt"
 
 sourceSets {
     test.kotlin.srcDirs += 'src/test/kotlin'
@@ -61,26 +59,11 @@ sourceSets {
     }
 }
 
-repositories {
-    jcenter()
-    mavenCentral()
-    maven { url 'https://jitpack.io/' }
-    maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
-}
-
 dependencies {
-    // Kotlin
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
-    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.14'
-
     // JDA
     compile 'net.dv8tion:JDA:3.3.1_284'
     compile 'com.github.JDA-Applications:JDA-Utilities:f9a0402'
     compile 'com.sedmelluq:lavaplayer:1.2.44'
-
-    // h2
-    compile 'com.h2database:h2:1.4.196'
 
     // API Requests
     compile 'org.jsoup:jsoup:1.10.2'
@@ -88,12 +71,6 @@ dependencies {
 
     // JagTag
     compile 'com.jagrosh:JagTag:0.5'
-
-    // Logging
-    compile 'ch.qos.logback:logback-classic:1.2.3'
-
-    // Testing
-    testCompile 'junit:junit:4.12'
 }
 
 jar {
@@ -115,32 +92,77 @@ shadowJar {
     // h2
     exclude('android/**')
 
-    // Unimplemented Internals
-    exclude('me.kgustave.nightfury.listeners.AntiAdsListener**')
-
     manifest {
         attributes 'Manifest-Version' : "${versionObj.major}.${versionObj.minor}"
     }
 }
 
-kotlin {
-    experimental.coroutines = 'ENABLE'
-}
+allprojects {
 
-compileJava.options.encoding = 'UTF-8'
-compileKotlin.kotlinOptions.jvmTarget = "1.8"
-compileTestJava.options.encoding = 'UTF-8'
-compileTestKotlin.kotlinOptions.jvmTarget = "1.8"
+    version = versionObj
 
-wrapper {
-    gradleVersion '4.0'
+    apply plugin: 'java'
+    apply plugin: 'kotlin'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven { url 'https://jitpack.io/' }
+        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
+    }
+
+    dependencies {
+        // Kotlin
+        compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+        compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+        compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
+
+        // h2
+        compile 'com.h2database:h2:1.4.196'
+
+        // Logging
+        compile 'ch.qos.logback:logback-classic:1.2.3'
+
+        // Testing
+        testCompile 'junit:junit:4.12'
+    }
+
+    kotlin {
+        experimental.coroutines = 'ENABLE'
+    }
+
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
+    }
+
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
+    }
+
+    compileJava.options.encoding = 'UTF-8'
+    compileTestJava.options.encoding = 'UTF-8'
+
+    wrapper {
+        gradleVersion '4.0'
+    }
+
+    build {
+        dependsOn clean
+        dependsOn classes
+        dependsOn shadowJar
+
+        classes.mustRunAfter clean
+        shadowJar.mustRunAfter classes
+    }
 }
 
 build {
-    dependsOn clean
-    dependsOn classes
-    dependsOn shadowJar
-
-    classes.mustRunAfter clean
-    shadowJar.mustRunAfter classes
+    rootProject.childProjects.values().forEach { it.build }
 }

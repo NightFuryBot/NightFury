@@ -23,7 +23,7 @@ import net.dv8tion.jda.core.entities.Role
  * @author Kaidan Gustave
  */
 abstract class SQLRoles(type: String) : Table() {
-    private val isRole = "SELECT * FROM ROLES WHERE GUILD_ID = ? AND ROLE_ID = ?"
+    private val isRole = "SELECT * FROM ROLES WHERE GUILD_ID = ? AND ROLE_ID = ? AND TYPE = '$type'"
     private val get    = "SELECT ROLE_ID FROM ROLES WHERE GUILD_ID = ? AND TYPE = '$type'"
     private val add    = "INSERT INTO ROLES (GUILD_ID, ROLE_ID, TYPE) VALUES (?, ?, '$type')"
     private val delete = "DELETE FROM ROLES WHERE GUILD_ID = ? AND ROLE_ID = ? AND TYPE = '$type'"

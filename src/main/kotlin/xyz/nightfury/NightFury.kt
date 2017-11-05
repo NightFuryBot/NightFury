@@ -20,6 +20,7 @@ import com.jagrosh.jagtag.Parser
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import net.dv8tion.jda.core.*
 import net.dv8tion.jda.core.requests.SessionReconnectQueue
+import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.nightfury.api.E621API
@@ -63,26 +64,23 @@ fun main(args: Array<String>?)
 /**
  * @author Kaidan Gustave
  */
-class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.txt").toFile())
+class NightFury
 {
     companion object
     {
         @JvmStatic val VERSION: String = this::class.java.`package`.implementationVersion?:"BETA"
-        @JvmStatic val GITHUB: String = "https://github.com/TheMonitorLizard/NightFury/"
+        @JvmStatic val GITHUB: String = "https://github.com/NightFuryBot/NightFury/"
         @JvmStatic val LOG: Logger = LoggerFactory.getLogger("NightFury")
 
         @JvmStatic
-        fun shutdown(exit: Int)
-        {
+        fun shutdown(exit: Int) {
             LOG.info("Shutdown Complete! "+if(exit == 0)"Restarting..." else "Exiting...")
             System.exit(exit)
         }
     }
 
-    init
-    {
-        val config = Config(file)
-
+    init {
+        val config = Config()
         Database.connect(config.dbURL, config.dbUser, config.dbPass)
 
         val e621 = E621API()
@@ -99,7 +97,7 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
         val client = Client(
             config.prefix, config.devId, Database,
             config.success, config.warning, config.error,
-            config.server, config.dbotskey, config.dborgkey,
+            config.server, config.dbotsKey, config.dborgKey,
             waiter, parser,
 
             AboutCmd(*config.permissions),
@@ -184,40 +182,78 @@ class NightFury(file: File = Paths.get(System.getProperty("user.dir"), "config.t
     }
 }
 
-internal class Config(key: File)
-{
-    private val tokens = try { key.readLines() } catch (e: IOException) { throw e }
+class Config {
+    companion object {
+        @JvmStatic var testing: Boolean = false
+    }
 
-    internal val token        : String            = tokens[0]
-    internal val devId        : Long              = tokens[1].toLong()
-    internal val dbotskey     : String            = tokens[2]
-    internal val dborgkey     : String            = tokens[3]
-    internal val dbURL        : String            = tokens[4]
-    internal val dbUser       : String            = tokens[5]
-    internal val dbPass       : String            = tokens[6]
-    internal val ytApiKey     : String            = tokens[7]
-    internal val prefix       : String            = if(key.nameWithoutExtension == "testConfig") "||" else "|"
-    internal val success      : String            = "\uD83D\uDC32"
-    internal val warning      : String            = "\uD83D\uDC22"
-    internal val error        : String            = "\uD83D\uDD25"
-    internal val server       : String            = "https://discord.gg/xkkw54u"
-    internal val permissions  : Array<Permission> = arrayOf(
+    private val file: File = Paths.get(System.getProperty("user.dir"), "config.json").toFile()
+    private val json: JSONObject = JSONObject(file.readText(Charsets.UTF_8))
 
-            Permission.MESSAGE_HISTORY,
-            Permission.MESSAGE_EMBED_LINKS,
-            Permission.MESSAGE_ATTACH_FILES,
-            Permission.MESSAGE_ADD_REACTION,
+    val token: String
+        get() = (if(testing) json.getString("test_bot_token") else json.getString("bot_token")) ?: nulled()
 
-            Permission.MANAGE_PERMISSIONS,
-            Permission.MANAGE_ROLES,
-            Permission.MANAGE_CHANNEL,
-            Permission.NICKNAME_MANAGE,
-            Permission.MESSAGE_MANAGE,
+    val devId: Long = 211393686628597761L
 
-            Permission.KICK_MEMBERS,
-            Permission.BAN_MEMBERS,
+    val dbotsKey: String = json.getString("dbots_key") ?: nulled()
 
-            Permission.VIEW_AUDIT_LOGS
+    val dborgKey: String = json.getString("discord_bots_list_key") ?: nulled()
+
+    val dbURL: String
+        get() = buildString {
+            val db = json.getJSONObject("db") ?: nulled()
+            append(db.getString("prefix") ?: nulled())
+
+            if(testing)
+                append(db.getString("test_url") ?: nulled())
+            else
+                append(db.getString("url") ?: nulled())
+
+            for((key, value) in db.getJSONObject("configurations")?.toMap() ?: nulled()) {
+                append(";")
+                append(key.toUpperCase())
+                append("=")
+                append(value.toString().toUpperCase())
+            }
+        }
+
+    val dbUser: String = json.getJSONObject("db")?.getString("user") ?: nulled()
+
+    val dbPass: String = json.getJSONObject("db")?.getString("pass") ?: nulled()
+
+    val ytApiKey: String = json.getString("yt_api_key") ?: nulled()
+
+    val prefix: String
+        get() = if(testing) "||" else "|"
+
+    val success: String = "\uD83D\uDC32"
+    val warning: String = "\uD83D\uDC22"
+    val error: String = "\uD83D\uDD25"
+
+    val server: String = "https://discord.gg/xkkw54u"
+
+    val permissions: Array<Permission> = arrayOf(
+
+        Permission.MESSAGE_HISTORY,
+        Permission.MESSAGE_EMBED_LINKS,
+        Permission.MESSAGE_ATTACH_FILES,
+        Permission.MESSAGE_ADD_REACTION,
+
+        Permission.MANAGE_PERMISSIONS,
+        Permission.MANAGE_ROLES,
+        Permission.MANAGE_CHANNEL,
+        Permission.NICKNAME_MANAGE,
+        Permission.MESSAGE_MANAGE,
+
+        Permission.KICK_MEMBERS,
+        Permission.BAN_MEMBERS,
+
+        Permission.VIEW_AUDIT_LOGS
 
     )
+
+    // This prevents npe with native java code
+    private inline fun <reified T> nulled(): T {
+        throw IllegalStateException("${file.name} did not have a specified token!")
+    }
 }

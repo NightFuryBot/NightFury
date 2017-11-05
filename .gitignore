@@ -1,3 +1,6 @@
+# Modules
+/Backend-Adapter/
+
 # IntelliJ project files
 .idea
 /out/
@@ -10,7 +13,6 @@
 
 # Data Files
 /logs/
-*.log
 *.txt
 *.json
 *.mv.db
