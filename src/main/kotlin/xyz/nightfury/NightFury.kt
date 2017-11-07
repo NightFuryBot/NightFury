@@ -46,8 +46,7 @@ import java.io.IOException
 import java.nio.file.Paths
 import java.util.logging.Level
 
-fun main(args: Array<String>?)
-{
+fun main(args: Array<String>?) {
     NightFury.LOG.info("Starting NightFury...")
 
     java.util.logging.Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
@@ -64,10 +63,8 @@ fun main(args: Array<String>?)
 /**
  * @author Kaidan Gustave
  */
-class NightFury
-{
-    companion object
-    {
+class NightFury {
+    companion object {
         @JvmStatic val VERSION: String = this::class.java.`package`.implementationVersion?:"BETA"
         @JvmStatic val GITHUB: String = "https://github.com/NightFuryBot/NightFury/"
         @JvmStatic val LOG: Logger = LoggerFactory.getLogger("NightFury")
@@ -160,15 +157,13 @@ class NightFury
         }
     }
 
-    private infix inline fun <reified T: JDABuilder> T.buildAsync(lazy: JDABuilder.() -> Unit)
-    {
+    private infix inline fun <reified T: JDABuilder> T.buildAsync(lazy: JDABuilder.() -> Unit) {
         lazy()
         buildAsync()
     }
 
     @Suppress("UNUSED")
-    private inline fun <reified T: JDABuilder> T.buildAsync(shards: Int, lazy: JDABuilder.() -> Unit)
-    {
+    private inline fun <reified T: JDABuilder> T.buildAsync(shards: Int, lazy: JDABuilder.() -> Unit) {
         lazy()
         setShardedRateLimiter(ShardedRateLimiter())
         setReconnectQueue(SessionReconnectQueue())

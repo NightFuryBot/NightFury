@@ -59,7 +59,6 @@ class RestPromise<V>(action: RestAction<V?>)
     }
 }
 
-@FunctionalInterface
 internal class Callback<T> : (T?) -> Unit
 {
     private var finishedValue : T?      = null

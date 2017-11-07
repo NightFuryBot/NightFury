@@ -40,11 +40,10 @@ import net.dv8tion.jda.core.entities.TextChannel
 
                   "This cannot quote messages from other private channels or channels " +
                   "on other servers.",
-    requirements = [""]
+    requirements = ["Bot must have **MESSAGE_EMBED_LINKS** permission."]
 )
 @MustHaveArguments("Please specify a message ID to quote!")
-class QuoteCmd : Command()
-{
+class QuoteCmd : Command() {
     init {
         this.name = "Quote"
         this.arguments = "<Channel ID> [Message ID]"
@@ -55,15 +54,13 @@ class QuoteCmd : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val split = event.args.split(Arguments.commandArgs)
         val channel: TextChannel
         val message: Message
 
-        when(split.size)
-        {
-            1    -> {
+        when(split.size) {
+            1 -> {
                 channel = event.textChannel
                 message = try {
                     channel.getMessageById(split[0].toLong())?.complete()
@@ -73,13 +70,15 @@ class QuoteCmd : Command()
                     null
                 } ?:return event.replyError("Could not find a message with ID: ${split[0]}!")
             }
-            2    -> {
+
+            2 -> {
                 channel = try {
                     event.guild.getTextChannelById(split[0].toLong())
                             ?:return event.replyError("Could not find a channel with ID: ${split[0]}!")
                 } catch (e: NumberFormatException) {
                     return event.replyError(INVALID_ARGS_ERROR.format("\"${split[0]}\" is not a valid channel ID"))
                 }
+
                 message = try {
                     channel.getMessageById(split[1].toLong())?.complete()
                 } catch (e: NumberFormatException) {
@@ -88,20 +87,23 @@ class QuoteCmd : Command()
                     null
                 } ?:return event.replyError("Could not find a message with ID: ${split[1]}!")
             }
+
             else -> return event.replyError("**Too Many Arguments!**\n" +
                                             "Provide either a channel ID and message ID or just a message ID!")
         }
 
         event.reply(embed {
-            author      {
+            author {
                 value = message.author.formattedName(false)
                 url   = message.author.effectiveAvatarUrl
                 icon  = message.author.effectiveAvatarUrl
             }
+
             description {  message.rawContent  }
             time        { message.creationTime }
             color       { message.member.color }
         })
+
         event.invokeCooldown()
     }
 }

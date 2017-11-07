@@ -36,7 +36,13 @@ Click [here][bot-invite] to invite NightFury!
 Need a list of commands? Just type `|help` and you'll be DM'd a full list of the commands
 you can use with NightFury!
 
-If you require additional support, take a look at the [wiki](https://github.com/NightFuryBot/NightFury/wiki)
+If you require additional support, take a look at the [wiki](https://github.com/NightFuryBot/NightFury/wiki/)
 or join NightFury's [Official Support Server][discord-invite]!
 
 [![Join Shengaero](https://discordapp.com/api/guilds/301012120613552138/widget.png?style=banner2)][discord-invite]
+
+## Contributing
+We are an open source project and open to collaboration and contribution via pull request!
+
+If you think you want to contribute to the bot, make sure to visit the 
+[Contributing Page](https://github.com/NightFuryBot/NightFury/wiki/Contributing) of the wiki!

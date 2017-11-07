@@ -27,8 +27,8 @@ buildscript {
     ext.ktor_version = '0.3.3'
 
     repositories {
+        jcenter()
         maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
-        mavenCentral()
     }
 
     dependencies {
@@ -60,6 +60,11 @@ sourceSets {
 }
 
 dependencies {
+    // Kotlin
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
+
     // JDA
     compile 'net.dv8tion:JDA:3.3.1_284'
     compile 'com.github.JDA-Applications:JDA-Utilities:f9a0402'
@@ -99,7 +104,7 @@ shadowJar {
 
 allprojects {
 
-    version = versionObj
+    version = versionObj.toString()
 
     apply plugin: 'java'
     apply plugin: 'kotlin'
@@ -116,15 +121,16 @@ allprojects {
 
     dependencies {
         // Kotlin
-        compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
-        compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-        compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
+        compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+        compileOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+        compileOnly "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
 
         // h2
         compile 'com.h2database:h2:1.4.196'
 
         // Logging
         compile 'ch.qos.logback:logback-classic:1.2.3'
+        //kapt group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
 
         // Testing
         testCompile 'junit:junit:4.12'
@@ -149,10 +155,6 @@ allprojects {
     compileJava.options.encoding = 'UTF-8'
     compileTestJava.options.encoding = 'UTF-8'
 
-    wrapper {
-        gradleVersion '4.0'
-    }
-
     build {
         dependsOn clean
         dependsOn classes
@@ -161,6 +163,10 @@ allprojects {
         classes.mustRunAfter clean
         shadowJar.mustRunAfter classes
     }
+}
+
+wrapper {
+    gradleVersion '4.0'
 }
 
 build {

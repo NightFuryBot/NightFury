@@ -18,6 +18,7 @@ package xyz.nightfury.commands.standard
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.annotations.doc.Documentation
+import xyz.nightfury.extensions.edit
 import java.time.temporal.ChronoUnit
 
 /**
@@ -27,8 +28,7 @@ import java.time.temporal.ChronoUnit
     name = ["Ping", "Pong", "Pang", "Pyng", "Pung", "Peng", "Png"],
     description = "Gets the bot's REST latency (in milliseconds)."
 )
-class PingCmd : Command()
-{
+class PingCmd : Command() {
     init {
         this.name = "Ping"
         this.aliases = arrayOf("pong", "pang", "pyng", "pung", "peng", "png")
@@ -36,10 +36,9 @@ class PingCmd : Command()
         this.guildOnly = false
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         event.reply("Ping...") {
-            it.editMessage("Ping: ${event.message.creationTime.until(it.creationTime, ChronoUnit.MILLIS)}ms").queue()
+            it.edit { "Ping: ${event.message.creationTime.until(it.creationTime, ChronoUnit.MILLIS)}ms" }
         }
     }
 }
