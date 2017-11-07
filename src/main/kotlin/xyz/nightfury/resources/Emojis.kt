@@ -15,11 +15,52 @@
  */
 package xyz.nightfury.resources
 
+import xyz.nightfury.extensions.niceName
+import java.time.temporal.TemporalAccessor
+import java.util.*
+
 /**
  * @author Kaidan Gustave
  */
-object Emojis
-{
+object Emojis {
     const val RED_TICK   = "<:xmark:314349398824058880>"
     const val GREEN_TICK = "<:check:314349398811475968>"
+
+    // Holder for flag emojis.
+    // The first is the actual emoji.
+    // The second is for the country name that is the first part
+    // of a ZoneInfo#id.
+    // So for "Chicago, Illinois" the ZoneInfo would be:
+    // ZoneInfo.getTimeZone("America/Chicago")
+    // Of which the country is "America" and the Flag would
+    // be Flag.US
+    enum class Flag(val emoji: String, country: String? = null) {
+        USA("\uD83C\uDDFA\uD83C\uDDF8", "America"),
+        CANADA("\uD83C\uDDE8\uD83C\uDDE6"),
+        AFRICA("\uD83C\uDDE6\uD83C\uDDEB"),
+        GERMANY(TODO("Add Germany")),
+        ENGLAND(TODO("Add England")),
+        RUSSIA(TODO("Add Russia"))
+        // TODO Add more countries
+        ;
+
+        val country: String = country ?: niceName
+
+        override fun toString(): String = emoji
+
+        companion object {
+            @[JvmStatic Suppress("UNUSED_PARAMETER")]
+            fun of(accessor: TemporalAccessor?): Flag? =
+                TODO("Support for TemporalAccessor is not supported yet")
+
+            @JvmStatic
+            fun of(zone: TimeZone?, ignoreCase: Boolean = true): Flag? {
+                val countryId = (zone ?: return null).id.run {
+                    substring(0, this.indexOf('/').takeIf { it != -1 } ?: return null)
+                }
+
+                return values().find { countryId.equals(it.country, ignoreCase) }
+            }
+        }
+    }
 }
