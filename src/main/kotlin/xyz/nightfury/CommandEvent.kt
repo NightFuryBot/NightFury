@@ -20,12 +20,12 @@ import xyz.nightfury.resources.Arguments
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
+import xyz.nightfury.extensions.filterMassMention
 
 /**
  * @author Kaidan Gustave
  */
-class CommandEvent internal constructor(val event: MessageReceivedEvent, args: String, val client: Client)
-{
+class CommandEvent internal constructor(val event: MessageReceivedEvent, args: String, val client: Client) {
     val jda            = event.jda!!
     val author         = event.author!!
     val member         = event.member
@@ -220,17 +220,13 @@ class CommandEvent internal constructor(val event: MessageReceivedEvent, args: S
             client.linkIds(messageIdLong, message)
     }
 
-    companion object
-    {
+    companion object {
         private val maxMessages = 3
         private val blockingDM : String = "%s I could not complete the command because you are blocking direct messages!"
-        fun processMessage(input: String) : ArrayList<String>
-        {
+        fun processMessage(input: String) : ArrayList<String> {
             val msgs = ArrayList<String>()
-            var toSend = input.replace("@everyone", "@\u0435veryone")
-                    .replace("@here", "@h\u0435re").trim()
-            while(toSend.length > 2000)
-            {
+            var toSend = input.filterMassMention()
+            while(toSend.length > 2000) {
                 val leeway = 2000 - (toSend.length % 2000)
                 var index = toSend.lastIndexOf("\n", 2000)
                 if(index < leeway)

@@ -28,8 +28,7 @@ infix fun List<Role>.multipleRoles(argument: String) = listOut("role", argument)
 
 private inline fun <T> List<T>.listOut(kind: String, argument: String, conversion: (T) -> String) = with(StringBuilder()) {
     append("Multiple ${kind}s found matching \"$argument\":\n")
-    for(i in 0..3)
-    {
+    for(i in 0..3) {
         append("${this@listOut[i].let(conversion)}\n")
         if(i==3 && this@listOut.size>4)
             append("And ${this@listOut.size-4} other $kind${if(this@listOut.size-4 > 1) "s..." else "..."}")
@@ -47,23 +46,22 @@ inline val OffsetDateTime.readableFormat
 fun noMatch(lookedFor: String, query: String) = "Could not find any $lookedFor matching \"$query\"!"
 
 inline val <T: Enum<*>> T.niceName : String
-    inline get() = run { "${name[0]}${name.substring(1).toLowerCase()}" }
+    inline get() = name.replace("_", " ").run { "${this[0]}${substring(1).toLowerCase()}" }
 
 inline val <T: AudioTrackInfo> T.formattedInfo : String
     inline get() = "**${title.filterMassMention()}** `[${formatTrackTime(length)}]`"
 
-fun formatTrackTime(duration: Long): String
-{
+fun String.filterMassMention() = replace("@everyone", "@\u0435veryone").replace("@here", "@h\u0435re").trim()
+
+fun formatTrackTime(duration: Long): String {
     if(duration == Long.MAX_VALUE) return "LIVE"
 
-    var seconds: Long = Math.round(duration / 1000.0)
-    val hours: Long = seconds / (60 * 60)
+    var seconds = Math.round(duration / 1000.0)
+    val hours = seconds / (60 * 60)
     seconds %= (60 * 60).toLong()
-    val minutes: Long = seconds / 60
+    val minutes = seconds / 60
     seconds %= 60
-    return  (if(hours > 0) "$hours:" else "") +
-            "${if(minutes < 10) "0$minutes" else minutes.toString()}:" +
-            (if(seconds < 10) "0$seconds" else seconds.toString())
+    return (if(hours > 0) "$hours:" else "") +
+           "${if(minutes < 10) "0$minutes" else "$minutes"}:" +
+           (if(seconds < 10) "0$seconds" else "$seconds")
 }
-
-fun String.filterMassMention() = replace("@everyone", "@\u0435veryone").replace("@here", "@h\u0435re").trim()

@@ -15,11 +15,59 @@
  */
 package xyz.nightfury.resources
 
+import xyz.nightfury.extensions.niceName
+import java.time.temporal.TemporalAccessor
+import java.util.*
+
 /**
  * @author Kaidan Gustave
  */
-object Emojis
-{
+object Emojis {
+    // Discord Custom Emotes
     const val RED_TICK   = "<:xmark:314349398824058880>"
     const val GREEN_TICK = "<:check:314349398811475968>"
+    const val GITHUB     = "<:GitHub:377567548075671552>"
+    const val TWITCH     = "<:twitch:314349922755411970>"
+
+    // Unicode Emojis
+    const val GLOBE_WITH_MERIDIANS = "\uD83C\uDF10"
+    const val CAKE                 = "\uD83C\uDF70"
+
+    // Holder for flag emojis.
+    // The first is the actual emoji.
+    // The second is for the country name that is the first part
+    // of a ZoneInfo#id.
+    // So for "Chicago, Illinois" the ZoneInfo would be:
+    // ZoneInfo.getTimeZone("America/Chicago")
+    // Of which the country is "America" and the Flag would
+    // be Flag.US
+    enum class Flag(val emoji: String, country: String? = null) {
+        USA("\uD83C\uDDFA\uD83C\uDDF8", "America"),
+        CANADA("\uD83C\uDDE8\uD83C\uDDE6"),
+        AFRICA("\uD83C\uDDE6\uD83C\uDDEB"),
+        // TODO GERMANY(),
+        // TODO ENGLAND(),
+        // TODO RUSSIA()
+        // TODO Add more countries
+        ;
+
+        val country: String = country ?: niceName
+
+        override fun toString(): String = emoji
+
+        companion object {
+            @[JvmStatic Suppress("UNUSED_PARAMETER")]
+            fun of(accessor: TemporalAccessor?): Flag? =
+                TODO("Support for TemporalAccessor is not supported yet")
+
+            @JvmStatic
+            fun of(zone: TimeZone?, ignoreCase: Boolean = true): Flag? {
+                val countryId = (zone ?: return null).id.run {
+                    substring(0, this.indexOf('/').takeIf { it != -1 } ?: return null)
+                }
+
+                return values().find { countryId.equals(it.country, ignoreCase) }
+            }
+        }
+    }
 }
