@@ -24,8 +24,8 @@
 /wiki/
 /bash/
 /backup/
+/misc/
 *.sh
-*.sql
 
 # Images
 *.gif
