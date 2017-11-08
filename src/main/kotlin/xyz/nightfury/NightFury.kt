@@ -107,6 +107,7 @@ class NightFury {
             InfoCmd(invisTracker),
             InviteCmd(*config.permissions),
             PingCmd(),
+            ProfileCmd(),
             QuoteCmd(),
             RoleMeCmd(waiter),
             ServerCmd(waiter, invisTracker),

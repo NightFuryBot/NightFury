@@ -18,16 +18,14 @@ package xyz.nightfury.resources
 import java.util.function.BiConsumer
 
 @Suppress("UNCHECKED_CAST")
-class FixedSizeCache<K : Any, V>(size: Int) : MutableMap<K, V>
-{
-    private val map: HashMap<K, V> = HashMap()
-    private val backingKeys: Array<K?>
-    private var currIndex = 0
-
+class FixedSizeCache<K : Any, V>(size: Int) : MutableMap<K, V> {
     init {
         require(size>0) { "Cache size must be at least 1!" }
-        backingKeys = arrayOfNulls<Any>(size) as Array<K?>
     }
+
+    private val map: MutableMap<K, V> = HashMap()
+    private val backingKeys: Array<K?> = arrayOfNulls<Any>(size) as Array<K?>
+    private var currIndex = 0
 
     override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
         get() = map.entries
@@ -43,16 +41,14 @@ class FixedSizeCache<K : Any, V>(size: Int) : MutableMap<K, V>
 
     operator fun set(key: K, value: V) { put(key, value) }
 
-    override fun clear()
-    {
+    override fun clear() {
         map.clear()
         for(i in 0 until backingKeys.size)
             backingKeys[i] = null
         currIndex = 0
     }
 
-    override fun put(key: K, value: V): V?
-    {
+    override fun put(key: K, value: V): V? {
         val v = if(backingKeys[currIndex] != null)
             map.remove(backingKeys[currIndex])
         else map.put(key, value)

@@ -23,8 +23,15 @@ import java.util.*
  * @author Kaidan Gustave
  */
 object Emojis {
+    // Discord Custom Emotes
     const val RED_TICK   = "<:xmark:314349398824058880>"
     const val GREEN_TICK = "<:check:314349398811475968>"
+    const val GITHUB     = "<:GitHub:377567548075671552>"
+    const val TWITCH     = "<:twitch:314349922755411970>"
+
+    // Unicode Emojis
+    const val GLOBE_WITH_MERIDIANS = "\uD83C\uDF10"
+    const val CAKE                 = "\uD83C\uDF70"
 
     // Holder for flag emojis.
     // The first is the actual emoji.
@@ -38,9 +45,9 @@ object Emojis {
         USA("\uD83C\uDDFA\uD83C\uDDF8", "America"),
         CANADA("\uD83C\uDDE8\uD83C\uDDE6"),
         AFRICA("\uD83C\uDDE6\uD83C\uDDEB"),
-        GERMANY(TODO("Add Germany")),
-        ENGLAND(TODO("Add England")),
-        RUSSIA(TODO("Add Russia"))
+        // TODO GERMANY(),
+        // TODO ENGLAND(),
+        // TODO RUSSIA()
         // TODO Add more countries
         ;
 

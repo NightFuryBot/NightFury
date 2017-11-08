@@ -21,7 +21,6 @@ import com.sedmelluq.discord.lavaplayer.player.event.*
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason.*
-import xyz.nightfury.extensions.formatTrackTime
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.VoiceChannel
@@ -35,6 +34,7 @@ import net.dv8tion.jda.core.events.guild.voice.GuildVoiceSuppressEvent
 import net.dv8tion.jda.core.hooks.EventListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.nightfury.extensions.formatTrackTime
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 

@@ -15,10 +15,10 @@
  */
 package xyz.nightfury.db
 
+import org.h2.value.Value
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.sql.PreparedStatement
-import java.sql.SQLException
+import java.sql.*
 
 /**
  * @author Kaidan Gustave
@@ -27,35 +27,68 @@ object SQL {
     val LOG : Logger = LoggerFactory.getLogger("SQL")
 }
 
-inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Long): T {
-    setLong(index, value)
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Long?): T {
+    if(value ==  null)
+        setNull(index, Value.LONG)
+    else
+        setLong(index, value)
     return this
 }
 
-inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: String): T {
-    setString(index, value)
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: String?): T {
+    if(value == null)
+        setNull(index, Value.STRING)
+    else
+        setString(index, value)
     return this
 }
 
-inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Int): T {
-    setInt(index, value)
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Int?): T {
+    if(value == null)
+        setNull(index, Value.INT)
+    else
+        setInt(index, value)
     return this
 }
 
-inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Boolean): T {
-    setBoolean(index, value)
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Boolean?): T {
+    if(value == null)
+        setNull(index, Value.BOOLEAN)
+    else
+        setBoolean(index, value)
     return this
 }
 
-inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Short): T {
-    setShort(index, value)
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Short?): T {
+    if(value == null)
+        setNull(index, Value.SHORT)
+    else
+        setShort(index, value)
     return this
 }
 
-inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Enum<*>): T {
-    setString(index, value.name)
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Enum<*>?): T {
+    setString(index, value?.name)
     return this
 }
+
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Timestamp?): T {
+    if(value == null)
+        setNull(index, Value.TIMESTAMP_TZ)
+    else
+        setTimestamp(index, value)
+    return this
+}
+
+inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Date?): T {
+    if(value == null)
+        setNull(index, Value.DATE)
+    else
+        setDate(index, value)
+    return this
+}
+
+inline operator fun <reified R> ResultSet.get(columnName: String): R? = (getObject(columnName) ?: null) as? R
 
 inline fun <reified T : AutoCloseable, R> using(
     closeable: T,
