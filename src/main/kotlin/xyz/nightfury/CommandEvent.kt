@@ -20,6 +20,7 @@ import xyz.nightfury.resources.Arguments
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
+import xyz.nightfury.db.Database
 import xyz.nightfury.extensions.filterMassMention
 
 /**
@@ -50,8 +51,6 @@ class CommandEvent internal constructor(val event: MessageReceivedEvent, args: S
     val selfMember: Member
         get() = guild.selfMember
     val selfUser: SelfUser = jda.selfUser
-
-    val manager = client.manager
 
     fun reply(string: String) = sendMessage(string, channel)
     fun reply(string: String, success: (Message) -> Unit) = sendMessage(string, channel, success)

@@ -17,7 +17,6 @@ package xyz.nightfury.commands.standard
 
 import com.jagrosh.jdautilities.menu.Paginator
 import com.jagrosh.jdautilities.waiter.EventWaiter
-import xyz.nightfury.*
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.then
@@ -27,6 +26,8 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
+import xyz.nightfury.db.SQLLimits
+import xyz.nightfury.db.SQLRoleMe
 import kotlin.streams.toList
 
 /**
@@ -65,14 +66,14 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        val allRoleMes = event.manager.getRoleMes(event.guild)
+        val allRoleMes = SQLRoleMe.getRoles(event.guild)
         if(allRoleMes.isEmpty())
             return event.replyError("**No RoleMe roles on this server!**\n" +
                     SEE_HELP.format(event.client.prefix, name))
         val roles = event.guild findRoles query
         if(roles.isEmpty())
             return event.replyError(noMatch("roles", query))
-        val roleMes = roles.stream().filter { event.manager.isRoleMe(it) }.toList()
+        val roleMes = roles.stream().filter { SQLRoleMe.isRole(it) }.toList()
         if(roleMes.isEmpty() && roles.isNotEmpty())
             return event.replyError("**${roles[0].name} is not a RoleMe role!**\n" +
                     SEE_HELP.format(event.client.prefix, name))
@@ -84,7 +85,7 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
                     SEE_HELP.format(event.client.prefix, name))
         else if(!event.member.roles.contains(requested)) {
             if(event.hasRoleMeLimit) {
-                if(event.roleMeLimit<=event.member.roles.stream().filter { event.manager.isRoleMe(it) }.count())
+                if(event.roleMeLimit<=event.member.roles.stream().filter { SQLRoleMe.isRole(it) }.count())
                     return event.replyError("More RoleMe roles cannot be added because you are at the limit set by the server!")
             }
             event.member giveRole requested then {
@@ -136,9 +137,9 @@ private class RoleMeAddCmd : Command()
         if(found.size>1)
             return event.replyError(found multipleRoles query)
         val requested = found[0]
-        if(event.manager.isRoleMe(requested))
+        if(SQLRoleMe.isRole(requested))
             return event.replyError("The role **${requested.name}** is already a RoleMe role!")
-        event.manager.addRoleMe(requested)
+        SQLRoleMe.addRole(requested)
         if(event.selfMember.canInteract(requested))
             event.replySuccess("The role **${requested.name}** was added as RoleMe!")
         else
@@ -169,12 +170,12 @@ private class RoleMeRemoveCmd : Command()
     {
         val query = event.args
         val found = event.guild.findRoles(query).stream()
-                .filter { event.manager.isRoleMe(it) }.toList()
+                .filter { SQLRoleMe.isRole(it) }.toList()
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
             return event.replyError(found multipleRoles query)
-        event.manager.removeRoleMe(found[0])
+        SQLRoleMe.deleteRole(found[0])
         event.replySuccess("The role **${found[0].name}** was removed from RoleMe!")
     }
 }
@@ -201,7 +202,7 @@ private class RoleMeListCmd(waiter: EventWaiter) : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val rolemes = event.manager.getRoleMes(event.guild).map { it.name }
+        val rolemes = SQLRoleMe.getRoles(event.guild).map { it.name }
         if(rolemes.isEmpty())
             return event.replyError("**No RoleMe roles on this server!**\n" +
                     SEE_HELP.format(event.client.prefix, "RoleMe"))
@@ -244,8 +245,8 @@ private class RoleMeLimitCmd : Command()
 }
 
 var CommandEvent.roleMeLimit : Int
-    set(value) = if(value == 0) manager.removeLimit(guild, "RoleMe") else manager.setLimit(guild, "RoleMe", value)
-    get() = manager.getLimit(guild, "RoleMe")
+    set(value) = if(value == 0) SQLLimits.removeLimit(guild, "RoleMe") else SQLLimits.setLimit(guild, "RoleMe", value)
+    get() = SQLLimits.getLimit(guild, "RoleMe")
 
 val CommandEvent.hasRoleMeLimit : Boolean
-    get() = manager.hasLimit(guild, "RoleMe")
+    get() = SQLLimits.hasLimit(guild, "RoleMe")

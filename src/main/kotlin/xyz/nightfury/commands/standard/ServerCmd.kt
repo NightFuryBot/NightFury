@@ -31,6 +31,7 @@ import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.User
+import xyz.nightfury.db.*
 import java.time.format.DateTimeFormatter
 import java.util.Comparator
 
@@ -273,31 +274,31 @@ private class ServerSettingsCmd : Command()
                 this.name = "Prefixes"
                 this.value = buildString {
                     this.append("`${event.client.prefix}`")
-                    event.client.manager.getPrefixes(guild).forEach { this.append(", `$it`") }
+                    SQLPrefixes.getPrefixes(guild).forEach { this.append(", `$it`") }
                 }
                 this.inline = true
             }
             field {
-                val modRole = event.client.manager.getModRole(guild)
+                val modRole = SQLModeratorRole.getRole(guild)
                 this.name = "Moderator Role"
                 this.value = if(modRole!=null) modRole.name else "None"
                 this.inline = true
             }
             field {
-                val modLog = event.client.manager.getModLog(guild)
+                val modLog = SQLModeratorLog.getChannel(guild)
                 this.name = "Moderator Log"
                 this.value = if(modLog!=null) modLog.asMention else "None"
                 this.inline = true
             }
             field {
-                val mutedRole = event.client.manager.getMutedRole(guild)
+                val mutedRole = SQLMutedRole.getRole(guild)
                 this.name = "Muted Role"
                 this.value = if(mutedRole!=null) mutedRole.name else "None"
                 this.inline = true
             }
             field {
                 this.name = "Cases"
-                this.value = "${event.client.manager.getCases(event.guild).size} cases"
+                this.value = "${SQLCases.getCases(event.guild).size} cases"
                 this.inline = true
             }
         })
@@ -328,9 +329,9 @@ private class ServerStatsCmd : Command()
             field {
                 name = "Members"
                 appendln("Total: ${event.guild.members.size}")
-                if(event.manager.hasModRole(event.guild))
+                if(SQLModeratorRole.hasRole(event.guild))
                 {
-                    val modRole = event.manager.getModRole(event.guild)
+                    val modRole = SQLModeratorRole.getRole(event.guild)
                     appendln("Moderators: ${event.guild.members.filter { it.roles.contains(modRole) }.size}")
                 }
                 appendln("Administrators: ${event.guild.members.filter { it.isAdmin }.size}")

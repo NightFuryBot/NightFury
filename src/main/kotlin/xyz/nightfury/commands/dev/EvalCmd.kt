@@ -22,6 +22,7 @@ import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.extensions.connectedChannel
 import xyz.nightfury.music.MusicManager
 import net.dv8tion.jda.core.entities.ChannelType
+import xyz.nightfury.db.Database
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
 import javax.script.ScriptException
@@ -81,7 +82,7 @@ class EvalCmd(val musicManager: MusicManager) : Command()
         put("author", event.author)
         put("channel", event.channel)
         put("client", event.client)
-        put("manager", event.manager)
+        put("manager", Database)
         put("musicManager", musicManager)
 
         // GUILD

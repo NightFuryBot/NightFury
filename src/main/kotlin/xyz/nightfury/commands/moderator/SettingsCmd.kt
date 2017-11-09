@@ -20,6 +20,10 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.entities.embed
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.db.SQLCases
+import xyz.nightfury.db.SQLModeratorRole
+import xyz.nightfury.db.SQLMutedRole
+import xyz.nightfury.db.SQLPrefixes
 
 /**
  * @author Kaidan Gustave
@@ -48,31 +52,31 @@ class SettingsCmd : Command()
                 this.name = "Prefixes"
                 this.value = buildString {
                     this.append("`${event.client.prefix}`")
-                    event.client.manager.getPrefixes(guild).forEach { this.append(", `$it`") }
+                    SQLPrefixes.getPrefixes(guild).forEach { this.append(", `$it`") }
                 }
                 this.inline = true
             }
             field {
-                val modRole = event.client.manager.getModRole(guild)
+                val modRole = SQLModeratorRole.getRole(guild)
                 this.name = "Moderator Role"
                 this.value = if(modRole!=null) modRole.name else "None"
                 this.inline = true
             }
             field {
-                val modLog = event.client.manager.getModLog(guild)
+                val modLog = SQLModeratorRole.getRole(guild)
                 this.name = "Moderator Log"
                 this.value = if(modLog!=null) modLog.asMention else "None"
                 this.inline = true
             }
             field {
-                val mutedRole = event.client.manager.getMutedRole(guild)
+                val mutedRole = SQLMutedRole.getRole(guild)
                 this.name = "Muted Role"
                 this.value = if(mutedRole!=null) mutedRole.name else "None"
                 this.inline = true
             }
             field {
                 this.name = "Cases"
-                this.value = "${event.client.manager.getCases(event.guild).size} cases"
+                this.value = "${SQLCases.getCases(event.guild).size} cases"
                 this.inline = true
             }
         })

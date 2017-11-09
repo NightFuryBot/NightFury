@@ -21,10 +21,8 @@ import net.dv8tion.jda.core.entities.Member
 /**
  * @author Kaidan Gustave
  */
-class MemberTrack(member: Member, val originalTrack: AudioTrack): AudioTrack by originalTrack
-{
-    init
-    {
+class MemberTrack(member: Member, val originalTrack: AudioTrack): AudioTrack by originalTrack {
+    init {
         userData = member
     }
 

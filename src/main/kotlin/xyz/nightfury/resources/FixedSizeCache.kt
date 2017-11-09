@@ -23,9 +23,10 @@ class FixedSizeCache<K : Any, V>(size: Int) : MutableMap<K, V> {
         require(size>0) { "Cache size must be at least 1!" }
     }
 
+    private var currIndex = 0
+
     private val map: MutableMap<K, V> = HashMap()
     private val backingKeys: Array<K?> = arrayOfNulls<Any>(size) as Array<K?>
-    private var currIndex = 0
 
     override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
         get() = map.entries
@@ -36,10 +37,12 @@ class FixedSizeCache<K : Any, V>(size: Int) : MutableMap<K, V> {
     override val values: MutableCollection<V>
         get() = map.values
 
-    override val size : Int
+    override val size: Int
         get() = map.size
 
-    operator fun set(key: K, value: V) { put(key, value) }
+    operator fun set(key: K, value: V) {
+        put(key, value)
+    }
 
     override fun clear() {
         map.clear()
@@ -62,15 +65,15 @@ class FixedSizeCache<K : Any, V>(size: Int) : MutableMap<K, V> {
 
     override fun remove(key: K): V? = map.remove(key)
 
-    override fun isEmpty() = size == 0
+    override fun isEmpty(): Boolean = size == 0
 
     override fun get(key: K) : V? = map[key]
 
-    override fun getOrDefault(key: K, defaultValue: V): V = map[key]?:defaultValue
+    override fun getOrDefault(key: K, defaultValue: V): V = map[key] ?: defaultValue
 
-    override fun containsKey(key: K) = map.containsKey(key)
+    override fun containsKey(key: K): Boolean = map.containsKey(key)
 
-    override fun containsValue(value: V) = map.containsValue(value)
+    override fun containsValue(value: V): Boolean = map.containsValue(value)
 
     override fun forEach(action: BiConsumer<in K, in V>) = map.forEach(action)
 }

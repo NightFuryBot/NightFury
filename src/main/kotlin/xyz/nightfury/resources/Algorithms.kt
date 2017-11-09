@@ -18,10 +18,8 @@ package xyz.nightfury.resources
 /**
  * @author Kaidan Gustave
  */
-object Algorithms
-{
-    fun selectResultURL(query: String, results: List<String>): String
-    {
+object Algorithms {
+    fun selectResultURL(query: String, results: List<String>): String {
         // Start with last index of the results
         var index = results.size - 1
 

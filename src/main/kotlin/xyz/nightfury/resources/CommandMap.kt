@@ -38,8 +38,7 @@ import xyz.nightfury.Command
  *
  * @author Kaidan Gustave
  */
-class CommandMap(private vararg val commands : Command) : Collection<Command>
-{
+class CommandMap(private vararg val commands : Command) : Collection<Command> {
     private val map = HashMap<String, Int>()
 
     /** The size of the initial [Command] [Array]. */
@@ -62,7 +61,7 @@ class CommandMap(private vararg val commands : Command) : Collection<Command>
      * @return A [Command] with a matching [name], or
      * `null` if no Command matches.
      */
-    operator fun get(name: String) = getCommandByName(name)
+    operator fun get(name: String): Command? = getCommandByName(name)
 
     /**
      * `contains` operator shortcut for [containsName].
@@ -74,7 +73,7 @@ class CommandMap(private vararg val commands : Command) : Collection<Command>
      * @return `true` if this [CommandMap] contains a
      * [Command] with a matching [name], `false` otherwise.
      */
-    operator fun contains(name: String) = containsName(name)
+    operator fun contains(name: String): Boolean = containsName(name)
 
     /**
      * Gets a [Command] with a matching [name], or `null` if no
@@ -87,7 +86,7 @@ class CommandMap(private vararg val commands : Command) : Collection<Command>
      * @return A [Command] with a matching [name], or `null` if
      * no Command matches.
      */
-    fun getCommandByName(name: String) = if(containsName(name)) {
+    fun getCommandByName(name: String): Command? = if(containsName(name)) {
         commands.getOrNull(map.getOrDefault(name.toLowerCase(), -1))
     } else null
 
@@ -102,7 +101,7 @@ class CommandMap(private vararg val commands : Command) : Collection<Command>
      * @return `true` if this [CommandMap] contains a
      * [Command] with a matching [name], `false` otherwise.
      */
-    fun containsName(name: String) = map.contains(name.toLowerCase())
+    fun containsName(name: String): Boolean = map.contains(name.toLowerCase())
 
     /**
      * Returns `true` if and only if the backing [map] index
@@ -117,7 +116,7 @@ class CommandMap(private vararg val commands : Command) : Collection<Command>
      * [Commands][Command] with matching [names], `false`
      * otherwise.
      */
-    fun containsAllNames(names: Collection<String>) : Boolean {
+    fun containsAllNames(names: Collection<String>): Boolean {
         names.forEach { if(!map.contains(it)) return false }
         return true
     }
@@ -126,14 +125,14 @@ class CommandMap(private vararg val commands : Command) : Collection<Command>
     // OVERRIDES //
     ///////////////
 
-    override fun contains(element: Command) = commands.contains(element)
+    override fun contains(element: Command): Boolean = commands.contains(element)
 
-    override fun containsAll(elements: Collection<Command>) : Boolean {
+    override fun containsAll(elements: Collection<Command>): Boolean {
         elements.forEach { if(!commands.contains(it)) return false }
         return true
     }
 
-    override fun isEmpty() = commands.isEmpty() && map.isEmpty()
+    override fun isEmpty(): Boolean = commands.isEmpty() && map.isEmpty()
 
-    override fun iterator() = commands.iterator()
+    override fun iterator(): Iterator<Command> = commands.iterator()
 }

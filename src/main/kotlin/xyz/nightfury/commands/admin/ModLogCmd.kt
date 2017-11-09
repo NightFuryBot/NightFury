@@ -23,6 +23,7 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.NoBaseExecutionCommand
+import xyz.nightfury.db.SQLModeratorLog
 
 /**
  * @author Kaidan Gustave
@@ -60,7 +61,7 @@ private class ModLogSetCmd : Command()
             return@with this[0]
         }
 
-        event.manager.setModLog(channel)
+        SQLModeratorLog.setChannel(channel)
         event.replySuccess("Moderation log was set to ${channel.asMention}!")
     }
 }

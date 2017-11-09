@@ -132,7 +132,7 @@ class Profile(val user: User,
                 this@embed.field {
                     this@field.name = "Birthday"
 
-                    this@field.append("${Emojis.CAKE} ${birthday.readableFormat}")
+                    this@field.append("${Emojis.CAKE} ${birthday.month.niceName} ${birthday.dayOfMonth}")
 
                     this@field.inline = true
                 }

@@ -22,6 +22,7 @@ import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.then
 import xyz.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.db.SQLMutedRole
 import java.awt.Color
 
 /**
@@ -42,7 +43,7 @@ class MuteCmd : Command() {
 
     override fun execute(event: CommandEvent)
     {
-        val mutedRole = event.client.manager.getMutedRole(event.guild)
+        val mutedRole = SQLMutedRole.getRole(event.guild)
                 ?:return event.replyError("**Muted role has not been setup!**\n" +
                 "Try using `${event.client.prefix}mute setup` to create a new mute role, or `${event.client.prefix}mute set` to " +
                 "register an existing one!")
@@ -97,7 +98,7 @@ private class SetupMuteCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        if(event.client.manager.getMutedRole(event.guild)!=null)
+        if(SQLMutedRole.hasRole(event.guild))
             return event.replyError("**Muted role already exists on this server!**\n" +
                     "To change it, use `${event.client.prefix}mute set`!")
         else event.guild.controller.promiseRole {
@@ -135,10 +136,10 @@ private class SetMutedRoleCmd : Command()
         if(found.size>1)
             return event.replyError(found multipleRoles query)
         val requested = found[0]
-        val muted = event.client.manager.getMutedRole(event.guild)
+        val muted = SQLMutedRole.getRole(event.guild)
         if(muted!=null && muted == requested)
             return event.replyError("**${requested.name}** is already the muted role for this server!")
-        event.client.manager.setMutedRole(requested)
+        SQLMutedRole.setRole(requested)
         if(event.selfMember.canInteract(requested)) {
             event.guild refreshMutedRole requested
             event.replySuccess("**${requested.name}** was set as the muted role for this server!")

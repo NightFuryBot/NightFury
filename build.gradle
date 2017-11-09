@@ -42,7 +42,7 @@ plugins {
     id "com.github.johnrengelman.shadow" version "2.0.1"
 }
 
-def versionObj = new Version(major: 0, minor: 7, build: 7)
+def versionObj = new Version(major: 0, minor: 7, build: 8)
 group = 'xyz.nightfury'
 version = versionObj
 

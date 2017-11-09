@@ -17,8 +17,7 @@ package xyz.nightfury
 
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.db.SQLLevel
-import xyz.nightfury.db.SQLMusicWhitelist
+import xyz.nightfury.db.*
 import xyz.nightfury.resources.Arguments
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
@@ -326,7 +325,7 @@ enum class CommandLevel(val rank: Int, private val predicate: (CommandEvent) -> 
     SHENGAERO(1, { it.isDev }),
     SERVER_OWNER(2, { SHENGAERO test it || it.member.isOwner }),
     ADMIN(3, { SERVER_OWNER test it || it.member.hasPermission(Permission.ADMINISTRATOR) }),
-    MODERATOR(4, { ADMIN test it || with(it.manager.getModRole(it.guild)) { this != null && it.member.roles.contains(this) } }),
+    MODERATOR(4, { ADMIN test it || SQLModeratorRole.getRole(it.guild).run { this != null && it.member.roles.contains(this) } }),
     STANDARD(5, { true });
 
     infix fun test(event: CommandEvent) = predicate.invoke(event)
@@ -362,9 +361,7 @@ enum class Category(val title: String,
     ADMIN("Administrator", { SERVER_OWNER test it || (it.isFromType(ChannelType.TEXT) && it.member.hasPermission(Permission.ADMINISTRATOR)) }),
 
     MODERATOR("Moderator", { ADMIN test it || (it.isFromType(ChannelType.TEXT) &&
-                             with(it.manager.getModRole(it.guild)) {
-                                 this != null && it.member.roles.contains(this)
-                             })
+                             SQLModeratorRole.getRole(it.guild).run { this != null && it.member.roles.contains(this) })
     }),
 
     // Other Categories

@@ -92,7 +92,7 @@ class NightFury {
         val musicManager = MusicManager()
 
         val client = Client(
-            config.prefix, config.devId, Database,
+            config.prefix, config.devId,
             config.success, config.warning, config.error,
             config.server, config.dbotsKey, config.dborgKey,
             waiter, parser,

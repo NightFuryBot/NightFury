@@ -46,6 +46,8 @@ import org.json.JSONObject
 import org.json.JSONTokener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.nightfury.db.SQLPrefixes
+import xyz.nightfury.db.SQLWelcomes
 import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -59,22 +61,22 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
-class Client internal constructor
-(val prefix: String, val devId: Long, val manager: Database,
- val success: String, val warning: String, val error: String,
- val server: String, val dBotsKey: String, val dBorgKey: String,
- val waiter: EventWaiter, val parser: Parser, vararg commands: Command): EventListener
-{
+class Client internal constructor(val prefix: String, val devId: Long,
+                                  val success: String, val warning: String,
+                                  val error: String, val server: String,
+                                  val dBotsKey: String, val dBorgKey: String,
+                                  val waiter: EventWaiter, val parser: Parser,
+                                  vararg commands: Command): EventListener {
+
     //////////////////////
     // PRE-INIT MEMBERS //
     //////////////////////
 
-    var totalGuilds : Int = 0
+    var totalGuilds: Int = 0
         private set
 
     var mode : CommandListener.Mode = CommandListener.Mode.STANDARD
-        set(value)
-        {
+        set(value) {
             NormalFilter.level = value.level.logLevel
             listener = value.listener
             field = value
@@ -82,19 +84,18 @@ class Client internal constructor
 
     val commands         : CommandMap               = CommandMap(*commands)
     val startTime        : OffsetDateTime           = OffsetDateTime.now()
-    val logger           : ModLogger                = ModLogger(manager)
+    val logger           : ModLogger                = ModLogger // TODO Remove this instance
     val messageCacheSize : Int
         get() = callCache.size
 
-    internal var listener : CommandListener = CommandListener.Mode.STANDARD.listener
+    internal var listener: CommandListener = CommandListener.Mode.STANDARD.listener
 
-    private val executor  : ScheduledExecutorService                  = Executors.newSingleThreadScheduledExecutor()
-    private val cooldowns : MutableMap<String, OffsetDateTime>        = HashMap()
-    private val uses      : MutableMap<String, Int>                   = HashMap()
-    private val callCache : FixedSizeCache<Long, MutableSet<Message>> = FixedSizeCache(300)
+    private val executor : ScheduledExecutorService                  = Executors.newSingleThreadScheduledExecutor()
+    private val cooldowns: MutableMap<String, OffsetDateTime>        = HashMap()
+    private val uses     : MutableMap<String, Int>                   = HashMap()
+    private val callCache: FixedSizeCache<Long, MutableSet<Message>> = FixedSizeCache(300)
 
-    companion object
-    {
+    companion object {
         private val log: Logger = LoggerFactory.getLogger("Client")
     }
 
@@ -102,40 +103,34 @@ class Client internal constructor
     // MEMBER FUNCTIONS //
     //////////////////////
 
-    fun getRemainingCooldown(name: String) : Int
-    {
+    fun getRemainingCooldown(name: String): Int {
         return if(cooldowns.containsKey(name)) {
             val time = OffsetDateTime.now().until(cooldowns[name], ChronoUnit.SECONDS).toInt()
             if(time <= 0) {
-                cooldowns.remove(name); 0
+                cooldowns.remove(name); 0 // Return zero because the cooldown is expired
             } else time
         } else 0
     }
 
-    fun applyCooldown(name: String, seconds: Int)
-    {
+    fun applyCooldown(name: String, seconds: Int) {
         cooldowns.put(name, OffsetDateTime.now().plusSeconds(seconds.toLong()))
     }
 
-    fun cleanCooldowns()
-    {
+    fun cleanCooldowns() {
         val now = OffsetDateTime.now()
         cooldowns.keys.stream().filter { cooldowns[it]!!.isBefore(now) }.toList().forEach { cooldowns.remove(it) }
     }
 
     @Suppress("unused")
-    fun getUsesFor(command: Command) : Int
-    {
+    fun getUsesFor(command: Command): Int {
         synchronized(uses) { return uses.getOrDefault(command.name, 0) }
     }
 
-    fun incrementUses(command: Command)
-    {
+    fun incrementUses(command: Command) {
         synchronized(uses) { uses.put(command.name, uses.getOrDefault(command.name, 0)+1) }
     }
 
-    fun searchCommand(query: String): Command?
-    {
+    fun searchCommand(query: String): Command? {
         val splitQuery = query.split(Arguments.commandArgs, 2)
         return commands.firstOrNull { it.isForCommand(splitQuery[0]) }
                 ?.findChild(if(splitQuery.size > 1) splitQuery[1] else "")
@@ -145,8 +140,7 @@ class Client internal constructor
     //      EVENTS      //
     //////////////////////
 
-    override fun onEvent(event: Event?)
-    {
+    override fun onEvent(event: Event?) {
         when(event)
         {
             is MessageReceivedEvent -> onMessageReceived(event)
@@ -164,9 +158,8 @@ class Client internal constructor
         }
     }
 
-    private fun onReady(event: ReadyEvent)
-    {
-        event.jda.addEventListener(waiter, DatabaseListener(manager), AutoLoggingListener(manager, logger))
+    private fun onReady(event: ReadyEvent) {
+        event.jda.addEventListener(waiter, DatabaseListener(), AutoLoggingListener())
         event.jda.presence.status = OnlineStatus.ONLINE
         event.jda.presence.game = Game.of("Type ${prefix}help")
 
@@ -174,15 +167,13 @@ class Client internal constructor
         log.info("${if(si == null) "NightFury" else "[${si.shardId} / ${si.shardTotal - 1}]"} is Online!")
 
         val toLeave = event.jda.guilds.stream().filter { !it.isGood }.toList()
-        if(toLeave.isNotEmpty())
-        {
+        if(toLeave.isNotEmpty()) {
             toLeave.forEach { it.leave().queue() }
             log.info("Left ${toLeave.size} bad guilds!")
         }
 
         // Clear Caches every hour
-        if(si == null || si.shardId == 0)
-        {
+        if(si == null || si.shardId == 0) {
             executor.scheduleAtFixedRate({
                 try {
                     clearAPICaches()
@@ -196,33 +187,22 @@ class Client internal constructor
         updateStats(event.jda)
     }
 
-    private fun onMessageReceived(event: MessageReceivedEvent)
-    {
+    private fun onMessageReceived(event: MessageReceivedEvent) {
         if(event.author.isBot)
             return
         val rawContent = event.message.rawContent.trim()
-        val parts: List<String>
-
-        when
-        {
-            rawContent.startsWith(prefix, true) -> // From Anywhere with default prefix
-            {
-                parts = rawContent.substring(prefix.length).trim().split(Arguments.commandArgs, 2)
+        val parts: List<String> = when {
+            rawContent.startsWith(prefix, true) -> { // From Anywhere with default prefix
+                rawContent.substring(prefix.length).trim().split(Arguments.commandArgs, 2)
             }
 
-            event.guild != null -> // From Guild without default prefix
-            {
-                val prefixes = manager.getPrefixes(event.guild)
-                if(prefixes.isNotEmpty())
-                {
-                    val prefix = prefixes.find { rawContent.startsWith(it, true) }
-                    if(prefix!=null)
-                    {
-                        parts = rawContent.substring(prefix.length).trim().split(Arguments.commandArgs, 2)
-                    }
-                    else return
-                }
-                else return
+            event.guild != null -> { // From Guild without default prefix
+                val prefixes = SQLPrefixes.getPrefixes(event.guild)
+                if(prefixes.isNotEmpty()) {
+                    val prefix = prefixes.find { rawContent.startsWith(it, true) } ?: return
+
+                    rawContent.substring(prefix.length).trim().split(Arguments.commandArgs, 2)
+                } else return
             }
 
             else -> return // No match, not a command call
@@ -278,13 +258,13 @@ class Client internal constructor
                                                  "- Close Code: ${if(cc != null) "${cc.code} - ${cc.meaning}" else "${event.code} - Unknown Code!"}\n" +
                                                  "- Time: ${event.shutdownTime}")
         executor.shutdownNow()
-        manager.close()
+        Database.close()
     }
 
     private fun onGuildMemberJoin(event: GuildMemberJoinEvent)
     {
         // If there's no welcome channel then we just return.
-        val welcomeChannel = manager.getWelcomeChannel(event.guild)?:return
+        val welcomeChannel = Database.getWelcomeChannel(event.guild)?:return
 
         // We can't even send messages to the channel so we return
         if(!welcomeChannel.canTalk()) return
@@ -300,7 +280,7 @@ class Client internal constructor
                 .put("guild", event.guild)
                 .put("channel", welcomeChannel)
                 .put("user", event.user)
-                .parse(manager.getWelcomeMessage(event.guild))
+                .parse(SQLWelcomes.getMessage(event.guild))
 
         // Too long or empty means we can't send, so we just return because it'll break otherwise
         if(message.isEmpty() || message.length>2000) return

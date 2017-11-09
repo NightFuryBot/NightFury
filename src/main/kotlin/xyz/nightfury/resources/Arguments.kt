@@ -15,13 +15,12 @@
  */
 package xyz.nightfury.resources
 
-object Arguments
-{
-    val commandArgs = Regex("\\s+")
-    val emoteRegex = Regex("<:\\S{2,32}:(\\d+)>")
-    val discordID = Regex("(\\d{17,20})")
-    val userMention = Regex("<@!?(\\d{17,20})>")
-    val reasonPattern = Regex("(^.+)\\s(?:for\\s+)([\\s\\S]+)$", RegexOption.DOT_MATCHES_ALL)
-    val targetIDWithReason = Regex("(\\d{17,20})(?:\\s+(?:for\\s+)?([\\s\\S]+))?")
-    val targetMentionWithReason = Regex("<@!?(\\d{17,20})>(?:\\s+(?:for\\s+)?([\\s\\S]+))?")
+object Arguments {
+    val commandArgs: Regex = Regex("\\s+")
+    val emoteRegex: Regex = Regex("<:\\S{2,32}:(\\d+)>")
+    val discordID: Regex = Regex("(\\d{17,20})")
+    val userMention: Regex = Regex("<@!?(\\d{17,20})>")
+    val reasonPattern: Regex = Regex("(^.+)\\s(?:for\\s+)([\\s\\S]+)$", RegexOption.DOT_MATCHES_ALL)
+    val targetIDWithReason: Regex = Regex("(\\d{17,20})(?:\\s+(?:for\\s+)?([\\s\\S]+))?")
+    val targetMentionWithReason: Regex = Regex("<@!?(\\d{17,20})>(?:\\s+(?:for\\s+)?([\\s\\S]+))?")
 }

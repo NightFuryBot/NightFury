@@ -17,6 +17,7 @@ package xyz.nightfury.commands.admin
 
 import xyz.nightfury.*
 import xyz.nightfury.annotations.MustHaveArguments
+import xyz.nightfury.db.SQLWelcomes
 import xyz.nightfury.extensions.findTextChannels
 import xyz.nightfury.extensions.multipleTextChannels
 import xyz.nightfury.extensions.noMatch
@@ -73,7 +74,7 @@ private class WelcomeSetCmd : Command()
 
         if(!channel.canTalk()) return event.replyError("I cannot speak in the channel you specified!")
 
-        event.manager.setWelcome(channel, args[1])
+        SQLWelcomes.setWelcome(channel, args[1])
         event.replySuccess("Successfully set welcome message for this server!")
         event.invokeCooldown()
     }
@@ -91,9 +92,9 @@ private class WelcomeDisableCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        if(!event.manager.hasWelcome(event.guild))
+        if(!SQLWelcomes.hasWelcome(event.guild))
             return event.replyError("I cannot disable welcomes because it is not enabled for this server!")
-        event.manager.resetWelcome(event.guild)
+        SQLWelcomes.removeWelcome(event.guild)
         event.replySuccess("Successfully disabled welcomes for this server!")
     }
 }
@@ -110,7 +111,7 @@ private class WelcomeRawCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val message = event.manager.getWelcomeMessage(event.guild)
+        val message = SQLWelcomes.getMessage(event.guild)
                 ?:return event.replyError("This server does not have a welcome message!")
         event.replySuccess("**Welcome message for ${event.guild.name}:** ```\n$message```")
     }

@@ -26,25 +26,20 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 /**
  * @author Kaidan Gustave
  */
-interface CommandListener
-{
-    fun checkCall(event: MessageReceivedEvent, client: Client, name: String, args: String) = true
+interface CommandListener {
+    fun checkCall(event: MessageReceivedEvent, client: Client, name: String, args: String): Boolean = true
     fun onCommandCall(event: CommandEvent, command: Command) {}
     fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?) {}
     fun onCommandCompleted(event: CommandEvent, command: Command) {}
     fun onException(event: CommandEvent, command: Command, exception: Throwable) {}
 
-    enum class Mode(val type: String, val level: Level, val listener: CommandListener)
-    {
-        STANDARD("standard", Level.INFO, object : CommandListener
-        {
-            override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?)
-            {
+    enum class Mode(val type: String, val level: Level, val listener: CommandListener) {
+        STANDARD("standard", Level.INFO, object : CommandListener {
+            override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?) {
                 if(msg != null) event.reply(msg)
             }
 
-            override fun onException(event: CommandEvent, command: Command, exception: Throwable)
-            {
+            override fun onException(event: CommandEvent, command: Command, exception: Throwable) {
                 NightFury.LOG.error("The CommandListener caught an Exception!")
                 NightFury.LOG.error("Command: ${command.name}")
                 if(exception.message != null)
@@ -53,46 +48,39 @@ interface CommandListener
             }
         }),
 
-        IDLE("idle", Level.OFF, object : CommandListener
-        {
+        IDLE("idle", Level.OFF, object : CommandListener {
             override fun checkCall(event: MessageReceivedEvent,
                                    client: Client, name: String,
                                    args: String) = event.author.idLong == client.devId
 
-            override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?)
-            {
+            override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?) {
                 if(msg != null) event.reply(msg)
             }
 
             override fun onException(event: CommandEvent, command: Command, exception: Throwable) {}
         }),
 
-        DEBUG("debug", Level.DEBUG, object : CommandListener
-        {
-            override fun onCommandCall(event: CommandEvent, command: Command)
-            {
+        DEBUG("debug", Level.DEBUG, object : CommandListener {
+            override fun onCommandCall(event: CommandEvent, command: Command) {
                 NightFury.LOG.debug("Call to Command \"${command.name}\"")
             }
 
-            override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?)
-            {
+            override fun onCommandTerminated(event: CommandEvent, command: Command, msg: String?) {
                 if(msg != null) event.reply(msg)
                 NightFury.LOG.debug("Terminated Command \"${command.name}\" with message: \"$msg\"")
             }
 
-            override fun onCommandCompleted(event: CommandEvent, command: Command)
-            {
+            override fun onCommandCompleted(event: CommandEvent, command: Command) {
                 NightFury.LOG.debug("Completed Command \"${command.name}\"")
             }
 
-            override fun onException(event: CommandEvent, command: Command, exception: Throwable)
-            {
+            override fun onException(event: CommandEvent, command: Command, exception: Throwable) {
                 NightFury.LOG.debug("Exception Caught for Command \"${command.name}\"",exception)
             }
         });
 
         companion object {
-            fun typeOf(type: String) = values().firstOrNull { it.type.equals(type, true) }
+            fun typeOf(type: String): Mode? = values().firstOrNull { it.type.equals(type, ignoreCase = true) }
         }
     }
 }

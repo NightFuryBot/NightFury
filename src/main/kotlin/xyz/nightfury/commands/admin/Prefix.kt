@@ -20,6 +20,7 @@ import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.embed
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.db.SQLPrefixes
 
 /**
  * @author Kaidan Gustave
@@ -62,14 +63,14 @@ private class PrefixAddCmd : Command() {
             args.equals(event.client.prefix, true) -> // Default Prefix
                 event.replyError("`$args` cannot be added as a prefix because it is the default prefix!")
 
-            event.manager.isPrefixFor(event.guild, args) -> // Already a prefix
+            SQLPrefixes.isPrefix(event.guild, args) -> // Already a prefix
                 event.replyError("`$args` cannot be added as a prefix because it is already a prefix!")
 
             args.length>50 -> // Longer than allowed
                 event.replyError("`$args` cannot be added as a prefix because it's longer than 50 characters!")
 
             else -> {
-                event.manager.addPrefix(event.guild, args)
+                SQLPrefixes.addPrefix(event.guild, args)
                 event.replySuccess("`$args` was added as a prefix!")
                 event.invokeCooldown()
             }
@@ -97,11 +98,11 @@ private class PrefixRemoveCmd : Command() {
             args.equals(event.client.prefix, true) -> // Default prefix
                 event.replyError("`$args` cannot be removed as a prefix because it is the default prefix!")
 
-            !event.manager.isPrefixFor(event.guild, args) -> // Not a prefix
+            !SQLPrefixes.isPrefix(event.guild, args) -> // Not a prefix
                 event.replyError("`$args` cannot be removed as a prefix because it is not a prefix!")
 
             else -> {
-                event.manager.removePrefix(event.guild, args)
+                SQLPrefixes.removePrefix(event.guild, args)
                 event.replySuccess("`$args` was removed as a prefix!")
             }
         }
@@ -123,7 +124,7 @@ private class PrefixListCmd : Command() {
 
     override fun execute(event: CommandEvent)
     {
-        val prefixes = event.client.manager.getPrefixes(event.guild)
+        val prefixes = SQLPrefixes.getPrefixes(event.guild)
         if(prefixes.isEmpty())
             event.replyError("There are no custom prefixes available for this server!")
         else event.reply(embed {

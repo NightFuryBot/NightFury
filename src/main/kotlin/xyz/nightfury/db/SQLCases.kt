@@ -19,6 +19,7 @@ package xyz.nightfury.db
 import xyz.nightfury.entities.Case
 import xyz.nightfury.entities.LogAction
 import net.dv8tion.jda.core.entities.Guild
+import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.User
 
 /**
@@ -79,6 +80,8 @@ object SQLCases : Table() {
             }
         }
     }
+
+    fun getCasesByUser(member: Member): List<Case> = getCasesByUser(member.guild, member.user)
 
     fun getCasesByUser(guild: Guild, user: User): List<Case> {
         val list = ArrayList<Case>()

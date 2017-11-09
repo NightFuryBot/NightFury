@@ -38,63 +38,54 @@ MutableList<MemberTrack> by ArrayList()
         private set
 
     val skips: Int
-        get()
-        {
+        get() {
             val currentIds = voiceChannel.members.map { it.user.idLong }
-            skipping.forEach { if(!currentIds.contains(it)) skipping.remove(it) }
+            skipping.removeIf { !currentIds.contains(it) }
             return skipping.size
         }
 
     val totalToSkip : Int
-        get()
-        {
+        get() {
             val totalMembers = listeners.size
-            return if(totalMembers % 2 == 0) totalMembers / 2 else (totalMembers / 2) + 1
+            return if(totalMembers % 2 == 0) (totalMembers / 2) else ((totalMembers / 2) + 1)
         }
 
     val listeners : List<Member>
         get() = voiceChannel.members.filter { !it.user.isBot }
 
-    init
-    {
+    init {
         voiceChannel.guild.audioManager.sendingHandler = this
         currentTrack = firstTrack
         audioPlayer.playTrack(currentTrack.originalTrack)
     }
 
-    fun next()
-    {
-        if(isNotEmpty())
-        {
+    fun next() {
+        if(isNotEmpty()) {
             if(currentTrack.state != AudioTrackState.FINISHED)
                 currentTrack.stop()
+
             currentTrack = removeAt(0)
             audioPlayer.playTrack(currentTrack.originalTrack)
             skipping.clear()
-        }
-        else dispose()
+        } else dispose()
     }
 
-    fun queue(track: MemberTrack): Int
-    {
+    fun queue(track: MemberTrack): Int {
         add(track)
         return indexOf(track) + 1
     }
 
     // Credit to jagrosh for the original shuffle code
-    fun shuffle(userId: Long): Int
-    {
+    fun shuffle(userId: Long): Int {
         val indexList = ArrayList<Int>()
 
         @Suppress("LoopToCallChain")
-        for(i in indices)
-        {
+        for(i in indices) {
             if(this[i].member.user.idLong == userId)
                 indexList += i
         }
 
-        for(i in indexList.indices)
-        {
+        for(i in indexList.indices) {
             val first = indexList[i]
             val second = indexList[(Math.random()*indexList.size).toInt()]
             val temp = this[first]
@@ -107,22 +98,19 @@ MutableList<MemberTrack> by ArrayList()
 
     fun isSkipping(member: Member): Boolean = skipping.contains(member.user.idLong)
 
-    fun voteToSkip(member: Member): Int
-    {
+    fun voteToSkip(member: Member): Int {
         skipping.add(member.user.idLong)
         return skips
     }
 
-    fun skip(): MemberTrack
-    {
+    fun skip(): MemberTrack {
         val skippedTrack = currentTrack
         currentTrack.stop()
         next()
         return skippedTrack
     }
 
-    override fun canProvide(): Boolean
-    {
+    override fun canProvide(): Boolean {
         lastFrame = audioPlayer.provide() ?: return false
         return true
     }
@@ -131,14 +119,17 @@ MutableList<MemberTrack> by ArrayList()
 
     override fun isOpus() = true
 
-    fun dispose()
-    {
+    fun dispose() {
         // Destroy
         // Close Connection
         // Die
         // Repeat...
         audioPlayer.destroy()
+
+        // JDA Audio Connections MUST be closed on a separate thread
         MusicManager.threadpool.submit { voiceChannel.guild.audioManager.closeAudioConnection() }
+
+        // We mark this as dead because it might need to be cleared later manually.
         isDead = true
     }
 }

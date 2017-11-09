@@ -25,6 +25,7 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
+import xyz.nightfury.db.SQLColorMe
 import java.awt.Color
 import kotlin.streams.toList
 
@@ -60,7 +61,7 @@ class ColorMeCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val allColormes = event.manager.getColorMes(event.guild)
+        val allColormes = SQLColorMe.getRoles(event.guild)
         if(allColormes.isEmpty())
             return event.replyError("**No ColorMe roles on this server!**\n" +
                     SEE_HELP.format(event.client.prefix, name))
@@ -139,9 +140,9 @@ private class ColorMeAddCmd : Command()
         if(found.size>1)
             return event.replyError(found.multipleRoles(query))
         val requested = found[0]
-        if(event.manager.isColorMe(requested))
+        if(SQLColorMe.isRole(requested))
             return event.replyError("The role **${requested.name}** is already a ColorMe role!")
-        event.manager.addColorMe(requested)
+        SQLColorMe.addRole(requested)
         if(event.selfMember.canInteract(requested))
             event.replySuccess("The role **${requested.name}** was added as ColorMe!")
         else
@@ -169,12 +170,12 @@ private class ColorMeRemoveCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        val found = event.guild.findRoles(query).stream().filter { event.manager.isColorMe(it) }.toList()
+        val found = event.guild.findRoles(query).stream().filter { SQLColorMe.isRole(it) }.toList()
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
             return event.replyError(found.multipleRoles(query))
-        event.manager.removeColorMe(found[0])
+        SQLColorMe.deleteRole(found[0])
         event.replySuccess("The role **${found[0].name}** was removed from ColorMe!")
     }
 }

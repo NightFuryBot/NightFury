@@ -17,7 +17,6 @@ package xyz.nightfury.listeners
 
 import xyz.nightfury.extensions.muteRole
 import xyz.nightfury.extensions.refreshMutedRole
-import xyz.nightfury.db.Database
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.ReadyEvent
 import net.dv8tion.jda.core.events.channel.category.CategoryCreateEvent
@@ -28,136 +27,114 @@ import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent
 import net.dv8tion.jda.core.events.role.RoleDeleteEvent
 import net.dv8tion.jda.core.hooks.EventListener
+import xyz.nightfury.db.*
 
 /**
  * @author Kaidan Gustave
  */
-class DatabaseListener(private val manager: Database) : EventListener
-{
-    override fun onEvent(event: Event?) = when(event)
-    {
-        is ReadyEvent              -> onReady(event)
-        is RoleDeleteEvent         -> onRoleDelete(event)
-        is TextChannelCreateEvent  -> onTextChannelCreate(event)
-        is TextChannelDeleteEvent  -> onTextChannelDelete(event)
-        is VoiceChannelCreateEvent -> onVoiceChannelCreate(event)
-        is CategoryCreateEvent     -> onCategoryCreate(event)
-        is GuildMemberJoinEvent    -> onGuildMemberJoin(event)
-        is GuildMemberLeaveEvent   -> onGuildMemberLeave(event)
-
-        else -> Unit
-    }
-
-    fun onReady(event: ReadyEvent)
-    {
-        event.jda.guilds.forEach {
-            val muted = manager getMutedRole it
-            if(muted!=null)
-                it refreshMutedRole muted
+class DatabaseListener : EventListener {
+    override fun onEvent(event: Event?) {
+        when(event) {
+            is ReadyEvent              -> onReady(event)
+            is RoleDeleteEvent         -> onRoleDelete(event)
+            is TextChannelCreateEvent  -> onTextChannelCreate(event)
+            is TextChannelDeleteEvent  -> onTextChannelDelete(event)
+            is VoiceChannelCreateEvent -> onVoiceChannelCreate(event)
+            is CategoryCreateEvent     -> onCategoryCreate(event)
+            is GuildMemberJoinEvent    -> onGuildMemberJoin(event)
+            is GuildMemberLeaveEvent   -> onGuildMemberLeave(event)
         }
     }
 
-    fun onRoleDelete(event: RoleDeleteEvent)
-    {
+    fun onReady(event: ReadyEvent) {
+        event.jda.guilds.forEach {
+            it.refreshMutedRole(SQLMutedRole.getRole(it) ?: return@forEach)
+        }
+    }
+
+    fun onRoleDelete(event: RoleDeleteEvent) {
         // RoleMe Deleted
-        if(manager.isRoleMe(event.role))
-            manager.removeRoleMe(event.role)
+        if(SQLRoleMe.isRole(event.role))
+            SQLRoleMe.deleteRole(event.role)
 
         // ColorMe Deleted
-        if(manager.isColorMe(event.role))
-            manager.removeColorMe(event.role)
+        if(SQLColorMe.isRole(event.role))
+            SQLColorMe.deleteRole(event.role)
 
         // Mod Role Deleted
-        val modRole = manager.getModRole(event.guild)
-        if(modRole!=null) {
-            if(modRole==event.role)
-                manager.resetModRole(event.guild)
+        val modRole = SQLModeratorRole.getRole(event.guild)
+        if(modRole != null) {
+            if(modRole == event.role)
+                SQLModeratorRole.deleteRole(event.guild)
         } else {
-            if(manager.hasModRole(event.guild))
-                manager.resetModRole(event.guild)
+            if(SQLModeratorRole.hasRole(event.guild))
+                SQLModeratorRole.deleteRole(event.guild)
         }
 
         // Muted Role Deleted
-        val mutedRole = manager.getMutedRole(event.guild)
-        if(mutedRole!=null) {
-            if(mutedRole==event.role)
-                manager.resetMutedRole(event.guild)
+        val mutedRole = SQLMutedRole.getRole(event.guild)
+        if(mutedRole != null) {
+            if(mutedRole == event.role)
+                SQLMutedRole.deleteRole(event.guild)
         } else {
-            if(manager.hasMutedRole(event.guild))
-                manager.resetMutedRole(event.guild)
+            if(SQLMutedRole.hasRole(event.guild))
+                SQLMutedRole.deleteRole(event.guild)
         }
     }
 
-    fun onTextChannelCreate(event: TextChannelCreateEvent)
-    {
-        val muted = manager.getMutedRole(event.guild)
-        if(muted!=null)
-            event.channel muteRole muted
+    fun onTextChannelCreate(event: TextChannelCreateEvent) {
+        event.channel.muteRole(SQLMutedRole.getRole(event.guild) ?: return)
+    }
+
+    fun onVoiceChannelCreate(event: VoiceChannelCreateEvent) {
+        event.channel.muteRole(SQLMutedRole.getRole(event.guild) ?: return)
     }
 
     // If the guild has a type of channel and it equals the deleted channel, then it's removed
     // if the type of channel is null, but the database contains info regarding that type, it
     // is also removed
-    fun onTextChannelDelete(event: TextChannelDeleteEvent)
-    {
+    fun onTextChannelDelete(event: TextChannelDeleteEvent) {
         // ModLog Deleted
-        val modLog = manager.getModLog(event.guild)
+        val modLog = SQLModeratorLog.getChannel(event.guild)
         if(modLog != null) {
             if(event.channel == modLog)
-                manager.resetModLog(event.guild)
+                SQLModeratorLog.deleteChannel(event.guild)
         } else {
-            if(manager.hasModLog(event.guild))
-                manager.resetModLog(event.guild)
+            if(SQLModeratorLog.hasChannel(event.guild))
+                SQLModeratorLog.deleteChannel(event.guild)
         }
 
         // Ignored Channel Deleted
-        if(manager.isIgnoredChannel(event.channel))
-            manager.removeIgnoredChannel(event.channel)
+        if(SQLIgnoredChannels.isChannel(event.channel))
+            SQLIgnoredChannels.deleteChannel(event.channel)
 
         // Welcome Channel Deleted
-        val welcomeChan = manager.getWelcomeChannel(event.guild)
+        val welcomeChan = SQLWelcomes.getChannel(event.guild)
         if(welcomeChan != null) {
-            if(event.channel == welcomeChan) {
-                manager.resetWelcome(event.guild)
-            }
+            if(event.channel == welcomeChan)
+                SQLWelcomes.removeWelcome(event.guild)
         } else {
-            if(manager.hasWelcome(event.guild)) {
-                manager.resetWelcome(event.guild)
-            }
+            if(SQLWelcomes.hasWelcome(event.guild))
+                SQLWelcomes.removeWelcome(event.guild)
         }
     }
 
-    fun onVoiceChannelCreate(event: VoiceChannelCreateEvent)
-    {
-        val muted = manager.getMutedRole(event.guild)
-        if(muted!=null)
-            event.channel muteRole muted
+    fun onCategoryCreate(event: CategoryCreateEvent) {
+        event.category.muteRole(SQLMutedRole.getRole(event.guild) ?: return)
     }
 
-    fun onCategoryCreate(event: CategoryCreateEvent)
-    {
-        val muted = manager.getMutedRole(event.guild)
-        if(muted!=null)
-            event.category muteRole muted
+    fun onGuildMemberLeave(event: GuildMemberLeaveEvent) {
+        if(Database.isRolePersist(event.guild))
+            SQLRolePersist.setRolePersist(event.member)
     }
 
-    fun onGuildMemberLeave(event: GuildMemberLeaveEvent)
-    {
-        if(manager.isRolePersist(event.guild))
-            manager.addRolePersist(event.member)
-    }
-
-    fun onGuildMemberJoin(event: GuildMemberJoinEvent)
-    {
-        if(manager.isRolePersist(event.guild))
-        {
-            val roles = manager.getRolePersistence(event.member)
-            if(roles.isNotEmpty())
-            {
+    fun onGuildMemberJoin(event: GuildMemberJoinEvent) {
+        if(Database.isRolePersist(event.guild)) {
+            val roles = SQLRolePersist.getRolePersist(event.member)
+            if(roles.isNotEmpty()) {
                 event.guild.controller.addRolesToMember(event.member, roles).queue()
-                manager.removeRolePersist(event.member)
+                SQLRolePersist.removeRolePersist(event.member)
             }
         }
     }
-
 }

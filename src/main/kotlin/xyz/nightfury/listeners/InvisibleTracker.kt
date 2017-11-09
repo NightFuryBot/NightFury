@@ -28,30 +28,22 @@ import java.time.temporal.ChronoUnit
 /**
  * @author Kaidan Gustave
  */
-class InvisibleTracker : EventListener
-{
+class InvisibleTracker : EventListener {
     private val map : HashMap<Long, OffsetDateTime> = HashMap()
 
-    override fun onEvent(event: Event?)
-    {
-        if(event is UserOnlineStatusUpdateEvent)
-        {
-            if(event.user.isInvisible)
-            {
-                synchronized(map)
-                {
+    override fun onEvent(event: Event?) {
+        if(event is UserOnlineStatusUpdateEvent) {
+            if(event.user.isInvisible) {
+                synchronized(map) {
                     map.remove(event.user.idLong)
                 }
             }
         }
-        if(event is UserTypingEvent)
-        {
+        if(event is UserTypingEvent) {
             if(event.isPrivate)
                 return
-            if(event.member.onlineStatus == OnlineStatus.OFFLINE)
-            {
-                synchronized(map)
-                {
+            if(event.member.onlineStatus == OnlineStatus.OFFLINE) {
+                synchronized(map) {
                     map.put(event.user.idLong, OffsetDateTime.now())
                 }
             }
@@ -60,14 +52,11 @@ class InvisibleTracker : EventListener
 
     @get:JvmName("getIsInvisible") // Change JVM name to prevent conflicts
     private inline val User.isInvisible
-        inline get() = synchronized(map)
-        {
-            if(map.contains(idLong))
-            {
+        inline get() = synchronized(map) {
+            if(map.contains(idLong)) {
                 if(map[idLong]?.plusMinutes(5)?.isAfter(OffsetDateTime.now()) == true)
                     true // Is invisible
-                else
-                {
+                else {
                     map.remove(idLong)
                     false // Was invisible but past the 5 minute mark
                 }
@@ -77,12 +66,10 @@ class InvisibleTracker : EventListener
 
     fun isInvisible(user: User) = user.isInvisible
 
-    fun getLastTimeTyping(user: User) : Long?
-    {
+    fun getLastTimeTyping(user: User) : Long? {
         if(!user.isInvisible)
             return null
-        synchronized(map)
-        {
+        synchronized(map) {
             return map[user.idLong]?.until(OffsetDateTime.now(), ChronoUnit.MINUTES)
         }
     }

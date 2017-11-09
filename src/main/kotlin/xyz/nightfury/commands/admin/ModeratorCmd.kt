@@ -27,6 +27,7 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.NoBaseExecutionCommand
+import xyz.nightfury.db.SQLModeratorRole
 import java.util.Comparator
 import kotlin.streams.toList
 
@@ -80,7 +81,7 @@ private class ModeratorAddCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val modRole = event.manager.getModRole(event.guild)
+        val modRole = SQLModeratorRole.getRole(event.guild)
                 ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.client.prefix, fullname)}")
 
         val parsed = event.modSearch()?:return
@@ -125,7 +126,7 @@ private class ModeratorRemoveCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val modRole = event.manager.getModRole(event.guild)
+        val modRole = SQLModeratorRole.getRole(event.guild)
                 ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.client.prefix, fullname)}")
 
         val parsed = event.modSearch()?:return
@@ -176,10 +177,10 @@ private class ModeratorSetCmd : Command()
         if(found.size>1)
             return event.replyError(found multipleRoles query)
         val requested = found[0]
-        val mod = event.manager.getModRole(event.guild)
+        val mod = SQLModeratorRole.getRole(event.guild)
         if(mod!=null && mod == requested)
             return event.replyError("**${requested.name}** is already the moderator role for this server!")
-        event.manager.setModRole(requested)
+        SQLModeratorRole.setRole(requested)
         if(event.selfMember.canInteract(requested)) {
             event.replySuccess("**${requested.name}** was set as the moderator role for this server!")
         } else
@@ -200,7 +201,7 @@ abstract class ModeratorListBaseCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val guild = event.guild
-        val modRole = event.manager.getModRole(event.guild)
+        val modRole = SQLModeratorRole.getRole(event.guild)
 
         val mods = guild.members.stream()
                 .filter { !(it.user.isBot) && (it.isOwner || it.isAdmin || (modRole!=null && it.roles.contains(modRole))) }
@@ -255,7 +256,7 @@ private class ModeratorOnlineCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val guild = event.guild
-        val modRole = event.manager.getModRole(event.guild)
+        val modRole = SQLModeratorRole.getRole(event.guild)
 
         val mods = guild.members.stream()
                 .filter { !(it.user.isBot) && (it.isOwner || it.isAdmin || (modRole!=null && it.roles.contains(modRole)))

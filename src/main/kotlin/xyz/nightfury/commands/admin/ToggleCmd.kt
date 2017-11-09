@@ -19,6 +19,8 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.NoBaseExecutionCommand
+import xyz.nightfury.db.Database
+import xyz.nightfury.db.SQLRolePersist
 
 /**
  * @author Kaidan Gustave
@@ -49,15 +51,15 @@ private class ToggleRolePersistCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        if(event.manager.isRolePersist(event.guild))
+        if(Database.isRolePersist(event.guild))
         {
-            event.manager.setIsRolePersist(event.guild, false)
-            event.manager.removeAllRolePersist(event.guild)
+            Database.setIsRolePersist(event.guild, false)
+            SQLRolePersist.removeAllRolePersist(event.guild)
             event.replySuccess("RolePersist has been toggled `OFF`!")
         }
         else
         {
-            event.manager.setIsRolePersist(event.guild, true)
+            Database.setIsRolePersist(event.guild, true)
             event.replySuccess("RolePersist has been toggled `ON`!")
         }
     }
