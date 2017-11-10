@@ -17,15 +17,28 @@ package xyz.nightfury.extensions
 
 import xyz.nightfury.entities.KEmbedBuilder
 import net.dv8tion.jda.core.MessageBuilder
+import net.dv8tion.jda.core.entities.IMentionable
 import net.dv8tion.jda.core.entities.Message
+import net.dv8tion.jda.core.entities.MessageChannel
+import xyz.nightfury.entities.RestPromise
+import xyz.nightfury.entities.promise
 
-inline fun message(builder: MessageBuilder = MessageBuilder(), init: MessageBuilder.() -> Unit) : Message
-{
+inline fun message(builder: MessageBuilder = MessageBuilder(), init: MessageBuilder.() -> Unit): Message {
     builder.init()
     return builder.build()
 }
 
-infix inline fun MessageBuilder.embed(crossinline init: KEmbedBuilder.() -> Unit) : MessageBuilder
-        = setEmbed(xyz.nightfury.entities.embed { init() })
+infix inline fun <reified C: MessageChannel> C.send(init: MessageBuilder.() -> Unit): RestPromise<Message>
+    = sendMessage(message { init() }).promise()
 
-infix inline fun <reified M: Message> M.edit(block: () -> String) = apply { editMessage(block()).queue() }
+infix inline fun MessageBuilder.embed(crossinline init: KEmbedBuilder.() -> Unit): MessageBuilder
+    = setEmbed(xyz.nightfury.entities.embed { init() })
+
+infix inline fun MessageBuilder.mention(lazy: () -> IMentionable): MessageBuilder = mention(lazy())
+
+infix fun MessageBuilder.mention(lazy: IMentionable): MessageBuilder {
+    append(lazy)
+    return this
+}
+
+infix inline fun <reified M: Message> M.edit(block: () -> String): M = apply { editMessage(block()).queue() }
