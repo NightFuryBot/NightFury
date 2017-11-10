@@ -124,4 +124,5 @@ abstract class SQLChannels(type: String) : Table() {
 }
 
 object SQLModeratorLog : SQLChannel("modlog")
+object SQLAnnouncementChannel : SQLChannel("announcement")
 object SQLIgnoredChannels : SQLChannels("ignored")

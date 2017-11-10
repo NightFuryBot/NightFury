@@ -126,5 +126,6 @@ abstract class SQLRole(type: String) : Table() {
 
 object SQLRoleMe : SQLRoles("roleme")
 object SQLColorMe : SQLRoles("colorme")
+object SQLAnnouncementRoles : SQLRoles("announcement")
 object SQLModeratorRole : SQLRole("moderator")
 object SQLMutedRole : SQLRole("muted")
