@@ -19,11 +19,11 @@ import com.jagrosh.jdautilities.menu.Paginator
 import com.jagrosh.jdautilities.waiter.EventWaiter
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.commands.standard.globalTags
-import xyz.nightfury.commands.standard.localTags
 import xyz.nightfury.db.SQLCustomCommands
 import xyz.nightfury.extensions.*
 import xyz.nightfury.*
+import xyz.nightfury.db.SQLGlobalTags
+import xyz.nightfury.db.SQLLocalTags
 
 /**
  * @author Kaidan Gustave
@@ -141,25 +141,25 @@ private class CustomCommandImportCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val name = event.args
-        if(!event.localTags.isTag(name, event.guild)) {
-            if(!event.globalTags.isTag(name)) {
+        if(!SQLLocalTags.isTag(name, event.guild)) {
+            if(!SQLGlobalTags.isTag(name)) {
                 event.replyError("Tag named \"$name\" does not exist!")
             } else {
-                val cmdName = event.globalTags.getOriginalName(name)
+                val cmdName = SQLGlobalTags.getOriginalName(name)
                 if(event.client.commands[cmdName]!=null)
                     return event.replyError("**Illegal Custom Command Name!**\n" +
                             "Custom Commands may not have names that match standard command names!")
-                val cmdCont = event.globalTags.getTagContent(name)
+                val cmdCont = SQLGlobalTags.getTagContent(name)
                 event.customCommands.add(cmdName, cmdCont, event.guild)
                 event.replySuccess("Successfully imported global tag \"$cmdName\" as a Custom Command!")
                 event.invokeCooldown()
             }
         } else {
-            val cmdName = event.localTags.getOriginalName(name, event.guild)
+            val cmdName = SQLLocalTags.getOriginalName(name, event.guild)
             if(event.client.commands[cmdName]!=null)
                 return event.replyError("**Illegal Custom Command Name!**\n" +
                         "Custom Commands may not have names that match standard command names!")
-            val cmdCont = event.localTags.getTagContent(name, event.guild)
+            val cmdCont = SQLLocalTags.getTagContent(name, event.guild)
             event.customCommands.add(cmdName, cmdCont, event.guild)
             event.replySuccess("Successfully imported local tag \"$cmdName\" as a Custom Command!")
             event.invokeCooldown()
