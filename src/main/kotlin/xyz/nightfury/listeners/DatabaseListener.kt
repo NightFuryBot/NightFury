@@ -80,6 +80,10 @@ class DatabaseListener : EventListener {
             if(SQLMutedRole.hasRole(event.guild))
                 SQLMutedRole.deleteRole(event.guild)
         }
+
+        // Announcement role
+        if(SQLAnnouncementRoles.isRole(event.role))
+            SQLAnnouncementRoles.deleteRole(event.role)
     }
 
     fun onTextChannelCreate(event: TextChannelCreateEvent) {
@@ -116,6 +120,15 @@ class DatabaseListener : EventListener {
         } else {
             if(SQLWelcomes.hasWelcome(event.guild))
                 SQLWelcomes.removeWelcome(event.guild)
+        }
+
+        val announceChan = SQLAnnouncementChannel.getChannel(event.guild)
+        if(announceChan != null) {
+            if(event.channel == announceChan)
+                SQLAnnouncementChannel.deleteChannel(event.guild)
+        } else {
+            if(SQLAnnouncementChannel.hasChannel(event.guild))
+                SQLAnnouncementChannel.deleteChannel(event.guild)
         }
     }
 

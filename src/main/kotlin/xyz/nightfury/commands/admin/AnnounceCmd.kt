@@ -98,13 +98,28 @@ class AnnounceCmd : Command() {
     }
 
     private fun announce(event: CommandEvent, role: Role, channel: TextChannel, message: String) {
-        channel.send {
-            mention(role).appendln()
-            append(message)
-        } then {
-            event.replySuccess("Successfully send announcement to ${channel.asMention}!")
-        } catch {
-            event.replyError("An error occurred when sending the announcement to ${channel.asMention}!")
+        val msgs = CommandEvent.processMessage(message)
+        if(msgs.size > 2) {
+            return event.replyError("Announcement is too long! Announcements can only be a maximum of 4000 characters!")
+        }
+
+        var isOkay = true
+        for((index, msg) in msgs.withIndex()) {
+            channel.send {
+                // Mention the role first
+                if(index == 0) mention(role).appendln()
+                append(msg)
+            } then {
+                if(index == msgs.size) {
+                    event.replySuccess("Successfully send announcement to ${channel.asMention}!")
+                }
+            } catch {
+                if(isOkay)
+                    event.replyError("An error occurred when sending the announcement to ${channel.asMention}!")
+                isOkay = false
+            }
+
+            if(!isOkay) break
         }
     }
 }

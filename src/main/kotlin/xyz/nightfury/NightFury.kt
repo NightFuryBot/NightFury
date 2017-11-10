@@ -130,6 +130,7 @@ class NightFury {
             UnbanCmd(),
             UnmuteCmd(),
 
+            AnnounceCmd(),
             CustomCommandCmd(waiter),
             ModeratorCmd(),
             ModLogCmd(),
