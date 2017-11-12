@@ -24,31 +24,29 @@ class Version {
 
 buildscript {
     ext.kotlin_version = '1.2.0-rc-39'
-    ext.ktor_version = '0.3.3'
+    ext.shadow_version = '2.0.1'
 
     repositories {
         jcenter()
+        maven { url "https://plugins.gradle.org/m2/" }
         maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.github.jengelman.gradle.plugins:shadow:$shadow_version"
     }
 }
 
-plugins {
-    id 'idea'
-    id 'application'
-    id "com.github.johnrengelman.shadow" version "2.0.1"
-}
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'idea'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 def versionObj = new Version(major: 0, minor: 7, build: 9)
 group = 'xyz.nightfury'
-version = versionObj
-
-apply plugin: 'java'
-apply plugin: 'kotlin'
-
+version = versionObj.toString()
 mainClassName = "${group}.${rootProject.name}Kt"
 
 sourceSets {
@@ -57,6 +55,10 @@ sourceSets {
         compileClasspath = main.output + main.resources
         runtimeClasspath = main.output + main.resources
     }
+}
+
+repositories {
+    maven { url 'https://jitpack.io/' }
 }
 
 dependencies {
@@ -74,8 +76,16 @@ dependencies {
     compile 'org.jsoup:jsoup:1.10.2'
     compile 'com.google.apis:google-api-services-youtube:v3-rev183-1.22.0'
 
+    // h2
+    compile 'com.h2database:h2:1.4.196'
+
+    // Logging
+    compile 'ch.qos.logback:logback-classic:1.2.3'
+
     // JagTag
     compile 'com.jagrosh:JagTag:0.5'
+
+    rootProject.childProjects.values().each { compile it }
 }
 
 jar {
@@ -89,33 +99,28 @@ shadowJar {
     version = ''
     classifier = ''
 
-    // Non-Necessary Resources //
-
-    // JDA-Utilities
     exclude('com/jagrosh/jdautilities/commandclient/**')
-
-    // h2
     exclude('android/**')
 
     manifest {
-        attributes 'Manifest-Version' : "${versionObj.major}.${versionObj.minor}"
+        attributes 'Manifest-Version': "${versionObj.major}.${versionObj.minor}"
     }
 }
 
 allprojects {
-
+    group = 'xyz.nightfury'
     version = versionObj.toString()
 
     apply plugin: 'java'
     apply plugin: 'kotlin'
+    apply plugin: 'idea'
+    apply plugin: 'com.github.johnrengelman.shadow'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 
     repositories {
         jcenter()
-        mavenCentral()
-        maven { url 'https://jitpack.io/' }
         maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
     }
 
@@ -123,14 +128,6 @@ allprojects {
         // Kotlin
         compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
         compileOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-        compileOnly "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
-
-        // h2
-        compile 'com.h2database:h2:1.4.196'
-
-        // Logging
-        compile 'ch.qos.logback:logback-classic:1.2.3'
-        //kapt group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
 
         // Testing
         testCompile 'junit:junit:4.12'
@@ -152,8 +149,13 @@ allprojects {
         }
     }
 
-    compileJava.options.encoding = 'UTF-8'
-    compileTestJava.options.encoding = 'UTF-8'
+    compileJava {
+        options.encoding = 'UTF-8'
+    }
+
+    compileTestJava {
+        options.encoding = 'UTF-8'
+    }
 
     build {
         dependsOn clean
@@ -170,5 +172,7 @@ wrapper {
 }
 
 build {
-    rootProject.childProjects.values().forEach { it.build }
+    doFirst {
+        rootProject.childProjects.values().forEach { it.build }
+    }
 }

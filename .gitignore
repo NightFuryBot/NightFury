@@ -6,6 +6,7 @@
 /out/
 /src/test/
 /src/main/resources/
+/src/main/java/
 
 # Gradle Files
 /.gradle/

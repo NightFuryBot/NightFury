@@ -13,11 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.annotations.doc
+@file:Suppress("Unused")
+package xyz.nightfury.doc
+
+import org.intellij.lang.annotations.Language
 
 /**
  * @author Kaidan Gustave
  */
-object Constants {
-    const val SNOWFLAKE_DOCS_URL = ""
-}
+@[Repeatable
+  MustBeDocumented
+  Target(AnnotationTarget.CLASS)
+  Retention(AnnotationRetention.SOURCE)
+  SinceKotlin("1.2")]
+annotation class Error(@Language("Markdown") val condition: String)

@@ -13,6 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
-include 'ToothlessDoc'
+@file:Suppress("Unused")
+package xyz.nightfury.doc
 
+/**
+ * @author Kaidan Gustave
+ */
+@[MustBeDocumented
+  Target(AnnotationTarget.CLASS)
+  Retention(AnnotationRetention.SOURCE)
+  SinceKotlin("1.2")]
+annotation class Author(vararg val name: String)

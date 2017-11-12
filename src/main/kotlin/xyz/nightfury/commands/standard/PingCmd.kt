@@ -17,17 +17,18 @@ package xyz.nightfury.commands.standard
 
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
-import xyz.nightfury.annotations.doc.Documentation
+import xyz.nightfury.doc.Author
+import xyz.nightfury.doc.CommandInfo
+import xyz.nightfury.doc.SinceNightFury
 import xyz.nightfury.extensions.edit
 import java.time.temporal.ChronoUnit
 
-/**
- * @author Kaidan Gustave
- */
-@Documentation(
+@CommandInfo(
     name = ["Ping", "Pong", "Pang", "Pyng", "Pung", "Peng", "Png"],
-    description = "Gets the bot's REST latency (in milliseconds)."
-)
+    description = "Gets the bot's REST latency (in milliseconds).")
+@SinceNightFury("0.7.9")
+@Author("Kaidan Gustave")
+
 class PingCmd : Command() {
     init {
         this.name = "Ping"

@@ -13,6 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
-include 'ToothlessDoc'
-
+sourceSets {
+    test.kotlin.srcDirs += 'src/test/kotlin'
+    test {
+        compileClasspath = main.output + main.resources
+        runtimeClasspath = main.output + main.resources
+    }
+}

@@ -13,6 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
-include 'ToothlessDoc'
+package xyz.nightfury.doc
 
+/**
+ * @author Kaidan Gustave
+ */
+object Constants {
+    const val SNOWFLAKE_DOCS_URL = "https://discordapp.com/developers/docs/reference#snowflake-ids"
+}

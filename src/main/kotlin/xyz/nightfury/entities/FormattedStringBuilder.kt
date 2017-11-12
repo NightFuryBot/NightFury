@@ -60,7 +60,7 @@ class FormattedStringBuilder(val format: String): Appendable {
         return this
     }
 
-    override fun toString(): String = format.format(set.toTypedArray())
+    override fun toString(): String = format.format(*set.toTypedArray())
 }
 
 /**
