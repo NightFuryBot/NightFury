@@ -44,7 +44,7 @@ apply plugin: 'idea'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-def versionObj = new Version(major: 0, minor: 8, build: 0)
+def versionObj = new Version(major: 0, minor: 8, build: 1)
 group = 'xyz.nightfury'
 version = versionObj.toString()
 mainClassName = "${group}.${rootProject.name}Kt"
@@ -68,7 +68,7 @@ dependencies {
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
 
     // JDA
-    compile 'net.dv8tion:JDA:3.3.1_284'
+    compile 'com.github.Dv8FromTheWorld:JDA:8c1e8d8'
     compile 'com.github.JDA-Applications:JDA-Utilities:f9a0402'
     compile 'com.sedmelluq:lavaplayer:1.2.44'
 

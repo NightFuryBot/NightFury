@@ -49,7 +49,7 @@ class KEmbedBuilder internal constructor() : Appendable
         fields.forEach { addField(it) }
 
         if(!description.isBlank())
-            setDescription(description)
+            setDescription(description.toString())
         if(!title.isNullOrBlank())
             setTitle(title, url)
         if(image !== null)

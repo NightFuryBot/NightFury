@@ -26,18 +26,17 @@ import java.util.concurrent.Executors
 /**
  * @author Kaidan Gustave
  */
-class AsyncEventManager : IEventManager
+class AsyncEventManager: IEventManager
 {
-    private val threadpool : ExecutorService = Executors.newCachedThreadPool {
+    private val threadpool: ExecutorService = Executors.newCachedThreadPool {
         val thread = Thread(it, "EventThread")
         thread.isDaemon = true
         thread
     }
 
-    private val listeners : MutableSet<EventListener> = CopyOnWriteArraySet<EventListener>()
+    private val listeners: MutableSet<EventListener> = CopyOnWriteArraySet<EventListener>()
 
-    override fun handle(event: Event?)
-    {
+    override fun handle(event: Event?) {
         if(threadpool.isShutdown || event == null)
             return
         threadpool.execute {
@@ -53,14 +52,12 @@ class AsyncEventManager : IEventManager
             threadpool.shutdown()
     }
 
-    override fun register(listener: Any?)
-    {
+    override fun register(listener: Any?) {
         require(listener is EventListener) { "Listener must implement EventListener!" }
         listeners += listener as EventListener
     }
 
-    override fun unregister(listener: Any?)
-    {
+    override fun unregister(listener: Any?) {
         if(listener is EventListener)
             listeners -= listener
     }

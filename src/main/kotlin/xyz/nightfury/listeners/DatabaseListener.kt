@@ -130,6 +130,15 @@ class DatabaseListener : EventListener {
             if(SQLAnnouncementChannel.hasChannel(event.guild))
                 SQLAnnouncementChannel.deleteChannel(event.guild)
         }
+
+        val starboard = SQLStarboardSettings.getChannel(event.guild)
+        if(starboard != null) {
+            if(starboard == event.channel)
+                SQLStarboardSettings.deleteSettingsFor(event.guild)
+        } else {
+            if(SQLStarboardSettings.hasChannel(event.guild))
+                SQLStarboardSettings.deleteSettingsFor(event.guild)
+        }
     }
 
     fun onCategoryCreate(event: CategoryCreateEvent) {

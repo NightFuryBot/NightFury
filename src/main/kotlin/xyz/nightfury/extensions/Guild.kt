@@ -15,7 +15,6 @@
  */
 package xyz.nightfury.extensions
 
-import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.launch
 import xyz.nightfury.entities.get
 import net.dv8tion.jda.core.Permission
@@ -116,18 +115,18 @@ infix inline fun AuditLogPaginationAction.action(lazy: () -> ActionType) : Audit
 
 fun MessageHistory.past(number: Int, breakIf: (List<Message>) -> Boolean = { false },
         catch: (Throwable) -> Unit = { throw it }, block: suspend (MutableList<Message>) -> Unit
-) = launch(CommonPool) {
+) = launch {
     require(number > 0) { "Cannot retrieve less than one past message!" }
 
     if(number<=100)
-        return@launch block(retrievePast(number).get(context) ?: mutableListOf())
+        return@launch block(retrievePast(number).get(coroutineContext) ?: mutableListOf())
 
     val list = LinkedList<Message>()
     var left = number
 
     while(left > 100)
     {
-        list.addAll(retrievePast(100).get(context) ?: break)
+        list.addAll(retrievePast(100).get(coroutineContext) ?: break)
         left -= 100
         if(breakIf(list))
         {
@@ -137,7 +136,7 @@ fun MessageHistory.past(number: Int, breakIf: (List<Message>) -> Boolean = { fal
     }
 
     if(left in 1..100)
-        list.addAll(retrievePast(left).get(context) ?: emptyList())
+        list.addAll(retrievePast(left).get(coroutineContext) ?: emptyList())
 
     block(list)
 

@@ -105,8 +105,7 @@ abstract class Command {
                     .append(if(arguments.isNotEmpty()) " $arguments`" else "`")
                     .append("\n")
 
-            if(aliases.isNotEmpty())
-            {
+            if(aliases.isNotEmpty()) {
                 b.append("\n**Alias${if(aliases.size>1) "es" else ""}:** `")
                 for(i in aliases.indices) {
                     b.append("${aliases[i]}`")
@@ -121,8 +120,7 @@ abstract class Command {
             if(explanation != null)
                 b.append("\n$explanation\n")
 
-            if(children.isNotEmpty())
-            {
+            if(children.isNotEmpty()) {
                 b.append("\n**Sub-Commands:**\n\n")
                 var cat : Category? = null
                 for(c in children) {

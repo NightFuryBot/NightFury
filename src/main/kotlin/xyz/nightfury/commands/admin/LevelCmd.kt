@@ -64,6 +64,9 @@ private class LevelSetCmd : Command()
                 return event.replyError("**Invalid command name!**\n" +
                                         "`${split[1]}` is not a command!")
 
+        if(command.defaultLevel == CommandLevel.SHENGAERO)
+            return
+
         if(SQLLevel.getLevel(event.guild, command) == level)
             return event.replyWarning("The command `${command.fullname}` is already set at $level!")
 

@@ -16,12 +16,11 @@
 @file:Suppress("unused", "HasPlatformType")
 package xyz.nightfury
 
-import xyz.nightfury.resources.Arguments
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
-import xyz.nightfury.db.Database
 import xyz.nightfury.extensions.filterMassMention
+import xyz.nightfury.resources.Arguments
 
 /**
  * @author Kaidan Gustave

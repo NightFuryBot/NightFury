@@ -14,21 +14,7 @@
  * limitations under the License.
  */
 @file:Suppress("Unused")
-package xyz.nightfury.doc
+package xyz.nightfury.entities.starboard
 
-import org.intellij.lang.annotations.Language
-
-/**
- * @author Kaidan Gustave
- */
-@[MustBeDocumented
-  Target(AnnotationTarget.CLASS)
-  Retention(AnnotationRetention.RUNTIME)
-  SinceKotlin("1.2")]
-annotation class CommandInfo(
-    // We use an array because all commands require at least one name.
-    val name: Array<out String>,
-    @Language("Markdown") val description: String,
-    @Language("Markdown") val requirements: Array<out String> = [],
-    val errors: Array<out Error> = []
-)
+internal typealias Entries = xyz.nightfury.db.SQLStarboardEntries
+internal typealias Settings = xyz.nightfury.db.SQLStarboardSettings

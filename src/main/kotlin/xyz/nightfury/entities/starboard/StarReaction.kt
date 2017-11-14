@@ -13,22 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("Unused")
-package xyz.nightfury.doc
-
-import org.intellij.lang.annotations.Language
+package xyz.nightfury.entities.starboard
 
 /**
  * @author Kaidan Gustave
  */
-@[MustBeDocumented
-  Target(AnnotationTarget.CLASS)
-  Retention(AnnotationRetention.RUNTIME)
-  SinceKotlin("1.2")]
-annotation class CommandInfo(
-    // We use an array because all commands require at least one name.
-    val name: Array<out String>,
-    @Language("Markdown") val description: String,
-    @Language("Markdown") val requirements: Array<out String> = [],
-    val errors: Array<out Error> = []
-)
+data class StarReaction(val userId: Long, val message: StarMessage)

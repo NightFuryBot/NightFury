@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("Unused")
 package xyz.nightfury.entities
 
 import kotlinx.coroutines.experimental.*
@@ -34,7 +35,7 @@ fun<V> RestAction<V?>.onlyIf(condition: Boolean, block: V?.() -> Unit = {}) = if
 
 fun<V> RestAction<V?>.unless(condition: Boolean, block: V?.() -> Unit = {}) = if(!condition) then(block) else promise()
 
-suspend fun<V> RestAction<V?>.get(context: CoroutineContext = CommonPool) = run(context) { complete() }
+suspend fun<V> RestAction<V?>.get(context: CoroutineContext = DefaultDispatcher) = run(context) { complete() }
 
 class RestPromise<V>(action: RestAction<V?>)
 {
