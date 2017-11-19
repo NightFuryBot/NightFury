@@ -1,13 +1,9 @@
-# Modules
-/Backend-Adapter/
-
 # IntelliJ project files
 .idea
 /out/
 /src/test/
 /src/main/resources/
 /src/main/java/
-**/.DS_STORE
 
 # Gradle Files
 /.gradle/
