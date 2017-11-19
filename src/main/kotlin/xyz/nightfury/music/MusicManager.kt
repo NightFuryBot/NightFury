@@ -43,7 +43,7 @@ import java.util.concurrent.Executors
  */
 class MusicManager : AudioEventListener, EventListener, AudioPlayerManager by DefaultAudioPlayerManager() {
     companion object {
-        internal val LOG: Logger = LoggerFactory.getLogger("MusicManager")
+        internal val LOG: ModLogger = ModLoggerFactory.getModLogger("MusicManager")
 
         internal val threadpool: ExecutorService by lazy {
             Executors.newCachedThreadPool {

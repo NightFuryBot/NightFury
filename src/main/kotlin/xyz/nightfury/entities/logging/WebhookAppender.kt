@@ -37,7 +37,7 @@ class WebhookAppender: AppenderBase<ILoggingEvent>()
     init {
         val lines = Paths.get(System.getProperty("user.dir"), "webhook.txt").toFile().readLines()
         client = WebhookClientBuilder(lines[0].toLong(), lines[1])
-                .setThreadFactory { Thread(it, "WebhookLogger").apply { isDaemon = true } }
+                .setThreadFactory { Thread(it, "WebhookModLogger").apply { isDaemon = true } }
                 .build()
     }
 
@@ -47,7 +47,7 @@ class WebhookAppender: AppenderBase<ILoggingEvent>()
 
         try {
             client.send {
-                title { event.loggerName.split(packageRegex).run { this[size - 1] } }
+                title { event.ModLoggerName.split(packageRegex).run { this[size - 1] } }
                 append(event.formattedMessage)
                 val proxy = event.throwableProxy
                 if(proxy != null)

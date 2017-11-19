@@ -28,7 +28,7 @@ class YouTubeAPI(apiKey : String) : AbstractAPICache<List<String>>()
 {
     private companion object
     {
-        private val ytLog = LoggerFactory.getLogger("YouTube")
+        private val ytLog = ModLoggerFactory.getModLogger("YouTube")
         private var maxSearchResults = 20L
     }
 

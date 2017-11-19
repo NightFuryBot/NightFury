@@ -78,8 +78,8 @@ class BanCmd : Command()
             } else {
                 this.banFrom(event.guild, 1)
             }.promise then {
-                if(reason != null) event.client.logger.newBan(event.member, this, reason)
-                else               event.client.logger.newBan(event.member, this)
+                if(reason != null) event.client.Mod.newBan(event.member, this, reason)
+                else               event.client.ModLogger.newBan(event.member, this)
                 event.replySuccess("${this.formattedName(true)} was banned from the server.")
             } catch {
                 event.replyError("Banning ${this.formattedName(true)} failed for an unexpected reason!")

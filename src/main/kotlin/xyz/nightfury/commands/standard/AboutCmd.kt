@@ -55,7 +55,7 @@ class AboutCmd(vararg val permissions : Permission) : Command()
                 isPublic = info.isBotPublic
                 if(isPublic) oauthLink = info.getInviteUrl(perms)
             } catch (e: Exception) {
-                LoggerFactory.getLogger("OAuth2").error("Could not generate invite link: $e")
+                ModLoggerFactory.getModLogger("OAuth2").error("Could not generate invite link: $e")
             }
         }
         val embed = embed {

@@ -84,7 +84,6 @@ class Client internal constructor(val prefix: String,      val devId: Long,
 
     val commands: CommandMap = CommandMap(*commands)
     val startTime: OffsetDateTime = OffsetDateTime.now()
-    val logger: ModLogger = ModLogger // TODO Remove this instance
     val messageCacheSize: Int
         get() = callCache.size
 
@@ -96,7 +95,7 @@ class Client internal constructor(val prefix: String,      val devId: Long,
     private val callCache: FixedSizeCache<Long, MutableSet<Message>> = FixedSizeCache(300)
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger("Client")
+        private val log: ModLogger = ModLoggerFactory.getModLogger("Client")
     }
 
     //////////////////////
