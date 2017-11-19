@@ -61,7 +61,7 @@ class BashCmd : Command() {
         } catch (e: IOException) {
             return event.reply("I wasn't able to find the command `${event.args}`!")
         } catch (e: Exception) {
-            LoggerFactory.getLogger("Bash").apply {
+            ModLoggerFactory.getModLogger("Bash").apply {
                 warn("An unknown error occurred!",e)
             }
             return event.replyError("An unknown error occurred!")
@@ -70,7 +70,7 @@ class BashCmd : Command() {
         try {
             return event.reply("Input: ```\n${event.args}``` Output: \n```\n$finalOutput```")
         } catch (e: IllegalArgumentException) {
-            LoggerFactory.getLogger("Bash").info("Input: ${event.args}\nOutput: $finalOutput")
+            ModLoggerFactory.getModLogger("Bash").info("Input: ${event.args}\nOutput: $finalOutput")
             event.reply("Command output too long! Output sent in console.")
         }
 

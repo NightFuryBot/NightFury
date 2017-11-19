@@ -207,7 +207,7 @@ class CleanCmd : Command()
                     i+=100
                 }
 
-                with(event.client.logger)
+                with(event.client.ModLogger)
                 {
                     if(reason != null) newClean(event.member, event.textChannel, numDeleted, reason)
                     else               newClean(event.member, event.textChannel, numDeleted)
