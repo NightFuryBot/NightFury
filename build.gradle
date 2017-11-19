@@ -24,7 +24,13 @@ class Version {
 
 buildscript {
     ext.kotlin_version = '1.2.0-rc-39'
+    ext.kotlinx_version = '0.19.3'
     ext.shadow_version = '2.0.1'
+    ext.jda_version = '8c1e8d8'
+    ext.jda_utilities_version = 'f9a0402'
+    ext.lavaplayer_version = '1.2.44'
+    ext.h2_version = '1.4.196'
+    ext.logback_version = '1.2.3'
 
     repositories {
         jcenter()
@@ -57,35 +63,29 @@ sourceSets {
     }
 }
 
-repositories {
-    maven { url 'https://jitpack.io/' }
-}
-
 dependencies {
     // Kotlin
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
 
     // JDA
-    compile 'com.github.Dv8FromTheWorld:JDA:8c1e8d8'
-    compile 'com.github.JDA-Applications:JDA-Utilities:f9a0402'
-    compile 'com.sedmelluq:lavaplayer:1.2.44'
+    compile "com.github.Dv8FromTheWorld:JDA:$jda_version"
+    compile "com.github.JDA-Applications:JDA-Utilities:$jda_utilities_version"
+    compile "com.sedmelluq:lavaplayer:$lavaplayer_version"
 
     // API Requests
     compile 'org.jsoup:jsoup:1.10.2'
     compile 'com.google.apis:google-api-services-youtube:v3-rev183-1.22.0'
 
     // h2
-    compile 'com.h2database:h2:1.4.196'
+    compile "com.h2database:h2:$h2_version"
 
     // Logging
-    compile 'ch.qos.logback:logback-classic:1.2.3'
+    compile "ch.qos.logback:logback-classic:$logback_version"
 
     // JagTag
     compile 'com.jagrosh:JagTag:0.5'
-
-    rootProject.childProjects.values().each { compile it }
 }
 
 jar {
@@ -121,6 +121,7 @@ allprojects {
 
     repositories {
         jcenter()
+        maven { url 'https://jitpack.io/' }
         maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
     }
 
@@ -128,6 +129,12 @@ allprojects {
         // Kotlin
         compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
         compileOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+        compileOnly "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
+
+        compileOnly "com.github.Dv8FromTheWorld:JDA:$jda_version"
+
+        // Logging
+        compileOnly "ch.qos.logback:logback-classic:$logback_version"
 
         // Testing
         testCompile 'junit:junit:4.12'

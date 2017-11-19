@@ -47,10 +47,10 @@ infix fun Int.randomNextInt(int: Int): Int
 // Good for checking if lateinit vars are initialized
 // And who said that checking if a non-null is null was useless?
 @Suppress("SENSELESS_COMPARISON", "UNUSED")
-inline fun <reified T: Any> checkInitialized(any: T) = try {
-    any != null } catch (e: UninitializedPropertyAccessException) { false }
+inline fun <reified T: Any> checkInitialized(any: T)
+    = try { any != null } catch (e: UninitializedPropertyAccessException) { false }
 
-fun OffsetDateTime.toTimestamp(): Timestamp = Timestamp.from(toInstant())!!
+fun OffsetDateTime.toTimestamp(): Timestamp = Timestamp.from(toInstant())
 fun OffsetDateTime.toDate(): Date = Date.valueOf(toLocalDate())
 fun Timestamp.toOffsetDateTime(offset: ZoneOffset = ZoneOffset.UTC): OffsetDateTime = toLocalDateTime().atOffset(offset)
 fun Date.toOffsetDateTime(): OffsetDateTime = toLocalDate().atTime(OffsetTime.MIN)

@@ -26,12 +26,21 @@ package xyz.nightfury.entities
 class FormattedStringBuilder(val format: String): Appendable {
     private val set: MutableSet<Any> = HashSet()
 
+    operator fun String.unaryPlus() {
+        append(this)
+    }
+
     operator fun plusAssign(any: Any?) {
         append(any)
     }
 
     operator fun plus(any: Any?): FormattedStringBuilder {
         append(any)
+        return this
+    }
+
+    operator fun get(int: Int): FormattedStringBuilder {
+        append(int)
         return this
     }
 

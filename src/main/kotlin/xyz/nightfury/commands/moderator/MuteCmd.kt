@@ -75,8 +75,8 @@ class MuteCmd : Command() {
         if(error!=null) return event.replyError(error)
 
         target.giveRole(mutedRole).apply { if(reason!=null) reason(reason) } then {
-            if(reason != null) event.client.ModLogger.newMute(event.member, target.user, reason)
-            else               event.client.ModLogger.newMute(event.member, target.user)
+            if(reason != null) event.client.logger.newMute(event.member, target.user, reason)
+            else               event.client.logger.newMute(event.member, target.user)
             event.replySuccess("${target.user.formattedName(true)} was muted!")
         } catch {
             event.replyError("Muting ${target.user.formattedName(true)} failed for an unexpected reason!")

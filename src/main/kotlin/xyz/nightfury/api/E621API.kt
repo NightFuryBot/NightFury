@@ -29,7 +29,7 @@ class E621API : AbstractAPICache<JSONArray>()
     private companion object
     {
         private val BASE_URL = "https://e621.net/post/index.json?"
-        private val LOG = ModLoggerFactory.getModLogger("E621")
+        private val LOG = LoggerFactory.getLogger("E621")
     }
 
     override val hoursToDecay : Long = 1

@@ -30,7 +30,7 @@ class GoogleAPI : AbstractAPICache<List<String>>()
     private companion object
     {
         private val URL_FORMAT : String = "https://www.google.com/search?q=%s&num=10"
-        private val LOG = ModLoggerFactory.getModLogger("Google")
+        private val LOG = LoggerFactory.getLogger("Google")
         private val ENCODING = "UTF-8"
         private val USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
     }

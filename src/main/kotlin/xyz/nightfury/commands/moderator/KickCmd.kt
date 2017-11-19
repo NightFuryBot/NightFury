@@ -75,8 +75,8 @@ class KickCmd : Command() {
         } else {
             target.kick()
         } then {
-            if(reason != null) event.client.ModLogger.newKick(event.member, target.user, reason)
-            else               event.client.ModLogger.newKick(event.member, target.user)
+            if(reason != null) event.client.logger.newKick(event.member, target.user, reason)
+            else               event.client.logger.newKick(event.member, target.user)
             event.replySuccess("${target.user.formattedName(true)} was kicked from the server.")
         } catch {
             event.replyError("Kicking ${target.user.formattedName(true)} failed for an unexpected reason!")

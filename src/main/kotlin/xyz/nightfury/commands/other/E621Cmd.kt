@@ -100,8 +100,11 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
                 event.reply("To save this, type `|save`")
                 { message ->
                     waiter.waitForEvent(MessageReceivedEvent::class.java, { e : MessageReceivedEvent ->
-                        e.author == event.author && e.channel == event.channel
-                                && (e.message.rawContent == "${event.client.prefix}save" || e.message.rawContent == "${event.client.prefix}save")
+                        e.author == event.author && e.channel == event.channel &&
+                        (
+                            e.message.contentRaw == "${event.client.prefix}save" ||
+                            e.message.contentRaw == "${event.client.prefix}save"
+                        )
                     }, {
                         message.delete().queue()
                         event.message.delete().queue()

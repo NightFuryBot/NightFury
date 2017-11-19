@@ -75,15 +75,15 @@ object ModLogger {
 
         val log = SQLModeratorLog.getChannel(guild) ?: return
         if(log.canTalk()) {
-            val formatted = format(Case.FORMAT) {
-                this[case.number]
-                this[case.action.emoji]
-                this[mod.formattedName(true)]
-                this[case.action.action]
-                this[target.name]
-                this[target.idLong]
-                this[reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"]
-            }
+            val formatted = Case.FORMAT.format(
+                case.number,
+                case.action.emoji,
+                mod.formattedName(true),
+                case.action.action,
+                target.name,
+                target.idLong,
+                reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
+            )
 
             log.sendMessage(formatted) then {
                 case.messageId = this?.idLong ?: return@then
@@ -108,15 +108,15 @@ object ModLogger {
 
         val log = SQLModeratorLog.getChannel(guild) ?: return
         if(log.canTalk()) {
-            val formatted = format(Case.FORMAT) {
-                this[case.number]
-                this[case.action.emoji]
-                this[mod.formattedName(true)]
-                this[case.action.action]
-                this[target.name]
-                this[target.idLong]
-                this[reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"]
-            }
+            val formatted = Case.FORMAT.format(
+                case.number,
+                case.action.emoji,
+                mod.formattedName(true),
+                case.action.action,
+                target.name,
+                target.idLong,
+                reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
+            )
 
             log.sendMessage(formatted) then {
                 case.messageId = this?.idLong ?: return@then
@@ -140,15 +140,15 @@ object ModLogger {
 
         val log = SQLModeratorLog.getChannel(guild) ?: return
         if(log.canTalk()) {
-            val formatted = format(Case.FORMAT) {
-                this[case.number]
-                this[case.action.emoji]
-                this[mod.formattedName(true)]
-                this[case.action.action]
-                this[target.name]
-                this[target.idLong]
-                this[reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"]
-            }
+            val formatted = Case.FORMAT.format(
+                case.number,
+                case.action.emoji,
+                mod.formattedName(true),
+                case.action.action,
+                target.name,
+                target.idLong,
+                reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
+            )
 
             log.sendMessage(formatted) then {
                 case.messageId = this?.idLong ?: return@then
@@ -172,15 +172,15 @@ object ModLogger {
 
         val log = SQLModeratorLog.getChannel(guild) ?: return
         if(log.canTalk()) {
-            val formatted = format(Case.FORMAT) {
-                this[case.number]
-                this[case.action.emoji]
-                this[mod.formattedName(true)]
-                this[case.action.action]
-                this[target.name]
-                this[target.idLong]
-                this[reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"]
-            }
+            val formatted = Case.FORMAT.format(
+                case.number,
+                case.action.emoji,
+                mod.formattedName(true),
+                case.action.action,
+                target.name,
+                target.idLong,
+                reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
+            )
 
             log.sendMessage(formatted) then {
                 case.messageId = this?.idLong ?: return@then
@@ -204,15 +204,15 @@ object ModLogger {
 
         val log = SQLModeratorLog.getChannel(guild) ?: return
         if(log.canTalk()) {
-            val formatted = format(Case.FORMAT) {
-                this[case.number]
-                this[case.action.emoji]
-                this[mod.formattedName(true)]
-                this[case.action.action]
-                this[target.name]
-                this[target.idLong]
-                this[reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"]
-            }
+            val formatted = Case.FORMAT.format(
+                case.number,
+                case.action.emoji,
+                mod.formattedName(true),
+                case.action.action,
+                target.name,
+                target.idLong,
+                reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
+            )
 
             log.sendMessage(formatted) then {
                 case.messageId = this?.idLong ?: return@then
@@ -235,15 +235,15 @@ object ModLogger {
 
         val log = SQLModeratorLog.getChannel(guild) ?: return
         if(log.canTalk()) {
-            val formatted = format(Case.FORMAT) {
-                this[case.number]
-                this[case.action.emoji]
-                this[mod.formattedName(true)]
-                this[case.action.action.format(number)]
-                this[target.name]
-                this[target.idLong]
-                this[reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"]
-            }
+            val formatted = Case.FORMAT.format(
+                case.number,
+                case.action.emoji,
+                mod.formattedName(true),
+                case.action.action.format(number),
+                target.name,
+                target.idLong,
+                reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
+            )
             log.sendMessage(formatted) then {
                 case.messageId = this?.idLong ?: return@then
                 SQLCases.addCase(case)

@@ -24,7 +24,7 @@ import java.sql.*
  * @author Kaidan Gustave
  */
 object SQL {
-    val LOG : ModLogger = ModLoggerFactory.getModLogger("SQL")
+    val LOG : Logger = LoggerFactory.getLogger("SQL")
 }
 
 inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Long?): T {

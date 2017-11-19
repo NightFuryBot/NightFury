@@ -50,7 +50,7 @@ import java.util.logging.Level
 fun main(args: Array<String>?) {
     NightFury.LOG.info("Starting NightFury...")
 
-    java.util.logging.ModLogger.getModLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
+    java.util.logging.Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
 
     try {
         NightFury()
@@ -68,7 +68,7 @@ class NightFury {
     companion object {
         @JvmStatic val VERSION: String = this::class.java.`package`.implementationVersion?:"BETA"
         @JvmStatic val GITHUB: String = "https://github.com/NightFuryBot/NightFury/"
-        @JvmStatic val LOG: ModLogger = ModLoggerFactory.getModLogger("NightFury")
+        @JvmStatic val LOG: Logger = LoggerFactory.getLogger("NightFury")
 
         @JvmStatic
         fun shutdown(exit: Int) {

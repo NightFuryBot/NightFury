@@ -15,15 +15,13 @@
  */
 package xyz.nightfury.commands.moderator
 
-import xyz.nightfury.Category
-import xyz.nightfury.Command
-import xyz.nightfury.CommandEvent
-import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.resources.Arguments
 import xyz.nightfury.extensions.past
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Message
+import xyz.nightfury.*
+import xyz.nightfury.entities.ModLogger
 import java.util.*
 import kotlin.collections.HashSet
 
@@ -176,13 +174,13 @@ class CleanCmd : Command()
                 ids.contains(message.author.idLong)                          -> toDelete.add(message)
                 bots && message.author.isBot                                 -> toDelete.add(message)
                 embeds && message.embeds.isNotEmpty()                        -> toDelete.add(message)
-                links && linkPattern.containsMatchIn(message.rawContent)     -> toDelete.add(message)
+                links && linkPattern.containsMatchIn(message.contentRaw)     -> toDelete.add(message)
 
                 // Files comes before images because images are files
                 files && message.attachments.isNotEmpty()                    -> toDelete.add(message)
                 images && message.hasImage                                   -> toDelete.add(message)
 
-                quotes.any { message.rawContent.toLowerCase().contains(it) } -> toDelete.add(message)
+                quotes.any { message.contentRaw.toLowerCase().contains(it) } -> toDelete.add(message)
             } else {
                 pastTwoWeeks = true
                 break
@@ -207,7 +205,7 @@ class CleanCmd : Command()
                     i+=100
                 }
 
-                with(event.client.ModLogger)
+                with(ModLogger)
                 {
                     if(reason != null) newClean(event.member, event.textChannel, numDeleted, reason)
                     else               newClean(event.member, event.textChannel, numDeleted)
@@ -216,6 +214,7 @@ class CleanCmd : Command()
                 event.replySuccess("Successfully cleaned $numDeleted messages!")
 
             } catch (e : Exception) {
+                NightFury.LOG.error("An error occurred", e)
                 // If something happens, we want to make sure that we inform them because
                 // messages may have already been deleted.
                 event.replyError("An error occurred when deleting $numDeleted messages!")

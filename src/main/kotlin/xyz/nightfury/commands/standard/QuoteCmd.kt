@@ -19,28 +19,12 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.doc.Constants
 import xyz.nightfury.entities.embed
 import xyz.nightfury.resources.Arguments
 import xyz.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.TextChannel
-import xyz.nightfury.doc.Author
-import xyz.nightfury.doc.CommandInfo
-import xyz.nightfury.doc.SinceNightFury
-
-@CommandInfo(
-    name = ["Quote"],
-    description = "Quotes a message by [Snowflake](${Constants.SNOWFLAKE_DOCS_URL}) " +
-                  "ID from the specified channel. If no channel is specified this " +
-                  "will default to the channel the command is called from.\n\n" +
-
-                  "This cannot quote messages from other private channels or channels " +
-                  "on other servers.",
-    requirements = ["Bot must have **MESSAGE_EMBED_LINKS** permission."])
-@SinceNightFury("0.7.9")
-@Author("Kaidan Gustave")
 
 @MustHaveArguments("Please specify a message ID to quote!")
 class QuoteCmd : Command() {
@@ -99,7 +83,7 @@ class QuoteCmd : Command() {
                 icon  = message.author.effectiveAvatarUrl
             }
 
-            description {  message.rawContent  }
+            description {  message.contentRaw  }
             time        { message.creationTime }
             color       { message.member.color }
         })

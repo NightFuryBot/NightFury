@@ -31,7 +31,7 @@ class GoogleImageAPI : AbstractAPICache<List<String>>()
 
     companion object {
         private val URL = "https://www.google.com/search?site=imghp&tbm=isch&source=hp&biw=1680&bih=940&q=%s&safe=active"
-        private val LOG = ModLoggerFactory.getModLogger("Google Image")
+        private val LOG = LoggerFactory.getLogger("Google Image")
         private val ENCODING = "UTF-8"
         private val USER_AGENT =
                 "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36"

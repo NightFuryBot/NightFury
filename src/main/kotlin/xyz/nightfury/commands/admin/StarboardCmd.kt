@@ -91,7 +91,7 @@ private class StarboardThresholdCmd : Command() {
                 "Specify a number of of stars to get an entry on the starboard!"))
         }
 
-        if(args > 10 /* || args < 3 */) {
+        if(args > 10 || args < 3) {
             return event.replyError("Invalid number of stars! Must be a number 3 - 10")
         }
 

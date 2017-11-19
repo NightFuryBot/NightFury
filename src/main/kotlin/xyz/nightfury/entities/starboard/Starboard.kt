@@ -60,6 +60,6 @@ class Starboard(val guild: Guild,
     companion object {
         const val DEFAULT_THRESHOLD = 5
         const val DEFAULT_MAX_AGE = 72
-        internal val LOG: ModLogger = ModLoggerFactory.getModLogger(Starboard::class.java)
+        internal val LOG: Logger = LoggerFactory.getLogger(Starboard::class.java)
     }
 }

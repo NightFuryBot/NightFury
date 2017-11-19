@@ -17,17 +17,8 @@ package xyz.nightfury.commands.standard
 
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
-import xyz.nightfury.doc.Author
-import xyz.nightfury.doc.CommandInfo
-import xyz.nightfury.doc.SinceNightFury
 import xyz.nightfury.extensions.edit
 import java.time.temporal.ChronoUnit
-
-@CommandInfo(
-    name = ["Ping", "Pong", "Pang", "Pyng", "Pung", "Peng", "Png"],
-    description = "Gets the bot's REST latency (in milliseconds).")
-@SinceNightFury("0.7.9")
-@Author("Kaidan Gustave")
 
 class PingCmd : Command() {
     init {
@@ -42,6 +33,10 @@ class PingCmd : Command() {
             it.edit {
                 return@edit "Ping: ${event.message.creationTime.until(it.creationTime, ChronoUnit.MILLIS)}ms"
             }
+        }
+
+        event.textChannel.createInvite().queue {
+            it.code
         }
     }
 }
