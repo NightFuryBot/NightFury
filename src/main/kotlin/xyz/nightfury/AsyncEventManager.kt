@@ -22,16 +22,18 @@ import net.dv8tion.jda.core.hooks.IEventManager
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * @author Kaidan Gustave
  */
-class AsyncEventManager: IEventManager
-{
+class AsyncEventManager: IEventManager {
+    companion object {
+        @JvmField val THREAD_NUMBER: AtomicInteger = AtomicInteger(0)
+    }
+
     private val threadpool: ExecutorService = Executors.newCachedThreadPool {
-        val thread = Thread(it, "EventThread")
-        thread.isDaemon = true
-        thread
+        Thread(it, "EventThread-${THREAD_NUMBER.getAndIncrement()}").also { it.isDaemon = true }
     }
 
     private val listeners: MutableSet<EventListener> = CopyOnWriteArraySet<EventListener>()
