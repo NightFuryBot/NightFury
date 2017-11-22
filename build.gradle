@@ -26,7 +26,7 @@ buildscript {
     ext.kotlin_version = '1.2.0-rc-39'
     ext.kotlinx_version = '0.19.3'
     ext.shadow_version = '2.0.1'
-    ext.jda_version = '8c1e8d8'
+    ext.jda_version = '1fe4e3c'
     ext.jda_utilities_version = 'f9a0402'
     ext.lavaplayer_version = '1.2.44'
     ext.h2_version = '1.4.196'

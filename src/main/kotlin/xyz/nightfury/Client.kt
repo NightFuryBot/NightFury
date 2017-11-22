@@ -16,7 +16,7 @@
 package xyz.nightfury
 
 import com.jagrosh.jagtag.Parser
-import com.jagrosh.jdautilities.waiter.EventWaiter
+import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.annotations.APICache
 import xyz.nightfury.entities.ModLogger
 import xyz.nightfury.entities.logging.NormalFilter

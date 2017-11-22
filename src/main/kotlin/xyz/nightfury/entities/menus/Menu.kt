@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.menus
+package xyz.nightfury.entities.menus
 
 import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.MessageChannel
@@ -24,25 +24,25 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Kaidan Gustave
  */
-abstract class Menu(
-    protected val waiter: EventWaiter,
-    internal val users: Set<User>,
-    internal val roles: Set<Role>,
-    protected val timeout: Long,
-    protected val unit: TimeUnit,
-    protected val finalAction: (Message) -> Unit
-) {
+abstract class Menu(builder: Builder<*,*>) {
+    protected val waiter: EventWaiter = builder.waiter
+    internal val users: Set<User> = builder.users
+    internal val roles: Set<Role> = builder.roles
+    protected val timeout: Long = builder.timeout
+    protected val unit: TimeUnit = builder.unit
+    protected val finalAction: (Message) -> Unit = builder.finalAction
+
     abstract fun displayIn(channel: MessageChannel)
     abstract fun displayAs(message: Message)
 
     @Suppress("UNCHECKED_CAST")
     abstract class Builder<B: Builder<B, M>, M: Menu> {
-        protected lateinit var waiter: EventWaiter
-        protected var timeout: Long = -1
-        protected var unit: TimeUnit = TimeUnit.SECONDS
-        protected val users: MutableSet<User> = HashSet()
-        protected val roles: MutableSet<Role> = HashSet()
-        protected var finalAction: (Message) -> Unit = { }
+        lateinit var waiter: EventWaiter
+        var timeout: Long = -1
+        var unit: TimeUnit = TimeUnit.SECONDS
+        val users: MutableSet<User> = HashSet()
+        val roles: MutableSet<Role> = HashSet()
+        var finalAction: (Message) -> Unit = { }
 
         abstract fun build(): M
 
@@ -64,23 +64,31 @@ abstract class Menu(
             return this as B
         }
 
-        protected infix inline fun waiter(block: () -> EventWaiter): B {
+        infix inline fun waiter(block: () -> EventWaiter): B {
             waiter = block()
             return this as B
         }
 
-        protected infix inline fun timeout(block: () -> Long?): B {
-            timeout = block() ?: -1
+        infix inline fun timeout(block: TimeOut.() -> Unit): B {
+            TimeOut().apply {
+                block()
+                timeout = delay
+                this@Builder.unit = unit
+            }
             return this as B
         }
 
-        protected infix inline fun unit(block: () -> TimeUnit?): B {
-            unit = block() ?: TimeUnit.SECONDS.also { timeout = -1 }
+        infix inline fun role(block: () -> Role): B = plus(block())
+
+        infix inline fun user(block: () -> User): B = plus(block())
+
+        infix inline fun finalAction(crossinline block: (Message) -> Unit): B {
+            finalAction = { block(it) }
             return this as B
         }
 
-        protected infix inline fun role(block: () -> Role): B = plus(block())
 
-        protected infix inline fun user(block: () -> User): B = plus(block())
+        infix inline fun displayIn(lazy: () -> MessageChannel) = build().displayIn(lazy())
+        infix inline fun displayAs(lazy: () -> Message) = build().displayAs(lazy())
     }
 }

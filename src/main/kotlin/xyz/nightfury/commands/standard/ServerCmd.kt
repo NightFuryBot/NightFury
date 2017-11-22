@@ -15,9 +15,9 @@
  */
 package xyz.nightfury.commands.standard
 
-import com.jagrosh.jdautilities.menu.OrderedMenu
-import com.jagrosh.jdautilities.menu.Paginator
-import com.jagrosh.jdautilities.waiter.EventWaiter
+import xyz.nightfury.entities.menus.OrderedMenu
+import xyz.nightfury.entities.menus.Paginator
+import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
@@ -25,13 +25,14 @@ import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.commands.admin.ModeratorListBaseCmd
 import xyz.nightfury.entities.embed
-import xyz.nightfury.extensions.*
 import xyz.nightfury.listeners.InvisibleTracker
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.User
 import xyz.nightfury.db.*
+import xyz.nightfury.entities.promise
+import xyz.nightfury.extensions.*
 import java.time.format.DateTimeFormatter
 import java.util.Comparator
 
@@ -62,25 +63,28 @@ class ServerCmd(waiter: EventWaiter, invisTracker: InvisibleTracker) : Command()
         )
     }
 
-    val builder : OrderedMenu.Builder = OrderedMenu.Builder()
+    val builder: OrderedMenu.Builder = OrderedMenu.Builder()
             .useCancelButton { true }
             .description { "Choose a field to get info on:" }
             .timeout { delay { 20 } }
+            .allowTextInput { false }
+            .finalAction { it.delete().promise() }
             .waiter  { waiter }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         if(event.args.isNotEmpty())
             return event.replyError("**Invalid Information Category**\n" +
                     SEE_HELP.format(event.client.prefix, name))
         val children = children
 
-        with(builder)
-        {
-            choices {
-                for(child in children)
-                    if(event.level test event)
-                        choice { name { child.name } action { child.run(event) } }
+        with(builder) {
+            clearChoices()
+            for(child in children) {
+                if(event.level.test(event)) {
+                    choice(child.name) {
+                        it.delete().promise() then { child.run(event) }
+                    }
+                }
             }
             user      { event.author }
             color     { event.selfMember.color }
@@ -229,7 +233,7 @@ private class ServerJoinsCmd(waiter: EventWaiter) : Command()
     val builder : Paginator.Builder = Paginator.Builder()
             .timeout          { delay { 20 } }
             .showPageNumbers  { true }
-            .useNumberedItems { true }
+            .numberItems      { true }
             .waitOnSinglePage { true }
             .waiter           { waiter }
 

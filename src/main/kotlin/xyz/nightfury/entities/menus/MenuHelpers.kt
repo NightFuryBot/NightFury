@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.menus
+package xyz.nightfury.entities.menus
 
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.User

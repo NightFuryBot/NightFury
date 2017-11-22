@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.menus
+package xyz.nightfury.entities.menus
 
 import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.MessageChannel
-import net.dv8tion.jda.core.entities.Role
-import net.dv8tion.jda.core.entities.User
 import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.core.exceptions.PermissionException
 import net.dv8tion.jda.core.requests.RestAction
@@ -27,33 +25,25 @@ import xyz.nightfury.entities.then
 import xyz.nightfury.extensions.embed
 import xyz.nightfury.extensions.message
 import java.awt.Color
-import java.util.concurrent.TimeUnit
 
 /**
  * @author Kaidan Gustave
  */
-@Suppress("Unused")
-class Paginator(
-    waiter: EventWaiter,
-    users: Set<User>,
-    roles: Set<Role>,
-    timeout: Long,
-    unit: TimeUnit,
-    finalAction: (Message) -> Unit,
-    private val color: (Int, Int) -> Color?,
-    private val text: (Int, Int) -> String?,
-    private val strings: List<String>,
-    private val columns: Int,
-    private val itemsPerPage: Int,
-    private val numberItems: Boolean,
-    private val showPageNumbers: Boolean,
-    private val waitOnSinglePage: Boolean
-): Menu(waiter, users, roles, timeout, unit, finalAction) {
+class Paginator(val builder: Paginator.Builder): Menu(builder) {
     companion object {
         const val LEFT = "\u25C0"
         const val STOP = "\u23F9"
         const val RIGHT = "\u25B6"
     }
+
+    private val color: (Int, Int) -> Color? = builder.colorFun
+    private val text: (Int, Int) -> String? = builder.textFun
+    private val strings: List<String> = builder.items
+    private val columns: Int = builder.columns
+    private val itemsPerPage: Int = builder.itemsPerPage
+    private val numberItems: Boolean = builder.numberItems
+    private val showPageNumbers: Boolean = builder.showPageNumbers
+    private val waitOnSinglePage: Boolean = builder.waitOnSinglePage
 
     val pages = Math.ceil(strings.size.toDouble() / itemsPerPage).toInt()
 
@@ -77,14 +67,14 @@ class Paginator(
         action.promise() then { m ->
             m ?: return@then
             when {
-                pageNum > 1 -> {
+                pages > 1 -> {
                     m.addReaction(LEFT).queue()
                     m.addReaction(STOP).queue()
-                    m.addReaction(RIGHT) then { paginate(m, pageNum) } catch { paginate(m, pageNum) }
+                    m.addReaction(RIGHT) then { pagination(m, pageNum) } catch { pagination(m, pageNum) }
                 }
 
                 waitOnSinglePage -> {
-                    m.addReaction(STOP) then { paginate(m, pageNum) } catch { paginate(m, pageNum) }
+                    m.addReaction(STOP) then { pagination(m, pageNum) } catch { pagination(m, pageNum) }
                 }
 
                 else -> finalAction(m)
@@ -132,7 +122,7 @@ class Paginator(
         return message {
             text(pageNum, pages)?.let { this@message.append(it) }
             embed embed@ {
-                if (columns == 1) {
+                if(columns == 1) {
                     for (i in start until end) {
                         this@embed.appendln()
                         this@embed.append(if (numberItems) "`${i + 1}.`" else "")
@@ -158,7 +148,7 @@ class Paginator(
 
                 this@embed.color { this@Paginator.color(pageNum, pages) }
 
-                if (showPageNumbers) {
+                if(showPageNumbers) {
                     this@embed.footer {
                         value = "Page $pageNum/$pages"
                         url = null
@@ -203,6 +193,16 @@ class Paginator(
             items[index] = item
         }
 
+        fun clearItems(): Paginator.Builder {
+            items.clear()
+            return this
+        }
+
+        infix inline fun add(lazy: () -> String): Builder {
+            items.add(lazy())
+            return this
+        }
+
         infix inline fun items(lazy: MutableList<in String>.() -> Unit): Builder {
             items.lazy()
             return this
@@ -233,24 +233,20 @@ class Paginator(
             return this
         }
 
-        infix fun text(lazy: (Int, Int) -> String?): Builder {
-            textFun = lazy
+        infix inline fun text(crossinline lazy: (Int, Int) -> String?): Builder {
+            textFun = { p, t -> lazy(p, t) }
             return this
         }
 
-        infix fun color(lazy: (Int, Int) -> Color?): Builder {
-            colorFun = lazy
+        infix inline fun color(crossinline lazy: (Int, Int) -> Color?): Builder {
+            colorFun = { p, t -> lazy(p, t) }
             return this
         }
 
         override fun build(): Paginator {
             require(items.size > 0) { "Must include at least one item to paginate." }
 
-            return Paginator(waiter, users, roles,
-                             timeout, unit, finalAction,
-                             colorFun, textFun, items,
-                             columns, itemsPerPage, numberItems,
-                             showPageNumbers, waitOnSinglePage)
+            return Paginator(this)
         }
     }
 }

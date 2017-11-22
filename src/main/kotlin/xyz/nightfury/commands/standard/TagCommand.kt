@@ -15,8 +15,8 @@
  */
 package xyz.nightfury.commands.standard
 
-import com.jagrosh.jdautilities.menu.Paginator
-import com.jagrosh.jdautilities.waiter.EventWaiter
+import xyz.nightfury.entities.menus.Paginator
+import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.*
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
@@ -369,7 +369,7 @@ private class TagListCmd(val waiter: EventWaiter): Command() {
     val builder: Paginator.Builder = Paginator.Builder()
             .timeout          { delay { 20 } }
             .showPageNumbers  { true }
-            .useNumberedItems { true }
+            .numberItems      { true }
             .waitOnSinglePage { true }
             .waiter           { waiter }
 
@@ -435,7 +435,10 @@ private class TagListCmd(val waiter: EventWaiter): Command() {
                     addAll(localTags)
                 addAll(globalTags)
             }
-            finalAction { event.linkMessage(it); it.removeMenuReactions() }
+            finalAction {
+                event.linkMessage(it)
+                it.removeMenuReactions()
+            }
             user { event.author }
             displayIn { event.channel }
         }

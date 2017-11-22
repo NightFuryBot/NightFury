@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 @file:Suppress("Unused")
-package xyz.nightfury.menus
+package xyz.nightfury.entities.menus
 
-import kotlinx.coroutines.experimental.ThreadPoolDispatcher
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.newSingleThreadContext
-import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.*
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.ShutdownEvent
 import net.dv8tion.jda.core.hooks.EventListener
@@ -38,17 +35,20 @@ class EventWaiter : EventListener {
     fun <E: Event> waitForEvent(klazz: KClass<E>, condition: (E) -> Boolean, action: (E) -> Unit,
                                 delay: Long = -1, unit: TimeUnit = TimeUnit.MILLISECONDS, timeout: (() -> Unit) = {}) {
         val eventList: MutableList<WaiterEvent<E>> = events[klazz].let {
-            it as? MutableList<WaiterEvent<E>> ?: ArrayList()
+            it as? MutableList<WaiterEvent<E>> ?: (ArrayList<WaiterEvent<E>>().apply {
+                events.put(klazz, this as MutableList<WaiterEvent<*>>)
+            })
         }
 
         val waiting: WaiterEvent<E> = WaiterEvent(condition, action)
 
-        eventList += waiting
+        eventList.add(waiting)
 
         if(delay > 0) {
             launch(dispatcher) {
                 delay(delay, unit)
-                dispatcher.dispatch(coroutineContext, Runnable { if(eventList.remove(waiting)) timeout() })
+                if(eventList.remove(waiting))
+                    timeout()
             }
         }
     }
@@ -67,6 +67,10 @@ class EventWaiter : EventListener {
     }
 
     override fun onEvent(event: Event) {
+
+        if(event is ShutdownEvent)
+            return dispatcher.close()
+
         val klazz = event::class
 
         dispatchEventType(event, klazz)
@@ -74,9 +78,6 @@ class EventWaiter : EventListener {
         klazz.superclasses.forEach {
             dispatchEventType(event, klazz)
         }
-
-        if(event is ShutdownEvent)
-            dispatcher.close()
     }
 
     private class WaiterEvent<in T: Event>
