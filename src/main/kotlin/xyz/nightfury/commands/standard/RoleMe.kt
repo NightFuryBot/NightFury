@@ -15,8 +15,8 @@
  */
 package xyz.nightfury.commands.standard
 
-import com.jagrosh.jdautilities.menu.Paginator
-import com.jagrosh.jdautilities.waiter.EventWaiter
+import xyz.nightfury.entities.menus.Paginator
+import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.then
@@ -196,7 +196,7 @@ private class RoleMeListCmd(waiter: EventWaiter) : Command()
     val builder : Paginator.Builder = Paginator.Builder()
             .timeout          { delay { 20 } }
             .showPageNumbers  { true }
-            .useNumberedItems { true }
+            .numberItems      { true }
             .waitOnSinglePage { false }
             .waiter           { waiter }
 

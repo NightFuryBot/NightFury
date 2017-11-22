@@ -16,6 +16,7 @@
 @file:Suppress("unused")
 package xyz.nightfury.extensions
 
+import kotlinx.coroutines.experimental.*
 import net.dv8tion.jda.core.OnlineStatus
 import sun.util.calendar.ZoneInfo
 import java.sql.Date
@@ -24,6 +25,9 @@ import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.util.*
+import kotlin.coroutines.experimental.Continuation
+import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.experimental.suspendCoroutine
 
 val OnlineStatus.emoteId : Long
     get() = when(this)
@@ -58,3 +62,33 @@ fun Date.toOffsetDateTime(): OffsetDateTime = toLocalDate().atTime(OffsetTime.MI
 // We don't use ZoneInfo.getTimeZone(String) directly
 // for native nullability issues.
 fun timeZone(identifier: String?): TimeZone? = ZoneInfo.getTimeZone(identifier)
+
+inline fun <reified T> launchCoroutine(
+    context: CoroutineContext = DefaultDispatcher,
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    crossinline block: CoroutineScope.(Continuation<T>) -> T
+): Job = launch(context, start) {
+    suspendCoroutine<T> { block.invoke(this, it) }
+}
+
+fun thread(start: Boolean = true,
+           isDaemon: Boolean = false,
+           contextClassLoader: ClassLoader? = null,
+           name: String? = null,
+           priority: Int = -1,
+           runnable: Runnable): Thread {
+
+    val thread = Thread(runnable)
+
+    if(isDaemon)
+        thread.isDaemon = true
+    if(priority > 0)
+        thread.priority = priority
+    if(name != null)
+        thread.name = name
+    if(contextClassLoader != null)
+        thread.contextClassLoader = contextClassLoader
+    if(start)
+        thread.start()
+    return thread
+}

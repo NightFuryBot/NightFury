@@ -17,7 +17,6 @@ package xyz.nightfury
 
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Parser
-import com.jagrosh.jdautilities.waiter.EventWaiter
 import net.dv8tion.jda.core.*
 import net.dv8tion.jda.core.requests.SessionReconnectQueue
 import org.json.JSONObject
@@ -37,6 +36,7 @@ import xyz.nightfury.commands.music.StopCmd
 import xyz.nightfury.commands.other.E621Cmd
 import xyz.nightfury.commands.standard.*
 import xyz.nightfury.db.Database
+import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.extensions.*
 import xyz.nightfury.jagtag.tagMethods
 import xyz.nightfury.listeners.InvisibleTracker
@@ -66,11 +66,10 @@ fun main(args: Array<String>?) {
  */
 class NightFury {
     companion object {
-        @JvmStatic val VERSION: String = this::class.java.`package`.implementationVersion?:"BETA"
-        @JvmStatic val GITHUB: String = "https://github.com/NightFuryBot/NightFury/"
-        @JvmStatic val LOG: Logger = LoggerFactory.getLogger("NightFury")
+        val VERSION: String = this::class.java.`package`.implementationVersion?:"BETA"
+        val GITHUB: String = "https://github.com/NightFuryBot/NightFury/"
+        val LOG: Logger = LoggerFactory.getLogger("NightFury")
 
-        @JvmStatic
         fun shutdown(exit: Int) {
             LOG.info("Shutdown Complete! "+if(exit == 0)"Restarting..." else "Exiting...")
             System.exit(exit)
