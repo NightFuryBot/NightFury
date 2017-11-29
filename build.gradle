@@ -49,7 +49,7 @@ apply plugin: 'idea'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-def versionObj = new Version(major: 0, minor: 8, build: 2)
+def versionObj = new Version(major: 0, minor: 8, build: 3)
 group = 'xyz.nightfury'
 version = versionObj.toString()
 mainClassName = "${group}.${rootProject.name}Kt"
