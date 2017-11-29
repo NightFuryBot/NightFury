@@ -26,10 +26,8 @@ import net.dv8tion.jda.core.Permission
 /**
  * @author Kaidan Gustave
  */
-class EmoteCmd : Command()
-{
-    companion object
-    {
+class EmoteCmd : Command() {
+    companion object {
         private val bullet = "\uD83D\uDD39"
     }
 
@@ -41,11 +39,9 @@ class EmoteCmd : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_EMBED_LINKS)
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val args = event.args
-        if(args matches Arguments.emoteRegex)
-        {
+        if(args matches Arguments.emoteRegex) {
             val emotes = event.message.emotes
             if(emotes.size < 1)
                 return event.replyError("The specified emote was fake, or could not be retrieved!")
@@ -82,8 +78,7 @@ class EmoteCmd : Command()
                         append(hex)
                         append("`   ")
 
-                        if(chars.size>1)
-                        {
+                        if(chars.size>1) {
                             var hex0 = Integer.toHexString(chars[0].toInt()).toUpperCase()
                             var hex1 = Integer.toHexString(chars[1].toInt()).toUpperCase()
                             while(hex0.length<4) hex0 = "0"+hex0

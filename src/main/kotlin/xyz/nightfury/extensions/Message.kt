@@ -42,3 +42,6 @@ infix fun MessageBuilder.mention(lazy: IMentionable): MessageBuilder {
 }
 
 infix inline fun <reified M: Message> M.edit(block: () -> String): M = apply { editMessage(block()).queue() }
+infix inline fun <reified M: Message> M.rebuild(block: MessageBuilder.() -> Unit): M = apply {
+    editMessage(MessageBuilder().also(block).build()).queue()
+}

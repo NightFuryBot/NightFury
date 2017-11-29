@@ -22,22 +22,23 @@ import net.dv8tion.jda.core.hooks.IEventManager
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * @author Kaidan Gustave
  */
-class AsyncEventManager : IEventManager
-{
-    private val threadpool : ExecutorService = Executors.newCachedThreadPool {
-        val thread = Thread(it, "EventThread")
-        thread.isDaemon = true
-        thread
+class AsyncEventManager: IEventManager {
+    companion object {
+        @JvmField val THREAD_NUMBER: AtomicInteger = AtomicInteger(0)
     }
 
-    private val listeners : MutableSet<EventListener> = CopyOnWriteArraySet<EventListener>()
+    private val threadpool: ExecutorService = Executors.newCachedThreadPool {
+        Thread(it, "EventThread-${THREAD_NUMBER.getAndIncrement()}").also { it.isDaemon = true }
+    }
 
-    override fun handle(event: Event?)
-    {
+    private val listeners: MutableSet<EventListener> = CopyOnWriteArraySet<EventListener>()
+
+    override fun handle(event: Event?) {
         if(threadpool.isShutdown || event == null)
             return
         threadpool.execute {
@@ -53,14 +54,12 @@ class AsyncEventManager : IEventManager
             threadpool.shutdown()
     }
 
-    override fun register(listener: Any?)
-    {
+    override fun register(listener: Any?) {
         require(listener is EventListener) { "Listener must implement EventListener!" }
         listeners += listener as EventListener
     }
 
-    override fun unregister(listener: Any?)
-    {
+    override fun unregister(listener: Any?) {
         if(listener is EventListener)
             listeners -= listener
     }

@@ -15,15 +15,15 @@
  */
 package xyz.nightfury.commands.moderator
 
-import xyz.nightfury.Category
-import xyz.nightfury.Command
-import xyz.nightfury.CommandEvent
-import xyz.nightfury.CooldownScope
+import kotlinx.coroutines.experimental.launch
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.resources.Arguments
-import xyz.nightfury.extensions.past
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Message
+import xyz.nightfury.*
+import xyz.nightfury.entities.ModLogger
+import xyz.nightfury.entities.succeed
+import xyz.nightfury.extensions.getPast
 import java.util.*
 import kotlin.collections.HashSet
 
@@ -31,8 +31,7 @@ import kotlin.collections.HashSet
  * @author Kaidan Gustave
  */
 @MustHaveArguments("Provide a number between 2-1000, or a flag to delete by!")
-class CleanCmd : Command()
-{
+class CleanCmd : Command() {
     companion object {
         private val numberPattern = Regex("(\\d{1,4})")
         private val linkPattern = Regex("https?://\\S+")
@@ -77,13 +76,12 @@ class CleanCmd : Command()
 
     val Message.hasImage : Boolean
         get() = when {
-            attachments.stream().anyMatch { it.isImage }                           -> true
+            attachments.stream().anyMatch { it.isImage } -> true
             embeds.stream().anyMatch { it.image != null || it.videoInfo != null }  -> true
-            else                                                                   -> false
+            else -> false
         }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         var args = event.args
 
         // Reason
@@ -147,11 +145,10 @@ class CleanCmd : Command()
 
         // Number of messages to delete
         val numMatcher = numberPattern.findAll(args.trim())
-        val num : Int = if(numMatcher.any()) {
+        val num: Int = if(numMatcher.any()) {
             val n = numMatcher.first().value.trim().toInt()
-            if(n<2 || n>1000)
-                return event.replyError(
-                        INVALID_ARGS_ERROR.format("The number of messages to delete must be between 2 and 1000!"))
+            if(n < 2 || n > 1000)
+                return event.replyError(INVALID_ARGS_ERROR.format("The number of messages to delete must be between 2 and 1000!"))
             else n + 1
         } else if(!cleanAll) {
             100
@@ -159,9 +156,11 @@ class CleanCmd : Command()
 
         val twoWeeksPrior = event.message.creationTime.minusWeeks(2).plusMinutes(1)
 
-        // Launches in a coroutine
-        event.textChannel.history.past(num, { it[it.size-1].creationTime.isBefore(twoWeeksPrior) })
-        { messages ->
+        launch {
+            val messages = event.textChannel.history.getPast(num, breakIf = {
+                it[it.size-1].creationTime.isBefore(twoWeeksPrior)
+            })
+
             messages.remove(event.message) // Remove call message
 
             val toDelete = LinkedList<Message>()
@@ -176,46 +175,50 @@ class CleanCmd : Command()
                 ids.contains(message.author.idLong)                          -> toDelete.add(message)
                 bots && message.author.isBot                                 -> toDelete.add(message)
                 embeds && message.embeds.isNotEmpty()                        -> toDelete.add(message)
-                links && linkPattern.containsMatchIn(message.rawContent)     -> toDelete.add(message)
+                links && linkPattern.containsMatchIn(message.contentRaw)     -> toDelete.add(message)
 
                 // Files comes before images because images are files
                 files && message.attachments.isNotEmpty()                    -> toDelete.add(message)
                 images && message.hasImage                                   -> toDelete.add(message)
 
-                quotes.any { message.rawContent.toLowerCase().contains(it) } -> toDelete.add(message)
+                quotes.any { message.contentRaw.toLowerCase().contains(it) } -> toDelete.add(message)
             } else {
                 pastTwoWeeks = true
                 break
             }
 
-            if(toDelete.isEmpty()) // If it's empty, either nothing fit the criteria or all of it was past 2 weeks
-                return@past event.replyError("**No messages found to delete!**\n" +
-                        if(pastTwoWeeks) "Messages older than 2 weeks cannot be deleted!"
-                        else SEE_HELP.format(event.client.prefix,this.name.toLowerCase()))
+            if(toDelete.isEmpty()) { // If it's empty, either nothing fit the criteria or all of it was past 2 weeks
+                return@launch event.replyError(
+                    "**No messages found to delete!**\n" +
+                    if(pastTwoWeeks) "Messages older than 2 weeks cannot be deleted!"
+                    else SEE_HELP.format(event.client.prefix,name.toLowerCase())
+                )
+            }
 
             val numDeleted = toDelete.size
 
             try {
-
                 var i = 0
-                while(i<numDeleted) // Delet this
-                {
-                    if(i+100>numDeleted)
-                        if(i+1==numDeleted) toDelete[numDeleted-1].delete().complete()
-                        else event.textChannel.deleteMessages(toDelete.subList(i, numDeleted)).complete()
-                    else event.textChannel.deleteMessages(toDelete.subList(i, i+100)).complete()
+                while(i < numDeleted) { // Delet this
+                    if(i+100>numDeleted) {
+                        if(i+1==numDeleted)
+                            toDelete[numDeleted-1].delete().succeed()
+                        else
+                            event.textChannel.deleteMessages(toDelete.subList(i, numDeleted)).succeed()
+                    } else {
+                        event.textChannel.deleteMessages(toDelete.subList(i, i+100)).succeed()
+                    }
                     i+=100
                 }
 
-                with(event.client.logger)
-                {
-                    if(reason != null) newClean(event.member, event.textChannel, numDeleted, reason)
-                    else               newClean(event.member, event.textChannel, numDeleted)
-                }
+                if(reason != null)
+                    ModLogger.newClean(event.member, event.textChannel, numDeleted, reason)
+                else
+                    ModLogger.newClean(event.member, event.textChannel, numDeleted)
 
                 event.replySuccess("Successfully cleaned $numDeleted messages!")
-
             } catch (e : Exception) {
+                NightFury.LOG.error("An error occurred", e)
                 // If something happens, we want to make sure that we inform them because
                 // messages may have already been deleted.
                 event.replyError("An error occurred when deleting $numDeleted messages!")

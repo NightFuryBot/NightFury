@@ -110,7 +110,7 @@ class AnnounceCmd : Command() {
                 if(index == 0) mention(role).appendln()
                 append(msg)
             } then {
-                if(index == msgs.size) {
+                if(index == msgs.size - 1) {
                     event.replySuccess("Successfully send announcement to ${channel.asMention}!")
                 }
             } catch {

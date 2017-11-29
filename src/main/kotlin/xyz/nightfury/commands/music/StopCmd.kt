@@ -28,8 +28,7 @@ class StopCmd(musicManager: MusicManager) : MusicCmd(musicManager)
         this.help = "Stops playing music in the server!"
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         if(!event.guild.isPlaying)
             return event.replyError("I am not playing music at this time!")
 

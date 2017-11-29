@@ -15,8 +15,8 @@
  */
 package xyz.nightfury.commands.other
 
-import com.jagrosh.jdautilities.menu.Slideshow
-import com.jagrosh.jdautilities.waiter.EventWaiter
+import xyz.nightfury.entities.menus.Slideshow
+import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.annotations.APICache
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
@@ -29,10 +29,9 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
+import xyz.nightfury.extensions.randomNextInt
 import java.awt.Color
-import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
@@ -40,8 +39,13 @@ import kotlin.streams.toList
 @APICache
 @AutoInvokeCooldown
 @MustHaveArguments("Provide up to 6 tags or a number of posts followed by the tags.")
-class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = Random()) : Command()
+class E621Cmd(val e621 : E621API, val waiter: EventWaiter) : Command()
 {
+    private val builder: Slideshow.Builder = Slideshow.Builder()
+        .waiter           { waiter }
+        .showPageNumbers  { false }
+        .waitOnSinglePage { true }
+
     init {
         this.name = "E621"
         this.arguments = "<Number of Posts> [Tags... (maximum of 6)]"
@@ -87,35 +91,51 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter, val random: Random = 
         }
     }
 
-    private fun generate(array: JSONArray, event: CommandEvent)
-    {
+    private fun generate(array: JSONArray, event: CommandEvent) {
         val list = array.toTypedList<JSONObject>()
-        with(Slideshow.Builder())
-        {
-            setUrls(*list.stream().map { it.getString("file_url") }.toList().toTypedArray())
-            setText("Showing results for ${event.args}")
-            setColor { _,_ -> Color(random.nextInt(256),random.nextInt(256),random.nextInt(256)) }
-            setDescription { x, _ -> "[Link](https://e621.net/post/show/${list[x]["id"]}/)"}
-            setFinalAction { m ->
-                event.reply("To save this, type `|save`")
-                { message ->
-                    waiter.waitForEvent(MessageReceivedEvent::class.java, { e : MessageReceivedEvent ->
-                        e.author == event.author && e.channel == event.channel
-                                && (e.message.rawContent == "${event.client.prefix}save" || e.message.rawContent == "${event.client.prefix}save")
-                    }, {
-                        message.delete().queue()
-                        event.message.delete().queue()
-                        m.clearReactions().queue()
-                    }, 20, TimeUnit.SECONDS, {
-                        message.delete().queue()
-                        m.delete().queue()
-                    })
+        with(builder) {
+            clearUrls()
+
+            // Populate menu
+            list.forEach { add { it["file_url"] as String } }
+
+            text        { _,_ -> "Showing results for ${event.args}" }
+            color       { _, _ -> Color(0 randomNextInt 256, 0 randomNextInt 256, 0 randomNextInt 256) }
+            description { x, _ -> "[Link](https://e621.net/post/show/${list[x]["id"]}/)" }
+
+            finalAction { m ->
+                event.reply("To save this, type `|save`") { message ->
+                    waiter.waitFor<MessageReceivedEvent>(
+                        delay = 20,
+                        unit = TimeUnit.SECONDS,
+                        timeout = {
+                            message.delete().queue()
+                            m.delete().queue()
+                        },
+                        condition = {
+                            it.author == event.author && it.channel == event.channel &&
+                            (
+                                it.message.contentRaw == "${event.client.prefix}save" ||
+                                it.message.contentRaw == "${event.client.prefix}save"
+                            )
+                        },
+                        action = {
+                            message.delete().queue()
+                            event.message.delete().queue()
+                            m.clearReactions().queue()
+                        }
+                    )
                 }
             }
-            setTimeout(30, TimeUnit.SECONDS)
-            setUsers(event.author)
-            setEventWaiter(waiter)
-        }.build().display(event.channel)
+
+            timeout {
+                delay { 30 }
+                unit  { TimeUnit.SECONDS }
+            }
+
+            user { event.author }
+            displayIn { event.channel }
+        }
     }
 
     inline fun <reified T> JSONArray.toTypedList() : List<T> = map { it as T }

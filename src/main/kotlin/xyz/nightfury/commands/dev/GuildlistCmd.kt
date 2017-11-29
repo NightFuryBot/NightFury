@@ -15,12 +15,11 @@
  */
 package xyz.nightfury.commands.dev
 
-import com.jagrosh.jdautilities.menu.Paginator
-import com.jagrosh.jdautilities.waiter.EventWaiter
+import xyz.nightfury.entities.menus.Paginator
+import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
-import xyz.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 
@@ -39,11 +38,11 @@ class GuildlistCmd(waiter: EventWaiter) : Command()
     }
 
     private val builder : Paginator.Builder = Paginator.Builder()
-            .setFinalAction   { it.delete().queue() }
+            .finalAction      { it.delete().queue() }
             .waitOnSinglePage { false }
-            .useNumberedItems { true }
+            .numberItems      { true }
             .itemsPerPage     { 10 }
-            .setText          { t, u -> "Page $t/$u" }
+            .text             { t, u -> "Page $t/$u" }
             .waiter           { waiter }
 
 
@@ -52,7 +51,7 @@ class GuildlistCmd(waiter: EventWaiter) : Command()
         builder.clearItems()
         event.jda.guilds.forEach { builder.add { "**${it.name}** (ID: ${it.id})" } }
         if(event.isFromType(ChannelType.TEXT))
-            builder.color { event.member.color }
+            builder.color { _,_ -> event.member.color }
         builder.user      { event.author }
         builder.displayIn { event.channel }
     }

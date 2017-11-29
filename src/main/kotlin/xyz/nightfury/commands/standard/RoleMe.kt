@@ -15,8 +15,8 @@
  */
 package xyz.nightfury.commands.standard
 
-import com.jagrosh.jdautilities.menu.Paginator
-import com.jagrosh.jdautilities.waiter.EventWaiter
+import xyz.nightfury.entities.menus.Paginator
+import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.then
@@ -34,8 +34,7 @@ import kotlin.streams.toList
  * @author Kaidan Gustave
  */
 @MustHaveArguments("Specify a RoleMe role to give or remove!")
-class RoleMeCmd(waiter: EventWaiter) : Command()
-{
+class RoleMeCmd(waiter: EventWaiter) : Command() {
     init {
         this.name = "RoleMe"
         this.arguments = "[Role]"
@@ -63,8 +62,7 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
         )
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val query = event.args
         val allRoleMes = SQLRoleMe.getRoles(event.guild)
         if(allRoleMes.isEmpty())
@@ -106,8 +104,7 @@ class RoleMeCmd(waiter: EventWaiter) : Command()
 }
 
 @MustHaveArguments("Specify a role to add to RoleMe!")
-private class RoleMeAddCmd : Command()
-{
+private class RoleMeAddCmd : Command() {
     init {
         this.name = "Add"
         this.fullname = "RoleMe Add"
@@ -128,8 +125,7 @@ private class RoleMeAddCmd : Command()
         this.category = Category.ADMIN
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val query = event.args
         val found = event.guild findRoles query
         if(found.isEmpty())
@@ -152,8 +148,7 @@ private class RoleMeAddCmd : Command()
 }
 
 @MustHaveArguments
-private class RoleMeRemoveCmd : Command()
-{
+private class RoleMeRemoveCmd : Command() {
     init {
         this.name = "Remove"
         this.fullname = "RoleMe Remove"
@@ -166,8 +161,7 @@ private class RoleMeRemoveCmd : Command()
         this.category = Category.ADMIN
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val query = event.args
         val found = event.guild.findRoles(query).stream()
                 .filter { SQLRoleMe.isRole(it) }.toList()
@@ -181,8 +175,7 @@ private class RoleMeRemoveCmd : Command()
 }
 
 @AutoInvokeCooldown
-private class RoleMeListCmd(waiter: EventWaiter) : Command()
-{
+private class RoleMeListCmd(waiter: EventWaiter) : Command() {
     init {
         this.name = "List"
         this.fullname = "RoleMe List"
@@ -196,18 +189,16 @@ private class RoleMeListCmd(waiter: EventWaiter) : Command()
     val builder : Paginator.Builder = Paginator.Builder()
             .timeout          { delay { 20 } }
             .showPageNumbers  { true }
-            .useNumberedItems { true }
+            .numberItems      { true }
             .waitOnSinglePage { false }
             .waiter           { waiter }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val rolemes = SQLRoleMe.getRoles(event.guild).map { it.name }
         if(rolemes.isEmpty())
             return event.replyError("**No RoleMe roles on this server!**\n" +
                     SEE_HELP.format(event.client.prefix, "RoleMe"))
-        with(builder)
-        {
+        with(builder) {
             text        { _,_ -> "RoleMe Roles On ${event.guild.name}" }
             items       { addAll(rolemes) }
             finalAction { event.linkMessage(it) }
@@ -218,8 +209,7 @@ private class RoleMeListCmd(waiter: EventWaiter) : Command()
 }
 
 @MustHaveArguments("Try specifying a limit in the form of a number.")
-private class RoleMeLimitCmd : Command()
-{
+private class RoleMeLimitCmd : Command() {
     init {
         this.name = "Limit"
         this.fullname = "RoleMe Limit"
@@ -233,8 +223,7 @@ private class RoleMeLimitCmd : Command()
         this.guildOnly = true
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         if(!(event.args matches Regex("\\d+")))
             return event.replyError(INVALID_ARGS_ERROR.format("Try specifying a limit in the form of a number."))
         val limit = event.args.toInt()

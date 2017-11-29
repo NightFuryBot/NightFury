@@ -16,7 +16,7 @@
 package xyz.nightfury
 
 import com.jagrosh.jagtag.Parser
-import com.jagrosh.jdautilities.waiter.EventWaiter
+import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.annotations.APICache
 import xyz.nightfury.entities.ModLogger
 import xyz.nightfury.entities.logging.NormalFilter
@@ -61,10 +61,10 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
-class Client internal constructor(val prefix: String, val devId: Long,
-                                  val success: String, val warning: String,
-                                  val error: String, val server: String,
-                                  val dBotsKey: String, val dBorgKey: String,
+class Client internal constructor(val prefix: String,      val devId: Long,
+                                  val success: String,     val warning: String,
+                                  val error: String,       val server: String,
+                                  val dBotsKey: String,    val dBorgKey: String,
                                   val waiter: EventWaiter, val parser: Parser,
                                   vararg commands: Command): EventListener {
 
@@ -75,24 +75,24 @@ class Client internal constructor(val prefix: String, val devId: Long,
     var totalGuilds: Int = 0
         private set
 
-    var mode : CommandListener.Mode = CommandListener.Mode.STANDARD
+    var mode: CommandListener.Mode = CommandListener.Mode.STANDARD
         set(value) {
             NormalFilter.level = value.level.logLevel
             listener = value.listener
             field = value
         }
 
-    val commands         : CommandMap               = CommandMap(*commands)
-    val startTime        : OffsetDateTime           = OffsetDateTime.now()
-    val logger           : ModLogger                = ModLogger // TODO Remove this instance
-    val messageCacheSize : Int
+    val commands: CommandMap = CommandMap(*commands)
+    val startTime: OffsetDateTime = OffsetDateTime.now()
+    val logger: ModLogger = ModLogger // TODO Remove this instance
+    val messageCacheSize: Int
         get() = callCache.size
 
     internal var listener: CommandListener = CommandListener.Mode.STANDARD.listener
 
-    private val executor : ScheduledExecutorService                  = Executors.newSingleThreadScheduledExecutor()
-    private val cooldowns: MutableMap<String, OffsetDateTime>        = HashMap()
-    private val uses     : MutableMap<String, Int>                   = HashMap()
+    private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+    private val cooldowns: MutableMap<String, OffsetDateTime> = HashMap()
+    private val uses: MutableMap<String, Int> = HashMap()
     private val callCache: FixedSizeCache<Long, MutableSet<Message>> = FixedSizeCache(300)
 
     companion object {
@@ -190,7 +190,7 @@ class Client internal constructor(val prefix: String, val devId: Long,
     private fun onMessageReceived(event: MessageReceivedEvent) {
         if(event.author.isBot)
             return
-        val rawContent = event.message.rawContent.trim()
+        val rawContent = event.message.contentRaw.trim()
         val parts: List<String> = when {
             rawContent.startsWith(prefix, true) -> { // From Anywhere with default prefix
                 rawContent.substring(prefix.length).trim().split(Arguments.commandArgs, 2)
@@ -233,12 +233,10 @@ class Client internal constructor(val prefix: String, val devId: Long,
         }
     }
 
-    private fun onMessageDelete(event: MessageDeleteEvent)
-    {
+    private fun onMessageDelete(event: MessageDeleteEvent) {
         if(!event.isFromType(ChannelType.TEXT))
             return
-        synchronized(callCache)
-        {
+        synchronized(callCache) {
             val messages = callCache[event.messageIdLong] ?: return
             if(messages.size > 1 && event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_MANAGE))
                 event.textChannel.deleteMessages(messages).queue({},{})
@@ -247,22 +245,20 @@ class Client internal constructor(val prefix: String, val devId: Long,
         }
     }
 
-    private fun onShutdown(event: ShutdownEvent)
-    {
+    private fun onShutdown(event: ShutdownEvent) {
         val si = event.jda.shardInfo
         val identifier = if(si != null) "Shard [${si.shardId} / ${si.shardTotal - 1}]" else "JDA"
         val cc = event.closeCode
         log.info("$identifier has shutdown.")
         log.debug("Shutdown Info:\n" +
-                                                 "- Shard ID: ${si?.shardId ?: "0 (No Shard)"}\n" +
-                                                 "- Close Code: ${if(cc != null) "${cc.code} - ${cc.meaning}" else "${event.code} - Unknown Code!"}\n" +
-                                                 "- Time: ${event.shutdownTime}")
+                  "- Shard ID: ${si?.shardId ?: "0 (No Shard)"}\n" +
+                  "- Close Code: ${if(cc != null) "${cc.code} - ${cc.meaning}" else "${event.code} - Unknown Code!"}\n" +
+                  "- Time: ${event.shutdownTime}")
         executor.shutdownNow()
         Database.close()
     }
 
-    private fun onGuildMemberJoin(event: GuildMemberJoinEvent)
-    {
+    private fun onGuildMemberJoin(event: GuildMemberJoinEvent) {
         // If there's no welcome channel then we just return.
         val welcomeChannel = Database.getWelcomeChannel(event.guild)?:return
 
@@ -296,15 +292,12 @@ class Client internal constructor(val prefix: String, val devId: Long,
     // INTERNAL MEMBERS //
     //////////////////////
 
-    internal fun linkIds(id: Long, message: Message)
-    {
-        synchronized(callCache)
-        {
+    internal fun linkIds(id: Long, message: Message) {
+        synchronized(callCache) {
             val stored = callCache[id]
             if(stored != null)
                 stored.add(message)
-            else
-            {
+            else {
                 val toStore = HashSet<Message>()
                 toStore.add(message)
                 callCache[id] = toStore
@@ -319,18 +312,17 @@ class Client internal constructor(val prefix: String, val devId: Long,
     private inline val Guild.isGood : Boolean
         inline get() = members.stream().filter { it.user.isBot }.count()<=30 || getMemberById(devId)!=null
 
-    private fun clearAPICaches()
-    {
+    private fun clearAPICaches() {
         commands.stream().filter {
             it::class.findAnnotation<APICache>() != null
-        }.forEach { cmd -> cmd::class.functions.stream()
+        }.forEach { cmd ->
+            cmd::class.functions.stream()
                 .filter { it.findAnnotation<APICache>() != null }
                 .findFirst().ifPresent { it.call(cmd) }
         }
     }
 
-    private fun updateStats(jda: JDA)
-    {
+    private fun updateStats(jda: JDA) {
         val client = (jda as JDAImpl).httpClientBuilder.build()
         val body = JSONObject().put("server_count", jda.guilds.size)
 
@@ -367,8 +359,7 @@ class Client internal constructor(val prefix: String, val devId: Long,
         })
 
         // If we're not sharded there's no reason to send a GET request
-        if(jda.shardInfo == null)
-        {
+        if(jda.shardInfo == null) {
             totalGuilds = jda.guilds.size
             return
         }
@@ -397,8 +388,7 @@ class Client internal constructor(val prefix: String, val devId: Long,
         }
     }
 
-    private inline fun OkHttpClient.newRequest(lazy: Request.Builder.() -> Unit) : Call
-    {
+    private inline fun OkHttpClient.newRequest(lazy: Request.Builder.() -> Unit) : Call {
         val builder = Request.Builder()
         builder.lazy()
         return newCall(builder.build())

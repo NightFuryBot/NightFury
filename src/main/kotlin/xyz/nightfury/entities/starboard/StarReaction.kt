@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.annotations.doc
+package xyz.nightfury.entities.starboard
 
 /**
  * @author Kaidan Gustave
  */
-object Constants {
-    const val SNOWFLAKE_DOCS_URL = ""
-}
+data class StarReaction(val userId: Long, val message: StarMessage)

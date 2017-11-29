@@ -26,8 +26,7 @@ import net.dv8tion.jda.core.entities.ChannelType
 /**
  * @author Kaidan Gustave
  */
-class AvatarCmd : Command()
-{
+class AvatarCmd : Command() {
     init {
         this.name = "Avatar"
         this.aliases = arrayOf("avy", "pfp")
@@ -39,8 +38,7 @@ class AvatarCmd : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val user = if(event.isFromType(ChannelType.TEXT)) {
             if(event.args.isNotEmpty()) {
                 val members = event.guild findMembers event.args
@@ -64,8 +62,7 @@ class AvatarCmd : Command()
         event.reply(embed {
             title { "Avatar For ${user.formattedName(true)}" }
 
-            if(event.isFromType(ChannelType.TEXT))
-            {
+            if(event.isFromType(ChannelType.TEXT)) {
                 val member = event.guild.getMember(user)
                 color { if(member!=null) member.color else event.selfMember.color }
             }

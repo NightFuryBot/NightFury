@@ -23,6 +23,7 @@ import xyz.nightfury.db.SQLCases
 import xyz.nightfury.db.SQLModeratorLog
 import xyz.nightfury.entities.Case
 import xyz.nightfury.entities.then
+import xyz.nightfury.extensions.edit
 import xyz.nightfury.resources.Arguments
 import xyz.nightfury.extensions.isSelf
 
@@ -30,8 +31,12 @@ import xyz.nightfury.extensions.isSelf
  * @author Kaidan Gustave
  */
 @MustHaveArguments("Provide a reason to give or specify a case number followed by a reason.")
-class ReasonCmd : Command()
-{
+class ReasonCmd : Command() {
+    companion object {
+        private val reasonRegex: Regex = Regex("\\d{1,5}")
+        private val reasonSplit: Regex = Regex("\n")
+    }
+
     init {
         this.name = "Reason"
         this.arguments = "<Case Number> [Reason]"
@@ -40,8 +45,7 @@ class ReasonCmd : Command()
         this.guildOnly = true
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val modLog = SQLModeratorLog.getChannel(event.guild)
                 ?: return event.replyError("The moderator log channel has not been set!")
         if(event.args.isEmpty())
@@ -51,24 +55,23 @@ class ReasonCmd : Command()
         val number : Int
         val reason : String
         // Only one argument or first argument is not a number
-        if(parts.size==1 || !(parts[0] matches Regex("\\d{1,5}")))
-        {
+        if(parts.size==1 || !(parts[0] matches reasonRegex)) {
             val cases = SQLCases.getCasesByUser(event.member).takeIf { it.isNotEmpty() }
                     ?: return event.replyError("You have no outstanding cases!")
             case = cases[0]
             number = case.number
             reason = event.args
-        }
-        else
-        {
+        } else {
             number = with(parts[0].toInt()) {
                 if(this > SQLCases.getCases(event.guild).size)
                     return event.replyError("**Invalid case number!**\n" +
                             "Specify a case number lower than the latest case number!")
                 else this
             }
+
             case = SQLCases.getCaseNumber(event.guild, number)
                     ?: return event.replyError("An error occurred getting case number $number!")
+
             reason = parts[1].trim()
         }
 
@@ -85,8 +88,8 @@ class ReasonCmd : Command()
         modLog.getMessageById(case.messageId) then {
             if(this == null)
                 return@then event.replyError("An unexpected error occurred while updating the reason for case number `$number`!")
-            if(this.author.isSelf)
-                this.editMessage("${this.rawContent.split(Regex("\n"),2)[0]}\n`[ REASON ]` $reason").queue()
+            if(author.isSelf)
+                this.edit { "${contentRaw.split(reasonSplit,2)[0]}\n`[ REASON ]` $reason" }
             SQLCases.updateCase(case)
             event.replySuccess("Successfully updated reason for case number `$number`!")
         } catch {

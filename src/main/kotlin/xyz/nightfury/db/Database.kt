@@ -26,7 +26,7 @@ import java.sql.SQLException
 /**
  * @author Kaidan Gustave
  */
-object Database: Closeable {
+object Database : Closeable {
     var init: Boolean = false
 
     @Suppress("ObjectPropertyName")
@@ -181,6 +181,10 @@ object Database: Closeable {
                  "TWITCH VARCHAR(100) DEFAULT NULL",
                  "TITLE VARCHAR(50) DEFAULT NULL",
                  "ABOUT VARCHAR(1800) DEFAULT NULL",
-                 "BIRTHDAY DATE DEFAULT NULL");
+                 "BIRTHDAY DATE DEFAULT NULL"),
+
+        STARBOARD_ENTRIES("STARRED_ID BIGINT", "ENTRY_ID BIGINT DEFAULT NULL", "STARBOARD_ID BIGINT", "GUILD_ID BIGINT", "USER_ID BIGINT"),
+
+        STARBOARD_SETTINGS("THRESHOLD INT DEFAULT 5", "MAX_AGE INT DEFAULT 72", "GUILD_ID BIGINT");
     }
 }

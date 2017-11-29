@@ -26,8 +26,7 @@ import java.time.ZoneOffset
 import java.util.*
 
 val OnlineStatus.emoteId : Long
-    get() = when(this)
-    {
+    get() = when(this) {
         OnlineStatus.ONLINE -> 313956277808005120L
         OnlineStatus.IDLE -> 313956277220802560L
         OnlineStatus.DO_NOT_DISTURB -> 313956276893646850L
@@ -36,8 +35,7 @@ val OnlineStatus.emoteId : Long
         OnlineStatus.UNKNOWN -> 313956277107556352L
     }
 
-infix fun Int.randomNextInt(int: Int): Int
-{
+infix fun Int.randomNextInt(int: Int): Int {
     require( this >=0 ) { "Cannot use negative numbers as receiver in random range!" }
     require(this < int) {         "Parameter must be greater than receiver!"         }
 
@@ -47,10 +45,10 @@ infix fun Int.randomNextInt(int: Int): Int
 // Good for checking if lateinit vars are initialized
 // And who said that checking if a non-null is null was useless?
 @Suppress("SENSELESS_COMPARISON", "UNUSED")
-inline fun <reified T: Any> checkInitialized(any: T) = try {
-    any != null } catch (e: UninitializedPropertyAccessException) { false }
+inline fun <reified T: Any> checkInitialized(any: T)
+    = try { any != null } catch (e: UninitializedPropertyAccessException) { false }
 
-fun OffsetDateTime.toTimestamp(): Timestamp = Timestamp.from(toInstant())!!
+fun OffsetDateTime.toTimestamp(): Timestamp = Timestamp.from(toInstant())
 fun OffsetDateTime.toDate(): Date = Date.valueOf(toLocalDate())
 fun Timestamp.toOffsetDateTime(offset: ZoneOffset = ZoneOffset.UTC): OffsetDateTime = toLocalDateTime().atOffset(offset)
 fun Date.toOffsetDateTime(): OffsetDateTime = toLocalDate().atTime(OffsetTime.MIN)
@@ -58,3 +56,25 @@ fun Date.toOffsetDateTime(): OffsetDateTime = toLocalDate().atTime(OffsetTime.MI
 // We don't use ZoneInfo.getTimeZone(String) directly
 // for native nullability issues.
 fun timeZone(identifier: String?): TimeZone? = ZoneInfo.getTimeZone(identifier)
+
+fun thread(start: Boolean = true,
+           isDaemon: Boolean = false,
+           contextClassLoader: ClassLoader? = null,
+           name: String? = null,
+           priority: Int = -1,
+           runnable: Runnable): Thread {
+
+    val thread = Thread(runnable)
+
+    if(isDaemon)
+        thread.isDaemon = true
+    if(priority > 0)
+        thread.priority = priority
+    if(name != null)
+        thread.name = name
+    if(contextClassLoader != null)
+        thread.contextClassLoader = contextClassLoader
+    if(start)
+        thread.start()
+    return thread
+}

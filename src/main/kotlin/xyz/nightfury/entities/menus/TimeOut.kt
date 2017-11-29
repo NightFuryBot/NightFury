@@ -13,5 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
+package xyz.nightfury.entities.menus
 
+import java.util.concurrent.TimeUnit
+
+/**
+ * @author Kaidan Gustave
+ */
+class TimeOut {
+    var delay = 0L
+    var unit = TimeUnit.SECONDS
+
+    infix inline fun delay(lazy: () -> Long) { delay = lazy() }
+    infix inline fun unit(lazy: () -> TimeUnit) { unit = lazy() }
+}

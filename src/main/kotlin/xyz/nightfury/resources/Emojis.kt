@@ -70,4 +70,15 @@ object Emojis {
             }
         }
     }
+
+    enum class Star(val emoji: String, val threshold: Int) {
+        MEDIUM_WHITE_STAR("\u2B50", 1),
+        GLOWING_STAR("\uD83C\uDF1F", 6),
+        DIZZY_SYMBOL("\uD83D\uDCAB", 11),
+        SPARKLES("\u2728", 16);
+
+        companion object {
+            fun forCount(count: Int): Star = values().first { count <= it.threshold }
+        }
+    }
 }

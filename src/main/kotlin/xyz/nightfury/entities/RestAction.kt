@@ -13,54 +13,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("Unused")
 package xyz.nightfury.entities
 
 import kotlinx.coroutines.experimental.*
 import net.dv8tion.jda.core.requests.RestAction
-import kotlin.coroutines.experimental.CoroutineContext
+import java.util.concurrent.TimeUnit
+import kotlin.coroutines.experimental.suspendCoroutine
 
 // Copied and modified from club.minnced.kjda.RestPromise
 
-inline val <reified V> RestAction<V?>.promise : RestPromise<V>
-    inline get() = RestPromise(this)
+fun <V> RestAction<V?>.promise() = RestPromise(this)
 
-fun<V> RestAction<V?>.promise() = RestPromise(this)
+infix fun <V> RestAction<V?>.then(apply: V?.() -> Unit): RestPromise<V> = promise() then apply
 
-infix fun<V> RestAction<V?>.then(apply: V?.() -> Unit) = promise() then apply
+infix fun <V> RestAction<V?>.catch(apply: Throwable?.() -> Unit): RestPromise<V> = promise() catch apply
 
-infix fun<V> RestAction<V?>.catch(apply: Throwable?.() -> Unit) = promise() catch apply
+fun <V> RestAction<V?>.onlyIf(condition: Boolean, block: V?.() -> Unit = {}): RestPromise<V>
+    = if(condition) then(block) else promise()
 
-fun<V> RestAction<V?>.onlyIf(condition: Boolean, block: V?.() -> Unit = {}) = if(condition) then(block) else promise()
+fun <V> RestAction<V?>.unless(condition: Boolean, block: V?.() -> Unit = {}): RestPromise<V>
+    = if(!condition) then(block) else promise()
 
-fun<V> RestAction<V?>.unless(condition: Boolean, block: V?.() -> Unit = {}) = if(!condition) then(block) else promise()
+suspend fun <V> RestAction<V?>.succeed(): V? = suspendCoroutine { cont ->
+    queue({ cont.resume(it) }, { cont.resumeWithException(it) })
+}
 
-suspend fun<V> RestAction<V?>.get(context: CoroutineContext = CommonPool) = run(context) { complete() }
+suspend fun <V> RestAction<V?>.succeedAfter(time: Long, unit: TimeUnit = TimeUnit.SECONDS): V? {
+    delay(time, unit)
+    return succeed()
+}
 
-class RestPromise<V>(action: RestAction<V?>)
-{
+class RestPromise<V>(action: RestAction<V?>) {
     private val success = Callback<V>()
     private val failure = Callback<Throwable>()
 
-    infix fun then(lazyCallback: (V?) -> Unit): RestPromise<V>
-    {
+    infix fun then(lazyCallback: (V?) -> Unit): RestPromise<V> {
         success.backing = lazyCallback
         return this
     }
 
-    infix fun catch(lazyHandler: (Throwable?) -> Unit): RestPromise<V>
-    {
+    infix fun catch(lazyHandler: (Throwable?) -> Unit): RestPromise<V> {
         failure.backing = lazyHandler
         return this
     }
 
-    init
-    {
+    init {
         action.queue(success, failure)
     }
 }
 
-internal class Callback<T> : (T?) -> Unit
-{
+internal class Callback<T> : (T?) -> Unit {
     private var finishedValue : T?      = null
     private var finished      : Boolean = false
 
@@ -71,8 +74,7 @@ internal class Callback<T> : (T?) -> Unit
             field = value
         }
 
-    override fun invoke(p1: T?)
-    {
+    override fun invoke(p1: T?) {
         finished = true
         finishedValue = p1
         backing(p1)

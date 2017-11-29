@@ -30,8 +30,7 @@ class PlayCmd(musicManager: MusicManager) : MusicCmd(musicManager)
         this.help = "Plays a song based on user query."
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val query = event.args
         if(query.toLowerCase().startsWith("ytsearch:") || query.toLowerCase().startsWith("scsearch:"))
             return event.replyError("Invalid query! The format specified is not allowed!")

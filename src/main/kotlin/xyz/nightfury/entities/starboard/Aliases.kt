@@ -13,5 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
+@file:Suppress("Unused")
+package xyz.nightfury.entities.starboard
 
+internal typealias Entries = xyz.nightfury.db.SQLStarboardEntries
+internal typealias Settings = xyz.nightfury.db.SQLStarboardSettings

@@ -23,8 +23,7 @@ import net.dv8tion.jda.core.Permission
 /**
  * @author Kaidan Gustave
  */
-class InviteCmd(vararg requestedPerms : Permission) : Command()
-{
+class InviteCmd(vararg requestedPerms : Permission) : Command() {
     companion object {
         private var perms : Long = 0
         private var id : Long = 0
@@ -43,12 +42,10 @@ class InviteCmd(vararg requestedPerms : Permission) : Command()
         perms = p
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         if(id == 0L)
             id = event.selfUser.idLong
-        event.reply(buildString
-        {
+        event.reply(buildString {
             appendln("NightFury is a general discord bot for moderation, utility, and larger communities!")
             appendln("To add me to your server, click the link below:")
             appendln()

@@ -15,12 +15,11 @@
  */
 package xyz.nightfury.commands.admin
 
-import com.jagrosh.jdautilities.menu.Paginator
-import com.jagrosh.jdautilities.waiter.EventWaiter
+import xyz.nightfury.entities.menus.Paginator
+import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLCustomCommands
-import xyz.nightfury.extensions.*
 import xyz.nightfury.*
 import xyz.nightfury.db.SQLGlobalTags
 import xyz.nightfury.db.SQLLocalTags
@@ -184,7 +183,7 @@ private class CustomCommandListCmd(waiter: EventWaiter) : Command()
             .timeout          { delay { 20 } }
             .waitOnSinglePage { false }
             .showPageNumbers  { true }
-            .useNumberedItems { true }
+            .numberItems      { true }
 
     override fun execute(event: CommandEvent)
     {

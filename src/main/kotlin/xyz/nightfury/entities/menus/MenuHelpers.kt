@@ -13,5 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
+package xyz.nightfury.entities.menus
 
+import net.dv8tion.jda.core.entities.Guild
+import net.dv8tion.jda.core.entities.User
+
+internal inline fun <reified M: Menu> M.isValidUser(user: User, guild: Guild? = null): Boolean {
+    if(user.isBot)
+        return false
+    if(users.isEmpty() && roles.isEmpty())
+        return true
+    if(users.contains(user))
+        return true
+    if(guild == null)
+        return false
+    return guild.getMember(user)?.roles?.any { roles.contains(it) } == true
+}

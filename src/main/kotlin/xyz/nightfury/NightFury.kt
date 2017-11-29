@@ -17,7 +17,6 @@ package xyz.nightfury
 
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Parser
-import com.jagrosh.jdautilities.waiter.EventWaiter
 import net.dv8tion.jda.core.*
 import net.dv8tion.jda.core.requests.SessionReconnectQueue
 import org.json.JSONObject
@@ -37,9 +36,11 @@ import xyz.nightfury.commands.music.StopCmd
 import xyz.nightfury.commands.other.E621Cmd
 import xyz.nightfury.commands.standard.*
 import xyz.nightfury.db.Database
+import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.extensions.*
 import xyz.nightfury.jagtag.tagMethods
 import xyz.nightfury.listeners.InvisibleTracker
+import xyz.nightfury.listeners.StarboardListener
 import xyz.nightfury.music.MusicManager
 import java.io.File
 import java.io.IOException
@@ -65,11 +66,10 @@ fun main(args: Array<String>?) {
  */
 class NightFury {
     companion object {
-        @JvmStatic val VERSION: String = this::class.java.`package`.implementationVersion?:"BETA"
-        @JvmStatic val GITHUB: String = "https://github.com/NightFuryBot/NightFury/"
-        @JvmStatic val LOG: Logger = LoggerFactory.getLogger("NightFury")
+        val VERSION: String = this::class.java.`package`.implementationVersion?:"BETA"
+        val GITHUB: String = "https://github.com/NightFuryBot/NightFury/"
+        val LOG: Logger = LoggerFactory.getLogger("NightFury")
 
-        @JvmStatic
         fun shutdown(exit: Int) {
             LOG.info("Shutdown Complete! "+if(exit == 0)"Restarting..." else "Exiting...")
             System.exit(exit)
@@ -90,6 +90,7 @@ class NightFury {
         val waiter = EventWaiter()
         val invisTracker = InvisibleTracker()
         val musicManager = MusicManager()
+        val starboard = StarboardListener()
 
         val client = Client(
             config.prefix, config.devId,
@@ -135,6 +136,7 @@ class NightFury {
             ModeratorCmd(),
             ModLogCmd(),
             PrefixCmd(),
+            StarboardCmd(),
             WelcomeCmd(),
             LevelCmd(),
             ToggleCmd(),
@@ -153,6 +155,7 @@ class NightFury {
             listener { client }
             listener { invisTracker }
             listener { musicManager }
+            listener { starboard }
             token    { config.token }
             status   { OnlineStatus.DO_NOT_DISTURB }
             game     { "Starting Up..." }
@@ -169,8 +172,7 @@ class NightFury {
         lazy()
         setShardedRateLimiter(ShardedRateLimiter())
         setReconnectQueue(SessionReconnectQueue())
-        for(i in 0 until shards)
-        {
+        for(i in 0 until shards) {
             useSharding(i, shards)
             buildAsync()
             LOG.info("Shard [$i / ${shards - 1}] now building...")

@@ -23,16 +23,14 @@ import net.dv8tion.jda.core.entities.ChannelType
 /**
  * @author Kaidan Gustave
  */
-class HelpCmd : Command()
-{
+class HelpCmd : Command() {
     init {
         this.name = "Help"
         this.help = "Gets a list of available commands."
         this.guildOnly = false
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val commands = event.client.commands
         val b = StringBuilder()
 
@@ -40,10 +38,8 @@ class HelpCmd : Command()
             if(event.isFromType(ChannelType.TEXT)) "<#${event.channel.id}>" else "Direct Messages"
         }:**\n\n")
         var cat : Category? = null
-        for(c in commands)
-        {
-            if(cat!=c.category)
-            {
+        for(c in commands) {
+            if(cat!=c.category) {
                 if(!c.category!!.test(event))
                     continue
                 cat = c.category
@@ -55,6 +51,7 @@ class HelpCmd : Command()
                     .append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
                     .append("` - ").append(c.help).append("\n")
         }
+
         event.jda.retrieveUserById(event.client.devId).queue({
             b.append("\nFor additional help contact **")
                     .append(it.name).append("**#").append(it.discriminator)

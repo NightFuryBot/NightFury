@@ -15,8 +15,8 @@
  */
 package xyz.nightfury.commands.music
 
-import com.jagrosh.jdautilities.menu.Paginator
-import com.jagrosh.jdautilities.waiter.EventWaiter
+import xyz.nightfury.entities.menus.Paginator
+import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
 import xyz.nightfury.extensions.*
@@ -30,7 +30,7 @@ class QueueCmd(waiter: EventWaiter, musicManager: MusicManager): MusicCmd(musicM
 {
     val pBuilder: Paginator.Builder = Paginator.Builder()
             .waitOnSinglePage { false }
-            .setFinalAction   { it.clearReactions().queue({},{}) }
+            .finalAction   { it.clearReactions().queue({},{}) }
             .showPageNumbers  { true }
             .itemsPerPage     { 8 }
             .waiter           { waiter }
@@ -43,8 +43,7 @@ class QueueCmd(waiter: EventWaiter, musicManager: MusicManager): MusicCmd(musicM
         this.botPermissions = botPermissions + arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         if(!musicManager.isPlaying(event.guild))
             return event.replyError("Currently not playing in a voice channel!")
         val queue = musicManager.getQueue(event.guild)
@@ -61,7 +60,7 @@ class QueueCmd(waiter: EventWaiter, musicManager: MusicManager): MusicCmd(musicM
         queue.forEachIndexed { index, track ->
             pBuilder.add { "`${index+1}` [${track.member.asMention}] - ${track.info.formattedInfo}" }
         }
-        pBuilder.color { event.selfMember.color }
+        pBuilder.color { _, _ -> event.selfMember.color }
         pBuilder.user { event.author }
         pBuilder.displayIn { event.channel }
     }

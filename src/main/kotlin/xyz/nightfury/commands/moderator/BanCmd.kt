@@ -77,7 +77,7 @@ class BanCmd : Command()
                 this.banFrom(event.guild, 1, reason)
             } else {
                 this.banFrom(event.guild, 1)
-            }.promise then {
+            }.promise() then {
                 if(reason != null) event.client.logger.newBan(event.member, this, reason)
                 else               event.client.logger.newBan(event.member, this)
                 event.replySuccess("${this.formattedName(true)} was banned from the server.")
