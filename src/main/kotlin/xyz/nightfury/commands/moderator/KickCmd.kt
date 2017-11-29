@@ -23,6 +23,7 @@ import xyz.nightfury.entities.then
 import xyz.nightfury.extensions.kick
 import xyz.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.entities.ModLogger
 
 /**
  * @author Kaidan Gustave
@@ -75,8 +76,10 @@ class KickCmd : Command() {
         } else {
             target.kick()
         } then {
-            if(reason != null) event.client.logger.newKick(event.member, target.user, reason)
-            else               event.client.logger.newKick(event.member, target.user)
+            if(reason != null)
+                ModLogger.newKick(event.member, target.user, reason)
+            else
+                ModLogger.newKick(event.member, target.user)
             event.replySuccess("${target.user.formattedName(true)} was kicked from the server.")
         } catch {
             event.replyError("Kicking ${target.user.formattedName(true)} failed for an unexpected reason!")

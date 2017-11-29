@@ -18,7 +18,6 @@ package xyz.nightfury
 import com.jagrosh.jagtag.Parser
 import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.annotations.APICache
-import xyz.nightfury.entities.ModLogger
 import xyz.nightfury.entities.logging.NormalFilter
 import xyz.nightfury.entities.logging.logLevel
 import xyz.nightfury.resources.Arguments
@@ -84,7 +83,6 @@ class Client internal constructor(val prefix: String,      val devId: Long,
 
     val commands: CommandMap = CommandMap(*commands)
     val startTime: OffsetDateTime = OffsetDateTime.now()
-    val logger: ModLogger = ModLogger // TODO Remove this instance
     val messageCacheSize: Int
         get() = callCache.size
 

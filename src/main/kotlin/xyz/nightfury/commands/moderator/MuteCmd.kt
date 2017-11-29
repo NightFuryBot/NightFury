@@ -23,6 +23,7 @@ import xyz.nightfury.entities.then
 import xyz.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.db.SQLMutedRole
+import xyz.nightfury.entities.ModLogger
 import java.awt.Color
 
 /**
@@ -75,8 +76,10 @@ class MuteCmd : Command() {
         if(error!=null) return event.replyError(error)
 
         target.giveRole(mutedRole).apply { if(reason!=null) reason(reason) } then {
-            if(reason != null) event.client.logger.newMute(event.member, target.user, reason)
-            else               event.client.logger.newMute(event.member, target.user)
+            if(reason != null)
+                ModLogger.newMute(event.member, target.user, reason)
+            else
+                ModLogger.newMute(event.member, target.user)
             event.replySuccess("${target.user.formattedName(true)} was muted!")
         } catch {
             event.replyError("Muting ${target.user.formattedName(true)} failed for an unexpected reason!")

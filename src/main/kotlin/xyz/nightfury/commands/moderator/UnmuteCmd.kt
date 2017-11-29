@@ -24,6 +24,7 @@ import xyz.nightfury.extensions.removeRole
 import xyz.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.db.SQLMutedRole
+import xyz.nightfury.entities.ModLogger
 
 /**
  * @author Kaidan Gustave
@@ -67,8 +68,10 @@ class UnmuteCmd : Command()
         if(error!=null) return event.replyError(error)
 
         target.removeRole(mutedRole).apply { if(reason!=null) reason(reason) } then {
-            if(reason != null) event.client.logger.newUnmute(event.member, target.user, reason)
-            else               event.client.logger.newUnmute(event.member, target.user)
+            if(reason != null)
+                ModLogger.newUnmute(event.member, target.user, reason)
+            else
+                ModLogger.newUnmute(event.member, target.user)
             event.replySuccess("${target.user.formattedName(true)} was unmuted!")
         } catch {
             event.replyError("Unmuting ${target.user.formattedName(true)} failed for an unexpected reason!")
