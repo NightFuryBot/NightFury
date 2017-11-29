@@ -40,6 +40,9 @@ import java.time.OffsetDateTime
  * @author Kaidan Gustave
  */
 class AutoLoggingListener : EventListener {
+
+    private val previouslyKicked: MutableMap<Long, Long> = HashMap()
+
     override fun onEvent(event: Event?) {
         when(event) {
             is GuildBanEvent -> onGuildBan(event)
@@ -57,13 +60,11 @@ class AutoLoggingListener : EventListener {
         event.guild.auditLogs limit { 10 } action { ActionType.BAN } then {
             if(this==null) return@then
 
-            val entry = with(stream().filter {
+            val entry = stream().filter {
                 it.targetIdLong == event.user.idLong &&
                 !it.user.isSelf &&
-                it.creationTime.plusMinutes(3).isBefore(OffsetDateTime.now())
-            }) {
-                try { findFirst() } catch (e: NullPointerException) { null }
-            } ?: return@then
+                it.creationTime.plusMinutes(2).isBefore(OffsetDateTime.now())
+            }.run { try { findFirst() } catch(e: NumberFormatException) { null } } ?: return@then
 
             entry.ifPresent {
                 ModLogger.newBan(event.guild, it.user, event.user, it.reason)
@@ -78,13 +79,11 @@ class AutoLoggingListener : EventListener {
         event.guild.auditLogs limit { 10 } action { ActionType.UNBAN } then {
             if(this==null) return@then
 
-            val entry = with(stream().filter {
+            val entry = stream().filter {
                 it.targetIdLong == event.user.idLong &&
                 !it.user.isSelf &&
-                it.creationTime.plusMinutes(3).isBefore(OffsetDateTime.now())
-            }) {
-                try { findFirst() } catch (e: NullPointerException) { null }
-            } ?: return@then
+                it.creationTime.plusMinutes(2).isBefore(OffsetDateTime.now())
+            }.run { try { findFirst() } catch(e: NumberFormatException) { null } } ?: return@then
 
             entry.ifPresent {
                 ModLogger.newUnban(event.guild, it.user, event.user, it.reason)
@@ -97,13 +96,36 @@ class AutoLoggingListener : EventListener {
         if(!event.shouldLog()) return
 
         event.guild.auditLogs limit { 10 } action { ActionType.KICK } then {
-            if(this==null) return@then
+            if(this == null) return@then
 
-            val entry = with(stream().filter { it.test(event) }) {
-                try { this.findFirst() } catch (e: NullPointerException) { null }
-            } ?: return@then
+            val entry = stream().filter { it.test(event) }
+                            .run { try { findFirst() } catch(e: NumberFormatException) { null } } ?: return@then
 
             entry.ifPresent {
+                // As I learned after creating this system, kicks are one case where you
+                // cannot feasibly determine correctness within reasonable measure with
+                // just info given by the audit-logs.
+                // To solve this, we cache the last kick ID, and pair it with the guild ID
+                // as a key for it.
+                // Now if we come to the point where yet again the same person is leaving
+                // we just return, otherwise we cache the new value.
+                // It doesn't really work, but nothing else does anyways, so why the hell not.
+                synchronized(previouslyKicked) {
+                    if(previouslyKicked.containsKey(event.guild.idLong)) {
+                        val id = previouslyKicked[event.guild.idLong] ?: run {
+                            previouslyKicked[event.guild.idLong] = it.targetIdLong
+                            return@synchronized
+                        }
+
+                        if(id == it.targetIdLong) {
+                            // Go to very top, do not log anything
+                            return@ifPresent
+                        } else {
+                            // Cache new latest kick
+                            previouslyKicked[event.guild.idLong] = it.targetIdLong
+                        }
+                    }
+                }
                 ModLogger.newKick(event.guild, it.user, event.user, it.reason)
             }
         }
@@ -119,9 +141,8 @@ class AutoLoggingListener : EventListener {
         event.guild.auditLogs limit { 10 } action { ActionType.MEMBER_ROLE_UPDATE } then {
             if(this==null) return@then
 
-            val entry = with(stream().filter { it.test(event) }) {
-                try { findFirst() } catch (e: NullPointerException) { null }
-            } ?: return@then
+            val entry = stream().filter { it.test(event) }
+                            .run { try { findFirst() } catch(e: NumberFormatException) { null } } ?: return@then
 
             entry.ifPresent {
                 ModLogger.newMute(event.guild, it.user, event.user, it.reason)
@@ -139,9 +160,8 @@ class AutoLoggingListener : EventListener {
         event.guild.auditLogs limit { 10 } action { ActionType.MEMBER_ROLE_UPDATE } then {
             if(this==null) return@then
 
-            val entry = with(stream().filter { it.test(event) }) {
-                try { findFirst() } catch (e: NullPointerException) { null }
-            } ?: return@then
+            val entry = stream().filter { it.test(event) }
+                            .run { try { findFirst() } catch(e: NumberFormatException) { null } } ?: return@then
 
             entry.ifPresent {
                 ModLogger.newUnmute(event.guild, it.user, event.user, it.reason)

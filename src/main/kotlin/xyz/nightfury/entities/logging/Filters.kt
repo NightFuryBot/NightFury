@@ -20,8 +20,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.filter.Filter
 import ch.qos.logback.core.spi.FilterReply.*
 
-class NormalFilter: Filter<ILoggingEvent>()
-{
+class NormalFilter: Filter<ILoggingEvent>() {
     companion object {
         var level: LogLevel = LogLevel.INFO
     }
@@ -32,8 +31,7 @@ class NormalFilter: Filter<ILoggingEvent>()
 val Level.logLevel: LogLevel
     get() = LogLevel.byLevel(this)
 
-enum class LogLevel(val int: Int, val logbackLevel: Level)
-{
+enum class LogLevel(val int: Int, val logbackLevel: Level) {
     ALL(0, Level.ALL),
     TRACE(1, Level.TRACE),
     DEBUG(2, Level.DEBUG),
@@ -42,8 +40,7 @@ enum class LogLevel(val int: Int, val logbackLevel: Level)
     ERROR(5, Level.ERROR),
     OFF(6, Level.OFF);
 
-    companion object
-    {
+    companion object {
         fun byLevel(level: Level): LogLevel = values().first { it.logbackLevel.levelInt == level.levelInt }
     }
 

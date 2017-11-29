@@ -43,8 +43,7 @@ class QueueCmd(waiter: EventWaiter, musicManager: MusicManager): MusicCmd(musicM
         this.botPermissions = botPermissions + arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         if(!musicManager.isPlaying(event.guild))
             return event.replyError("Currently not playing in a voice channel!")
         val queue = musicManager.getQueue(event.guild)

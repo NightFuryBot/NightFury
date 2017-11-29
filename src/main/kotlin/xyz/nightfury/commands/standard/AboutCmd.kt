@@ -28,8 +28,7 @@ import org.slf4j.LoggerFactory
 /**
  * @author Kaidan Gustave
  */
-class AboutCmd(vararg val permissions : Permission) : Command()
-{
+class AboutCmd(vararg val permissions : Permission) : Command() {
     private var oauthLink: String? = null
     private var isPublic: Boolean = true
     private val perms : Long
@@ -38,18 +37,15 @@ class AboutCmd(vararg val permissions : Permission) : Command()
         this.name = "About"
         this.help = "Shows an overview of the bot."
         this.guildOnly = false
-        perms = with(permissions)
-        {
+        perms = with(permissions) {
             var p = 0L
             this.forEach { p += it.rawValue }
             return@with p
         }
     }
 
-    override fun execute(event: CommandEvent)
-    {
-        if(oauthLink == null && isPublic)
-        {
+    override fun execute(event: CommandEvent) {
+        if(oauthLink == null && isPublic) {
             try {
                 val info = event.jda.asBot().applicationInfo.complete()
                 isPublic = info.isBotPublic
@@ -108,6 +104,7 @@ class AboutCmd(vararg val permissions : Permission) : Command()
             }
             time { event.client.startTime }
         }
+
         event.reply(embed)
     }
 }

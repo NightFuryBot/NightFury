@@ -39,8 +39,7 @@ import java.util.Comparator
 /**
  * @author Kaidan Gustave
  */
-class ServerCmd(waiter: EventWaiter, invisTracker: InvisibleTracker) : Command()
-{
+class ServerCmd(waiter: EventWaiter, invisTracker: InvisibleTracker) : Command() {
     init {
         this.name = "Server"
         this.aliases = arrayOf("guild")
@@ -95,10 +94,8 @@ class ServerCmd(waiter: EventWaiter, invisTracker: InvisibleTracker) : Command()
 }
 
 @AutoInvokeCooldown
-private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Command()
-{
-    companion object
-    {
+private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Command() {
+    companion object {
         private val BULLET : String = "\uD83D\uDD39 "
         private val STREAMING_EMOTE_ID = 313956277132853248L
         private val ASTERISK_ESC = "\u002A"
@@ -118,8 +115,7 @@ private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Comma
                 .replace("]", R_BRACKET_ESC)
     }
 
-    init
-    {
+    init {
         this.name = "Owner"
         this.fullname = "Server Owner"
         this.help = "Gets info on the owner of this server."
@@ -127,8 +123,7 @@ private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Comma
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val member : Member = event.guild.owner
         val user : User = member.user
 
@@ -139,14 +134,12 @@ private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Comma
             append(BULLET).append("**ID:** ${user.id}")
             appendln()
             color { member.color }
-            if(member.nickname != null)
-            {
+            if(member.nickname != null) {
                 append(BULLET).append("**Nickname:** ${member.nickname}")
                 appendln()
             }
             val roles = member.roles
-            if(roles.isNotEmpty())
-            {
+            if(roles.isNotEmpty()) {
                 append(BULLET).append("**Role${if (roles.size > 1) "s" else ""}:** ")
                 append("`${roles[0].name}`")
                 for(i in 1 until roles.size)
@@ -154,35 +147,24 @@ private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Comma
                 appendln()
             }
             append(BULLET).append("**Status:** ")
-            if(member.game!=null)
-            {
-                if(member.game.url!=null)
-                {
+            if(member.game!=null) {
+                if(member.game.url!=null) {
                     append(event.jda.getEmoteById(STREAMING_EMOTE_ID).asMention)
                     append(" Streaming **[${cleanEscapes(member.game.name)}](${member.game.url})**")
-                }
-                else
-                {
+                } else {
                     append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
                     append(" Playing **${cleanEscapes(member.game.name)}**")
                 }
-            }
-            else if(member.onlineStatus == OnlineStatus.OFFLINE && invisTracker.isInvisible(member.user))
-            {
+            } else if(member.onlineStatus == OnlineStatus.OFFLINE && invisTracker.isInvisible(member.user)) {
                 val lastTimeTyping = invisTracker.getLastTimeTyping(user)
-                if(lastTimeTyping!=null)
-                {
+                if(lastTimeTyping!=null) {
                     append(event.jda.getEmoteById(OnlineStatus.INVISIBLE.emoteId).asMention)
                     append(" *${OnlineStatus.INVISIBLE.name}* (Last seen $lastTimeTyping minutes ago)")
-                }
-                else
-                {
+                } else {
                     append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
                     append(" *${member.onlineStatus.name}*")
                 }
-            }
-            else
-            {
+            } else {
                 append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
                 append(" *${member.onlineStatus.name}*")
             }
@@ -218,8 +200,7 @@ private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Comma
 }
 
 @AutoInvokeCooldown
-private class ServerJoinsCmd(waiter: EventWaiter) : Command()
-{
+private class ServerJoinsCmd(waiter: EventWaiter) : Command() {
     init {
         this.name = "Joins"
         this.fullname = "Server Joins"
@@ -237,13 +218,11 @@ private class ServerJoinsCmd(waiter: EventWaiter) : Command()
             .waitOnSinglePage { true }
             .waiter           { waiter }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val joins = ArrayList(event.guild.members)
         joins.sortWith(Comparator.comparing(Member::getJoinDate))
         val names = joins.map { it.user.formattedName(true) }
-        with(builder)
-        {
+        with(builder) {
             text        { _,_ -> "Joins for ${event.guild.name}" }
             items       { addAll(names) }
             finalAction { it.delete().queue() }
@@ -253,8 +232,7 @@ private class ServerJoinsCmd(waiter: EventWaiter) : Command()
     }
 }
 
-private class ServerSettingsCmd : Command()
-{
+private class ServerSettingsCmd : Command() {
     init {
         this.name = "Settings"
         this.fullname = "Server Settings"
@@ -265,8 +243,7 @@ private class ServerSettingsCmd : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val guild = event.guild
         event.reply(embed {
             author {
@@ -310,8 +287,7 @@ private class ServerSettingsCmd : Command()
 }
 
 @AutoInvokeCooldown
-private class ServerStatsCmd : Command()
-{
+private class ServerStatsCmd : Command() {
     init {
         this.name = "Stats"
         this.fullname = "Server Stats"
@@ -322,8 +298,7 @@ private class ServerStatsCmd : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         event.reply(embed {
             title { "Stats for ${event.guild.name}" }
             url   { event.guild.iconUrl }

@@ -256,8 +256,7 @@ val embedMethods: Collection<Method> by lazy {
     )
 }
 
-internal fun userSearch(env: Environment, input: Array<out String>): User
-{
+internal fun userSearch(env: Environment, input: Array<out String>): User {
     if(env.contains("guild")) { // is from guild
         with(env.get<Guild>("guild").findMembers(input[0])) {
             if(this.isEmpty())
@@ -277,8 +276,7 @@ internal fun userSearch(env: Environment, input: Array<out String>): User
     }
 }
 
-internal fun channelSearch(env: Environment, input: Array<out String>): TextChannel?
-{
+internal fun channelSearch(env: Environment, input: Array<out String>): TextChannel? {
     if(!env.contains("guild"))
         return null
     if(input[0].isEmpty())

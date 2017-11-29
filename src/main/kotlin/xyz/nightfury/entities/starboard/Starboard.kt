@@ -48,8 +48,7 @@ class Starboard(val guild: Guild,
         if(starred.creationTime.plusHours(maxAge.toLong()).isBefore(OffsetDateTime.now()))
             return
         synchronized(map) {
-            map[starred.idLong]
-            ?: StarMessage(this, starred).also { map[starred.idLong] = it }
+            map[starred.idLong] ?: StarMessage(this, starred).also { map[starred.idLong] = it }
         }.addStar(user)
     }
 

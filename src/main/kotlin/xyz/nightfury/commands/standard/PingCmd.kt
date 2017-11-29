@@ -34,9 +34,5 @@ class PingCmd : Command() {
                 return@edit "Ping: ${event.message.creationTime.until(it.creationTime, ChronoUnit.MILLIS)}ms"
             }
         }
-
-        event.textChannel.createInvite().queue {
-            it.code
-        }
     }
 }

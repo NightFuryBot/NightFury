@@ -26,8 +26,7 @@ import xyz.nightfury.api.GoogleAPI
  * @author Kaidan Gustave
  */
 @[APICache MustHaveArguments("Specify what to search Google for.")]
-class GoogleCmd(private val api: GoogleAPI) : Command()
-{
+class GoogleCmd(private val api: GoogleAPI) : Command() {
     init {
         this.name = "Google"
         this.aliases = arrayOf("g")
@@ -38,8 +37,7 @@ class GoogleCmd(private val api: GoogleAPI) : Command()
         this.guildOnly = false
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val query = event.args
         event.channel.sendTyping().queue {
             val results = api.search(query)

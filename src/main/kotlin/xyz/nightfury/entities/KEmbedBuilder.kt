@@ -27,23 +27,21 @@ import java.time.temporal.TemporalAccessor
 /**
  * @author Kaidan Gustave
  */
-class KEmbedBuilder internal constructor() : Appendable
-{
-    val fields : MutableList<MessageEmbed.Field> = mutableListOf()
+class KEmbedBuilder internal constructor() : Appendable {
+    val fields: MutableList<MessageEmbed.Field> = mutableListOf()
 
-    var description : StringBuilder = StringBuilder()
-    var title       : String?       = null
-    var url         : String?       = null
-    var thumbnail   : String?       = null
-    var image       : String?       = null
+    var description = StringBuilder()
+    var title: String? = null
+    var url: String? = null
+    var thumbnail: String? = null
+    var image: String? = null
 
-    var author : KEmbedEntity?     = null
-    var footer : KEmbedEntity?     = null
-    var time   : TemporalAccessor? = null
-    var color  : Color?            = null
+    var author: KEmbedEntity? = null
+    var footer: KEmbedEntity? = null
+    var time: TemporalAccessor? = null
+    var color: Color? = null
 
-    internal fun build() = with (EmbedBuilder())
-    {
+    internal fun build(): MessageEmbed = EmbedBuilder().apply {
         val(description, fields, title, url, time, color, author, thumbnail, footer, image) = this@KEmbedBuilder
 
         fields.forEach { addField(it) }
@@ -65,8 +63,7 @@ class KEmbedBuilder internal constructor() : Appendable
         if(author !== null)
             setAuthor(author.value, author.url, author.icon)
 
-        build()
-    }
+    }.build()
 
     operator fun component1()  = description
     operator fun component2()  = fields
@@ -79,26 +76,22 @@ class KEmbedBuilder internal constructor() : Appendable
     operator fun component9()  = footer
     operator fun component10() = image
 
-    operator fun plusAssign(init: FieldBuilder.() -> Unit) = with(FieldBuilder())
-    {
+    operator fun plusAssign(init: FieldBuilder.() -> Unit) = with(FieldBuilder()) {
         field(init)
         Unit
     }
 
-    override fun append(csq: CharSequence?): KEmbedBuilder
-    {
+    override fun append(csq: CharSequence?): KEmbedBuilder {
         description.append(csq)
         return this
     }
 
-    override fun append(csq: CharSequence?, start: Int, end: Int): KEmbedBuilder
-    {
+    override fun append(csq: CharSequence?, start: Int, end: Int): KEmbedBuilder {
         description.append(csq, start, end)
         return this
     }
 
-    override fun append(c: Char): KEmbedBuilder
-    {
+    override fun append(c: Char): KEmbedBuilder {
         description.append(c)
         return this
     }
@@ -111,66 +104,56 @@ class KEmbedBuilder internal constructor() : Appendable
 
     operator fun plusAssign(any: Any?) { append(any) }
 
-    infix inline fun description(lazy: () -> String): KEmbedBuilder
-    {
+    infix inline fun description(lazy: () -> String): KEmbedBuilder {
         description = StringBuilder(lazy())
         return this
     }
 
-    infix inline fun image(lazy: () -> String): KEmbedBuilder
-    {
+    infix inline fun image(lazy: () -> String): KEmbedBuilder {
         image = lazy()
         return this
     }
 
-    infix inline fun url(lazy: () -> String): KEmbedBuilder
-    {
+    infix inline fun url(lazy: () -> String): KEmbedBuilder {
         url = lazy()
         return this
     }
 
-    infix inline fun title(lazy: () -> String): KEmbedBuilder
-    {
+    infix inline fun title(lazy: () -> String): KEmbedBuilder {
         title = lazy()
         return this
     }
 
-    infix inline fun thumbnail(lazy: () -> String): KEmbedBuilder
-    {
+    infix inline fun thumbnail(lazy: () -> String): KEmbedBuilder {
         thumbnail = lazy()
         return this
     }
 
-    infix inline fun time(lazy: () -> TemporalAccessor): KEmbedBuilder
-    {
+    infix inline fun time(lazy: () -> TemporalAccessor): KEmbedBuilder {
         time = lazy()
         return this
     }
 
-    infix inline fun color(lazy: () -> Color?): KEmbedBuilder
-    {
+    infix inline fun color(lazy: () -> Color?): KEmbedBuilder {
         color = lazy()
         return this
     }
 
-    infix inline fun author(lazy: KEmbedEntity.() -> Unit): KEmbedBuilder
-    {
+    infix inline fun author(lazy: KEmbedEntity.() -> Unit): KEmbedBuilder {
         val data = KEmbedEntity()
         data.lazy()
         author = data
         return this
     }
 
-    infix inline fun footer(lazy: KEmbedEntity.() -> Unit): KEmbedBuilder
-    {
+    infix inline fun footer(lazy: KEmbedEntity.() -> Unit): KEmbedBuilder {
         val data = KEmbedEntity()
         data.lazy()
         footer = data
         return this
     }
 
-    infix inline fun field(lazy: FieldBuilder.() -> Unit): KEmbedBuilder
-    {
+    infix inline fun field(lazy: FieldBuilder.() -> Unit): KEmbedBuilder {
         val builder = FieldBuilder()
         builder.lazy()
         fields.add(MessageEmbed.Field(builder.name, builder.value, builder.inline))
@@ -178,21 +161,20 @@ class KEmbedBuilder internal constructor() : Appendable
     }
 }
 
-class KEmbedEntity(var value: String = EmbedBuilder.ZERO_WIDTH_SPACE, var url: String? = null, var icon: String? = null)
+class KEmbedEntity(var value: String = EmbedBuilder.ZERO_WIDTH_SPACE,
+                   var url: String? = null,
+                   var icon: String? = null)
 
-class FieldBuilder : Appendable
-{
-    var name   : String  = EmbedBuilder.ZERO_WIDTH_SPACE
-    var value  : String  = EmbedBuilder.ZERO_WIDTH_SPACE
-    var inline : Boolean = true
+class FieldBuilder : Appendable {
+    var name: String  = EmbedBuilder.ZERO_WIDTH_SPACE
+    var value: String  = EmbedBuilder.ZERO_WIDTH_SPACE
+    var inline = true
 
-    operator fun plusAssign(any: Any?)
-    {
+    operator fun plusAssign(any: Any?) {
         append(any)
     }
 
-    override fun append(csq: CharSequence?): FieldBuilder
-    {
+    override fun append(csq: CharSequence?): FieldBuilder {
         value += csq
         return this
     }
@@ -210,8 +192,7 @@ class FieldBuilder : Appendable
 
 internal fun Any?.normalize() = ((this as? IMentionable)?.asMention) ?: this.toString()
 
-fun embed(init: KEmbedBuilder.() -> Unit): MessageEmbed = with (KEmbedBuilder())
-{
+fun embed(init: KEmbedBuilder.() -> Unit): MessageEmbed = with (KEmbedBuilder()) {
     init()
     build()
 }
