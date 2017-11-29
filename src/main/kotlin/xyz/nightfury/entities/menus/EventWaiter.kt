@@ -31,17 +31,25 @@ class EventWaiter : EventListener {
     private val events: MutableMap<KClass<*>, MutableList<WaiterEvent<*>>> = HashMap()
     private val dispatcher: ThreadPoolDispatcher = newSingleThreadContext("EventWaiter")
 
+    inline fun <reified E: Event> waitFor(
+        delay: Long = -1, unit: TimeUnit = TimeUnit.SECONDS,
+        noinline timeout: () -> Unit = {},
+        noinline condition: (E) -> Boolean,
+        noinline action: (E) -> Unit
+    ) = waitForEvent(E::class, condition, action, delay, unit, timeout)
+
     @Suppress("UNCHECKED_CAST")
-    fun <E: Event> waitForEvent(klazz: KClass<E>, condition: (E) -> Boolean, action: (E) -> Unit,
-                                delay: Long = -1, unit: TimeUnit = TimeUnit.MILLISECONDS, timeout: (() -> Unit) = {}) {
+    fun <E: Event> waitForEvent(
+        klazz: KClass<E>, condition: (E) -> Boolean, action: (E) -> Unit,
+        delay: Long = -1, unit: TimeUnit = TimeUnit.SECONDS, timeout: () -> Unit = {}
+    ) {
         val eventList: MutableList<WaiterEvent<E>> = events[klazz].let {
-            it as? MutableList<WaiterEvent<E>> ?: (ArrayList<WaiterEvent<E>>().apply {
+            it as? MutableList<WaiterEvent<E>> ?: ArrayList<WaiterEvent<E>>().apply {
                 events.put(klazz, this as MutableList<WaiterEvent<*>>)
-            })
+            }
         }
 
         val waiting: WaiterEvent<E> = WaiterEvent(condition, action)
-
         eventList.add(waiting)
 
         if(delay > 0) {
@@ -56,18 +64,10 @@ class EventWaiter : EventListener {
     @Suppress("UNCHECKED_CAST")
     private fun dispatchEventType(event: Event, klazz: KClass<*>) {
         val list = events[klazz] ?: return
-        list.removeAll(list.toMutableList().filter { (it as WaiterEvent<Event>)(event) })
-    }
-
-    inline fun <reified E: Event> waitFor(delay: Long = -1, unit: TimeUnit = TimeUnit.MILLISECONDS,
-                                          noinline timeout: (() -> Unit) = {},
-                                          crossinline condition: (E) -> Boolean,
-                                          crossinline action: (E) -> Unit) {
-        waitForEvent(E::class, { condition(it) }, { action(it) }, delay, unit, timeout)
+        list -= list.toMutableList().filter { (it as WaiterEvent<Event>)(event) }
     }
 
     override fun onEvent(event: Event) {
-
         if(event is ShutdownEvent)
             return dispatcher.close()
 
@@ -80,9 +80,8 @@ class EventWaiter : EventListener {
         }
     }
 
-    private class WaiterEvent<in T: Event>
-    internal constructor(internal val condition: (T) -> Boolean, internal val action: (T) -> Unit) : (T) -> Boolean {
-
+    private inner class WaiterEvent<in T: Event>
+    constructor(internal val condition: (T) -> Boolean, internal val action: (T) -> Unit): (T) -> Boolean {
         override fun invoke(event: T): Boolean {
             if(condition(event)) {
                 action(event)

@@ -26,8 +26,7 @@ import xyz.nightfury.api.YouTubeAPI
  * @author Kaidan Gustave
  */
 @[APICache MustHaveArguments("Specify what to search YouTube for.")]
-class YouTubeCmd(val ytAPI: YouTubeAPI) : Command()
-{
+class YouTubeCmd(val ytAPI: YouTubeAPI) : Command() {
     init {
         this.name = "YouTube"
         this.aliases = arrayOf("yt")
@@ -38,8 +37,7 @@ class YouTubeCmd(val ytAPI: YouTubeAPI) : Command()
         this.guildOnly = false
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val query = event.args
         event.channel.sendTyping().queue {
             val results = ytAPI.search(query)

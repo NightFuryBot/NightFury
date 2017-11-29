@@ -41,10 +41,8 @@ class WebhookAppender: AppenderBase<ILoggingEvent>()
                 .build()
     }
 
-    override fun append(event: ILoggingEvent?)
-    {
-        if(event == null) return
-
+    override fun append(event: ILoggingEvent?) {
+        event ?: return
         try {
             client.send {
                 title { event.loggerName.split(packageRegex).run { this[size - 1] } }
@@ -60,9 +58,7 @@ class WebhookAppender: AppenderBase<ILoggingEvent>()
                     OffsetDateTime.ofInstant(gmt.toInstant(), gmt.timeZone.toZoneId())
                 }
             }
-        } catch(e: Throwable) {
-            return e.printStackTrace()
-        }
+        } catch(ignored: Throwable) {}
     }
 
     override fun stop() {
@@ -83,7 +79,7 @@ class WebhookAppender: AppenderBase<ILoggingEvent>()
 
         private val EMBED_LIMIT = 750
 
-        fun buildStackTrace(proxy: IThrowableProxy) = buildString {
+        private fun buildStackTrace(proxy: IThrowableProxy) = buildString {
             append("```java\n")
             append(proxy.className)
             val message = proxy.message
@@ -93,11 +89,9 @@ class WebhookAppender: AppenderBase<ILoggingEvent>()
             append("\n")
 
             val arr = proxy.stackTraceElementProxyArray
-            for((index, element) in arr.withIndex())
-            {
+            for((index, element) in arr.withIndex()) {
                 val str = element.steAsString
-                if(str.length + length > EMBED_LIMIT)
-                {
+                if(str.length + length > EMBED_LIMIT) {
                     append("\t... (${arr.size - index + 1} more calls)")
                     break
                 }

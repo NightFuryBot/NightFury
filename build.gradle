@@ -23,18 +23,17 @@ class Version {
 }
 
 buildscript {
-    ext.kotlin_version = '1.2.0-rc-39'
+    ext.kotlin_version = '1.2.0'
     ext.kotlinx_version = '0.19.3'
     ext.shadow_version = '2.0.1'
     ext.jda_version = '1fe4e3c'
     ext.jda_utilities_version = 'f9a0402'
-    ext.lavaplayer_version = '1.2.44'
+    ext.lavaplayer_version = '1.2.45'
     ext.h2_version = '1.4.196'
     ext.logback_version = '1.2.3'
 
     repositories {
         jcenter()
-        maven { url "https://plugins.gradle.org/m2/" }
         maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
     }
 
@@ -50,7 +49,7 @@ apply plugin: 'idea'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-def versionObj = new Version(major: 0, minor: 8, build: 2)
+def versionObj = new Version(major: 0, minor: 8, build: 3)
 group = 'xyz.nightfury'
 version = versionObj.toString()
 mainClassName = "${group}.${rootProject.name}Kt"

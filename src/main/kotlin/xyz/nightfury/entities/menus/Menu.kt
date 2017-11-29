@@ -22,6 +22,8 @@ import net.dv8tion.jda.core.entities.User
 import java.util.concurrent.TimeUnit
 
 /**
+ * Modeled after jagrosh's Menu in JDA-Utilities
+ *
  * @author Kaidan Gustave
  */
 abstract class Menu(builder: Builder<*,*>) {

@@ -34,8 +34,7 @@ import java.util.Comparator
  * @author Kaidan Gustave
  */
 @AutoInvokeCooldown
-class InfoCmd(private val invisTracker: InvisibleTracker) : Command()
-{
+class InfoCmd(private val invisTracker: InvisibleTracker) : Command() {
     companion object {
         private val BULLET : String = "\uD83D\uDD39 "
         private val STREAMING_EMOTE_ID = 313956277132853248L
@@ -68,16 +67,14 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val query = event.args
         val temp : Member? = if(event.isFromType(ChannelType.TEXT)) {
             if(query.isEmpty())
                 event.member
             else {
                 val found = event.guild.findMembers(query)
-                when
-                {
+                when {
                     found.isEmpty() -> null
                     found.size>1 -> return event.replyError(found.multipleMembers(query))
                     else -> found[0]
@@ -90,8 +87,7 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command()
             query.isEmpty() -> event.author
             else -> {
                 val found =  event.jda.findUsers(query)
-                when
-                {
+                when {
                     found.isEmpty() -> return event.replyError(noMatch("users", query))
                     found.size>1    -> return event.replyError(found.multipleUsers(query))
                     else            -> found[0]
@@ -107,17 +103,14 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command()
             thumbnail = if(user.avatarUrl == null) user.defaultAvatarUrl else user.avatarUrl
             append(BULLET).append("**ID:** ${user.id}")
             appendln()
-            if(member != null)
-            {
+            if(member != null) {
                 color { member.color }
-                if(member.nickname != null)
-                {
+                if(member.nickname != null) {
                     append(BULLET).append("**Nickname:** ${member.nickname}")
                     appendln()
                 }
                 val roles = member.roles
-                if(roles.isNotEmpty())
-                {
+                if(roles.isNotEmpty()) {
                     append(BULLET).append("**Role${if (roles.size > 1) "s" else ""}:** ")
                     append("`${roles[0].name}`")
                     for(i in 1 until roles.size)
@@ -125,35 +118,24 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command()
                     appendln()
                 }
                 append(BULLET).append("**Status:** ")
-                if(member.game!=null)
-                {
-                    if(member.game.url!=null)
-                    {
+                if(member.game!=null) {
+                    if(member.game.url!=null) {
                         append(event.jda.getEmoteById(STREAMING_EMOTE_ID).asMention)
                         append(" Streaming **[${cleanEscapes(member.game.name)}](${member.game.url})**")
-                    }
-                    else
-                    {
+                    } else {
                         append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
                         append(" Playing **${cleanEscapes(member.game.name)}**")
                     }
-                }
-                else if(member.onlineStatus == OnlineStatus.OFFLINE && invisTracker.isInvisible(member.user))
-                {
+                } else if(member.onlineStatus == OnlineStatus.OFFLINE && invisTracker.isInvisible(member.user)) {
                     val lastTimeTyping = invisTracker.getLastTimeTyping(member.user)
-                    if(lastTimeTyping!=null)
-                    {
+                    if(lastTimeTyping!=null) {
                         append(event.jda.getEmoteById(OnlineStatus.INVISIBLE.emoteId).asMention)
                         append(" *${OnlineStatus.INVISIBLE.name}* (Last seen $lastTimeTyping minutes ago)")
-                    }
-                    else
-                    {
+                    } else {
                         append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
                         append(" *${member.onlineStatus.name}*")
                     }
-                }
-                else
-                {
+                } else {
                     append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
                     append(" *${member.onlineStatus.name}*")
                 }
@@ -161,8 +143,7 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command()
             }
             append(BULLET).append("**Creation Date:** ").append(user.creationTime.format(DateTimeFormatter.ISO_LOCAL_DATE))
             appendln()
-            if(member!=null)
-            {
+            if(member!=null) {
                 append(BULLET).append("**Join Date:** ").append(member.joinDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
                 val joins = ArrayList(event.guild.members)
                 joins.sortWith(Comparator.comparing(Member::getJoinDate))

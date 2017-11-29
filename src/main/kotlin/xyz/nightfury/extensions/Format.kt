@@ -26,7 +26,7 @@ infix fun List<TextChannel>.multipleTextChannels(argument: String) = listOut("te
 infix fun List<VoiceChannel>.multipleVoiceChannels(argument: String) = listOut("voice channel", argument) { it.name }
 infix fun List<Role>.multipleRoles(argument: String) = listOut("role", argument) { it.name }
 
-private inline fun <T> List<T>.listOut(kind: String, argument: String, conversion: (T) -> String) = with(StringBuilder()) {
+private inline fun <T> List<T>.listOut(kind: String, argument: String, conversion: (T) -> String): String = buildString {
     append("Multiple ${kind}s found matching \"$argument\":\n")
     for(i in 0..3) {
         append("${this@listOut[i].let(conversion)}\n")
@@ -35,20 +35,19 @@ private inline fun <T> List<T>.listOut(kind: String, argument: String, conversio
         if(this@listOut.size==i+1)
             break
     }
-    return@with toString()
 }
 
 infix fun User.formattedName(boldName: Boolean) = "${if(boldName) "**$name**" else name}#$discriminator"
 
-inline val OffsetDateTime.readableFormat
+inline val OffsetDateTime.readableFormat: String
     inline get() = "${dayOfWeek.niceName}, ${month.niceName} $dayOfMonth, $year"
 
 fun noMatch(lookedFor: String, query: String) = "Could not find any $lookedFor matching \"$query\"!"
 
-inline val <T: Enum<*>> T.niceName : String
+inline val <T: Enum<*>> T.niceName: String
     inline get() = name.replace("_", " ").run { "${this[0]}${substring(1).toLowerCase()}" }
 
-inline val <T: AudioTrackInfo> T.formattedInfo : String
+inline val <T: AudioTrackInfo> T.formattedInfo: String
     inline get() = "**${title.filterMassMention()}** `[${formatTrackTime(length)}]`"
 
 fun String.filterMassMention() = replace("@everyone", "@\u0435veryone").replace("@here", "@h\u0435re").trim()

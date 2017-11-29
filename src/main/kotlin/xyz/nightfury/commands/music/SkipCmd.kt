@@ -33,8 +33,7 @@ class SkipCmd(musicManager: MusicManager) : MusicCmd(musicManager)
         this.cooldownScope = CooldownScope.USER_GUILD
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         if(!event.member.isInProperVoice)
             return event.replyError("I am already in a voice channel!")
         val queue = musicManager.getQueue(event.guild)

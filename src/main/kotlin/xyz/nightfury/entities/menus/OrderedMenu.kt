@@ -32,6 +32,8 @@ import java.awt.Color
 import java.util.*
 
 /**
+ * Modeled after jagrosh's OrderedMenu in JDA-Utilities
+ *
  * @author Kaidan Gustave
  */
 class OrderedMenu(builder: OrderedMenu.Builder): Menu(builder) {

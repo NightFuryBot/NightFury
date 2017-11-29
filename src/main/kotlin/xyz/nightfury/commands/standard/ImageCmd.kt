@@ -31,8 +31,7 @@ import net.dv8tion.jda.core.entities.ChannelType
  * @author Kaidan Gustave
  */
 @[APICache MustHaveArguments("Specify what to search for.")]
-class ImageCmd(private val api: GoogleImageAPI) : Command()
-{
+class ImageCmd(private val api: GoogleImageAPI) : Command() {
     init {
         this.name = "Image"
         this.arguments = "[Query]"
@@ -42,8 +41,7 @@ class ImageCmd(private val api: GoogleImageAPI) : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val query = event.args
         event.channel.sendTyping().queue {
             val results = api.search(query)
@@ -67,5 +65,4 @@ class ImageCmd(private val api: GoogleImageAPI) : Command()
 
     @[APICache Suppress("unused")]
     fun clearCache() = api.clearCache()
-
 }
