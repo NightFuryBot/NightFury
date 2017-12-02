@@ -21,6 +21,7 @@ import xyz.nightfury.db.*
 import xyz.nightfury.resources.Arguments
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
+import xyz.nightfury.resources.onlyInitializingOnce
 
 /**
  * @author Kaidan Gustave
@@ -47,8 +48,8 @@ abstract class Command {
     var category: Category? = null
         protected set
 
-    val defaultLevel: CommandLevel
-        get() = CommandLevel.fromCategory(category)
+    var defaultLevel: CommandLevel by onlyInitializingOnce(default = CommandLevel.fromCategory(category))
+        protected set
 
     var helpBiConsumer: (CommandEvent, Command) -> Unit = DefaultSubHelp
         protected set
@@ -318,13 +319,12 @@ abstract class Command {
     }
 }
 
-@Suppress("UNUSED")
-enum class CommandLevel(val rank: Int, private val predicate: (CommandEvent) -> Boolean) {
-    SHENGAERO(1, { it.isDev }),
-    SERVER_OWNER(2, { SHENGAERO test it || it.member.isOwner }),
-    ADMIN(3, { SERVER_OWNER test it || it.member.hasPermission(Permission.ADMINISTRATOR) }),
-    MODERATOR(4, { ADMIN test it || SQLModeratorRole.getRole(it.guild).run { this != null && it.member.roles.contains(this) } }),
-    STANDARD(5, { true });
+enum class CommandLevel(private val predicate: (CommandEvent) -> Boolean) {
+    STANDARD({ true }),
+    MODERATOR({ ADMIN test it || SQLModeratorRole.getRole(it.guild).run { this != null && it.member.roles.contains(this) } }),
+    ADMIN({ SERVER_OWNER test it || it.member.hasPermission(Permission.ADMINISTRATOR) }),
+    SERVER_OWNER({ SHENGAERO test it || it.member.isOwner }),
+    SHENGAERO({ it.isDev });
 
     infix fun test(event: CommandEvent) = predicate.invoke(event)
 

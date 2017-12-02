@@ -25,9 +25,9 @@ import net.dv8tion.jda.core.entities.VoiceChannel
 /**
  * @author Kaidan Gustave
  */
-class MusicQueue(val voiceChannel: VoiceChannel, val audioPlayer: AudioPlayer, firstTrack: MemberTrack): AudioSendHandler,
-MutableList<MemberTrack> by ArrayList()
-{
+class MusicQueue
+constructor(val voiceChannel: VoiceChannel, val audioPlayer: AudioPlayer, firstTrack: MemberTrack): AudioSendHandler,
+    MutableList<MemberTrack> by ArrayList() {
     private lateinit var lastFrame: AudioFrame
     private val skipping = ArrayList<Long>()
 

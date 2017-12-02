@@ -34,7 +34,6 @@ buildscript {
 
     repositories {
         jcenter()
-        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
     }
 
     dependencies {
@@ -49,7 +48,7 @@ apply plugin: 'idea'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-def versionObj = new Version(major: 0, minor: 8, build: 3)
+def versionObj = new Version(major: 0, minor: 8, build: 4)
 group = 'xyz.nightfury'
 version = versionObj.toString()
 mainClassName = "${group}.${rootProject.name}Kt"
@@ -121,7 +120,6 @@ allprojects {
     repositories {
         jcenter()
         maven { url 'https://jitpack.io/' }
-        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
     }
 
     dependencies {
@@ -145,12 +143,14 @@ allprojects {
 
     compileKotlin {
         kotlinOptions {
+            apiVersion = "1.2"
             jvmTarget = "1.8"
         }
     }
 
     compileTestKotlin {
         kotlinOptions {
+            apiVersion = "1.2"
             jvmTarget = "1.8"
         }
     }

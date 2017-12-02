@@ -43,7 +43,7 @@ class CommandEvent internal constructor(val event: MessageReceivedEvent, args: S
     fun isFromType(type: ChannelType) = channelType == type
 
     var args: String = args
-        internal set(value) {field = value}
+        internal set
 
     val isDev: Boolean = author.idLong == client.devId
 

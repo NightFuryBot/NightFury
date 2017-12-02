@@ -19,7 +19,7 @@ import net.dv8tion.jda.core.Permission.*
 import net.dv8tion.jda.core.audit.ActionType
 import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.requests.restaction.pagination.AuditLogPaginationAction
-import xyz.nightfury.entities.succeed
+import xyz.nightfury.entities.await
 import java.util.*
 
 infix fun Guild.refreshMutedRole(role: Role) {
@@ -107,13 +107,13 @@ suspend fun MessageHistory.getPast(number: Int, breakIf: suspend (List<Message>)
     require(number > 0) { "Minimum of one message must be retrieved" }
 
     if(number <= 100)
-        return retrievePast(number).succeed() ?: mutableListOf()
+        return retrievePast(number).await() ?: mutableListOf()
 
     val list = LinkedList<Message>()
     var left = number
 
     while(left > 100) {
-        list += retrievePast(100).succeed() ?: break
+        list += retrievePast(100).await() ?: break
         left -= 100
         if(breakIf(list)) {
             left = 0
@@ -122,7 +122,7 @@ suspend fun MessageHistory.getPast(number: Int, breakIf: suspend (List<Message>)
     }
 
     if(left in 1..100)
-        retrievePast(left).succeed()?.let { list += it }
+        retrievePast(left).await()?.let { list += it }
 
     return list
 }

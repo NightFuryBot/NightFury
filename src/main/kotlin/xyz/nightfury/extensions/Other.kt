@@ -78,3 +78,6 @@ fun thread(start: Boolean = true,
         thread.start()
     return thread
 }
+
+@Suppress("NOTHING_TO_INLINE")
+infix inline fun String.doesNotMatch(regex: Regex) = !(this matches regex)

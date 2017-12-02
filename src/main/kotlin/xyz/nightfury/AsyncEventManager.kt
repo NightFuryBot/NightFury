@@ -15,13 +15,14 @@
  */
 package xyz.nightfury
 
+import kotlinx.coroutines.experimental.launch
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.ShutdownEvent
 import net.dv8tion.jda.core.hooks.EventListener
 import net.dv8tion.jda.core.hooks.IEventManager
+import xyz.nightfury.resources.CachedThreadPoolDispatcher
+import xyz.nightfury.resources.newCachedThreadContext
 import java.util.concurrent.CopyOnWriteArraySet
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -29,19 +30,25 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class AsyncEventManager: IEventManager {
     companion object {
-        @JvmField val THREAD_NUMBER: AtomicInteger = AtomicInteger(0)
+        @JvmField val THREAD_NUMBER: AtomicInteger = AtomicInteger(1)
     }
 
-    private val threadpool: ExecutorService = Executors.newCachedThreadPool {
-        Thread(it, "EventThread-${THREAD_NUMBER.getAndIncrement()}").also { it.isDaemon = true }
+    private val context: CachedThreadPoolDispatcher = newCachedThreadContext factory@ {
+        val thisThreadName = "EventThread-${THREAD_NUMBER.getAndIncrement()}".also {
+            NightFury.LOG.debug("Creating new thread: '$it'")
+        }
+        return@factory Thread(it, thisThreadName).also { it.isDaemon = true }
     }
 
-    private val listeners: MutableSet<EventListener> = CopyOnWriteArraySet<EventListener>()
+    var isShutdown: Boolean = false
+
+    private val listeners: MutableSet<EventListener> = CopyOnWriteArraySet()
 
     override fun handle(event: Event?) {
-        if(threadpool.isShutdown || event == null)
+        if(isShutdown || event == null)
             return
-        threadpool.execute {
+
+        launch(context) {
             listeners.forEach {
                 try {
                     it.onEvent(event)
@@ -50,13 +57,15 @@ class AsyncEventManager: IEventManager {
                 }
             }
         }
+
         if(event is ShutdownEvent)
-            threadpool.shutdown()
+            isShutdown = true
     }
 
     override fun register(listener: Any?) {
-        require(listener is EventListener) { "Listener must implement EventListener!" }
-        listeners += listener as EventListener
+        listeners += requireNotNull(listener as? EventListener) {
+            "Listener must implement EventListener or SuspendedEventListener!"
+        }
     }
 
     override fun unregister(listener: Any?) {

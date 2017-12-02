@@ -16,6 +16,7 @@
 package xyz.nightfury.commands.music
 
 import xyz.nightfury.CommandEvent
+import xyz.nightfury.CommandLevel
 import xyz.nightfury.music.MusicManager
 
 /**
@@ -25,7 +26,8 @@ class StopCmd(musicManager: MusicManager) : MusicCmd(musicManager)
 {
     init {
         this.name = "Stop"
-        this.help = "Stops playing music in the server!"
+        this.help = "Stops playing music in the server."
+        this.defaultLevel = CommandLevel.ADMIN
     }
 
     override fun execute(event: CommandEvent) {

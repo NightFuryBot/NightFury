@@ -46,7 +46,7 @@ class MusicManager : AudioEventListener, EventListener, AudioPlayerManager by De
         internal val LOG: Logger = LoggerFactory.getLogger("MusicManager")
 
         internal val threadpool: ExecutorService by lazy {
-            Executors.newCachedThreadPool {
+            Executors.newSingleThreadExecutor {
                 Thread(it).apply {
                     name = "AudioCloseThread"
                     isDaemon = true

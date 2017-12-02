@@ -35,13 +35,13 @@ fun <V> RestAction<V?>.onlyIf(condition: Boolean, block: V?.() -> Unit = {}): Re
 fun <V> RestAction<V?>.unless(condition: Boolean, block: V?.() -> Unit = {}): RestPromise<V>
     = if(!condition) then(block) else promise()
 
-suspend fun <V> RestAction<V?>.succeed(): V? = suspendCoroutine { cont ->
+suspend fun <V> RestAction<V?>.await(): V? = suspendCoroutine { cont ->
     queue({ cont.resume(it) }, { cont.resumeWithException(it) })
 }
 
-suspend fun <V> RestAction<V?>.succeedAfter(time: Long, unit: TimeUnit = TimeUnit.SECONDS): V? {
+suspend fun <V> RestAction<V?>.awaitAfter(time: Long, unit: TimeUnit = TimeUnit.SECONDS): V? {
     delay(time, unit)
-    return succeed()
+    return await()
 }
 
 class RestPromise<V>(action: RestAction<V?>) {

@@ -21,7 +21,7 @@ import xyz.nightfury.annotations.APICache
 import xyz.nightfury.entities.logging.NormalFilter
 import xyz.nightfury.entities.logging.logLevel
 import xyz.nightfury.resources.Arguments
-import xyz.nightfury.listeners.*
+import xyz.nightfury.listeners.CommandListener
 import xyz.nightfury.db.Database
 import xyz.nightfury.db.SQLCustomCommands
 import xyz.nightfury.resources.*
@@ -157,7 +157,6 @@ class Client internal constructor(val prefix: String,      val devId: Long,
     }
 
     private fun onReady(event: ReadyEvent) {
-        event.jda.addEventListener(waiter, DatabaseListener(), AutoLoggingListener())
         event.jda.presence.status = OnlineStatus.ONLINE
         event.jda.presence.game = Game.of("Type ${prefix}help")
 
@@ -258,7 +257,7 @@ class Client internal constructor(val prefix: String,      val devId: Long,
 
     private fun onGuildMemberJoin(event: GuildMemberJoinEvent) {
         // If there's no welcome channel then we just return.
-        val welcomeChannel = Database.getWelcomeChannel(event.guild)?:return
+        val welcomeChannel = Database.getWelcomeChannel(event.guild) ?: return
 
         // We can't even send messages to the channel so we return
         if(!welcomeChannel.canTalk()) return
@@ -268,7 +267,7 @@ class Client internal constructor(val prefix: String,      val devId: Long,
         val remaining = getRemainingCooldown(cooldownKey)
 
         // Still on cooldown - we're done here
-        if(remaining>0) return
+        if(remaining > 0) return
 
         val message = parser.clear()
                 .put("guild", event.guild)
@@ -277,7 +276,7 @@ class Client internal constructor(val prefix: String,      val devId: Long,
                 .parse(SQLWelcomes.getMessage(event.guild))
 
         // Too long or empty means we can't send, so we just return because it'll break otherwise
-        if(message.isEmpty() || message.length>2000) return
+        if(message.isEmpty() || message.length > 2000) return
 
         // Send Message
         welcomeChannel.sendMessage(message).queue()

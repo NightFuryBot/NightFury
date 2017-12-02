@@ -22,7 +22,7 @@ import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Message
 import xyz.nightfury.*
 import xyz.nightfury.entities.ModLogger
-import xyz.nightfury.entities.succeed
+import xyz.nightfury.entities.await
 import xyz.nightfury.extensions.getPast
 import java.util.*
 import kotlin.collections.HashSet
@@ -202,11 +202,11 @@ class CleanCmd : Command() {
                 while(i < numDeleted) { // Delet this
                     if(i+100>numDeleted) {
                         if(i+1==numDeleted)
-                            toDelete[numDeleted-1].delete().succeed()
+                            toDelete[numDeleted-1].delete().await()
                         else
-                            event.textChannel.deleteMessages(toDelete.subList(i, numDeleted)).succeed()
+                            event.textChannel.deleteMessages(toDelete.subList(i, numDeleted)).await()
                     } else {
-                        event.textChannel.deleteMessages(toDelete.subList(i, i+100)).succeed()
+                        event.textChannel.deleteMessages(toDelete.subList(i, i+100)).await()
                     }
                     i+=100
                 }

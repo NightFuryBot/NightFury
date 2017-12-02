@@ -16,7 +16,6 @@
 package xyz.nightfury
 
 import com.jagrosh.jagtag.JagTag
-import com.jagrosh.jagtag.Parser
 import net.dv8tion.jda.core.*
 import net.dv8tion.jda.core.requests.SessionReconnectQueue
 import org.json.JSONObject
@@ -29,16 +28,15 @@ import xyz.nightfury.api.YouTubeAPI
 import xyz.nightfury.commands.admin.*
 import xyz.nightfury.commands.dev.*
 import xyz.nightfury.commands.moderator.*
-import xyz.nightfury.commands.music.PlayCmd
-import xyz.nightfury.commands.music.QueueCmd
-import xyz.nightfury.commands.music.SkipCmd
-import xyz.nightfury.commands.music.StopCmd
+import xyz.nightfury.commands.music.*
 import xyz.nightfury.commands.other.E621Cmd
 import xyz.nightfury.commands.standard.*
 import xyz.nightfury.db.Database
 import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.extensions.*
 import xyz.nightfury.jagtag.tagMethods
+import xyz.nightfury.listeners.AutoLoggingListener
+import xyz.nightfury.listeners.DatabaseListener
 import xyz.nightfury.listeners.InvisibleTracker
 import xyz.nightfury.listeners.StarboardListener
 import xyz.nightfury.music.MusicManager
@@ -66,7 +64,7 @@ fun main(args: Array<String>?) {
  */
 class NightFury {
     companion object {
-        val VERSION: String = this::class.java.`package`.implementationVersion?:"BETA"
+        val VERSION: String = this::class.java.`package`.implementationVersion ?: "BETA"
         val GITHUB: String = "https://github.com/NightFuryBot/NightFury/"
         val LOG: Logger = LoggerFactory.getLogger("NightFury")
 
@@ -78,6 +76,8 @@ class NightFury {
 
     init {
         val config = Config()
+
+        // Make initial connection
         Database.connect(config.dbURL, config.dbUser, config.dbPass)
 
         val e621 = E621API()
@@ -85,12 +85,11 @@ class NightFury {
         val image = GoogleImageAPI()
         val yt = YouTubeAPI(config.ytApiKey)
 
-        val parser : Parser = JagTag.newDefaultBuilder().addMethods(tagMethods).build()
+        val parser = JagTag.newDefaultBuilder().addMethods(tagMethods).build()
 
         val waiter = EventWaiter()
         val invisTracker = InvisibleTracker()
         val musicManager = MusicManager()
-        val starboard = StarboardListener()
 
         val client = Client(
             config.prefix, config.devId,
@@ -117,6 +116,7 @@ class NightFury {
 
             PlayCmd(musicManager),
             QueueCmd(waiter, musicManager),
+            RemoveCmd(musicManager),
             SkipCmd(musicManager),
             StopCmd(musicManager),
 
@@ -155,7 +155,10 @@ class NightFury {
             listener { client }
             listener { invisTracker }
             listener { musicManager }
-            listener { starboard }
+            listener { StarboardListener() }
+            listener { waiter }
+            listener { AutoLoggingListener() }
+            listener { DatabaseListener() }
             token    { config.token }
             status   { OnlineStatus.DO_NOT_DISTURB }
             game     { "Starting Up..." }
