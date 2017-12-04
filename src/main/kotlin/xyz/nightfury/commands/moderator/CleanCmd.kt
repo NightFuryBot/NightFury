@@ -21,6 +21,7 @@ import xyz.nightfury.resources.Arguments
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Message
 import xyz.nightfury.*
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.entities.ModLogger
 import xyz.nightfury.entities.await
 import xyz.nightfury.extensions.getPast
@@ -30,6 +31,7 @@ import kotlin.collections.HashSet
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @MustHaveArguments("Provide a number between 2-1000, or a flag to delete by!")
 class CleanCmd : Command() {
     companion object {
@@ -48,30 +50,6 @@ class CleanCmd : Command() {
         this.category = Category.MODERATOR
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE)
-
-        this.helpBiConsumer = Command standardSubHelp
-                        "This cleans the channel it is called in of up to 1000 messages that are less than " +
-                        "two weeks old.\n\n" +
-
-                        "Several flags can be specified to delete messages by, and are listed below:\n\n" +
-
-                        "`userID` or `@user` - Only deletes messages by a user.\n" +
-                        "`bots` - Only deletes messages by bots.\n" +
-                        "`embeds` - Only deletes messages containing embeds.\n" +
-                        "`links` - Only deletes messages containing links.\n" +
-                        "`files` - Only deletes messages containing file uploads.\n" +
-                        "`images` - Only deletes messages containing images uploads.\n\n" +
-
-                        "It's worth noting the order above is the exact order of which this command discerns " +
-                        "what to delete by. This in term, prevents flags from being combined to specify past " +
-                        "their original intent.\n" +
-                        "An example is that by using the `bots` flag, you will inevitably delete all `files` " +
-                        "uploaded by that bot. However, using the flags in combination (`bots files`) will not " +
-                        "produce an effect where only messages from bots containing files are deleted.\n\n" +
-
-                        "As a final note, discord prevents the bulk deletion of messages older than 2 weeks by " +
-                        "bots. As a result, NightFury, nor any other bot, is able to bulk clean a channel of " +
-                        "messages that were sent two weeks prior to the command being used."
     }
 
     val Message.hasImage : Boolean

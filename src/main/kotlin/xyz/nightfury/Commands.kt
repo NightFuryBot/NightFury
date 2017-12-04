@@ -21,7 +21,10 @@ import xyz.nightfury.db.*
 import xyz.nightfury.resources.Arguments
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.resources.onlyInitializingOnce
+import java.io.InputStreamReader
+import kotlin.reflect.full.findAnnotation
 
 /**
  * @author Kaidan Gustave
@@ -36,7 +39,7 @@ abstract class Command {
     var arguments: String = ""
         protected set
 
-    var help: String = "no help available"
+    var help: String = "No help available."
         protected set
 
     var devOnly: Boolean = false
@@ -49,9 +52,6 @@ abstract class Command {
         protected set
 
     var defaultLevel: CommandLevel by onlyInitializingOnce(default = CommandLevel.fromCategory(category))
-        protected set
-
-    var helpBiConsumer: (CommandEvent, Command) -> Unit = DefaultSubHelp
         protected set
 
     var botPermissions: Array<Permission> = emptyArray()
@@ -73,6 +73,27 @@ abstract class Command {
         get() = if(field == "null") name else field
         protected set
 
+    val docs: String? by lazy {
+        this::class.findAnnotation<HasDocumentation>() ?: return@lazy null
+
+        javaClass.getResourceAsStream(("/${category?.title?.toLowerCase()?.replace(' ', '-') ?: "standard"}" +
+                                      "/${fullname.replace(Arguments.commandArgs, "-").toLowerCase()}.md").also {println(it)}).use {
+            InputStreamReader(it).use {
+                it.readText().split(Regex("\n\n")).joinToString(separator = "\n\n") {
+                    it.replace(Regex("\\s*\n\\s*"), "\n").replace("\n", " ").replace("<br> ", "\n")
+                }
+            }
+        }
+    }
+
+    var documentation: String? = null
+        get() = field ?: docs?.also { field = it }
+        protected set
+
+    private val noArgError: String? by lazy { this::class.findAnnotation<MustHaveArguments>()?.error }
+
+    private val autoInvokeCooldown: Boolean by lazy { this::class.findAnnotation<AutoInvokeCooldown>() != null }
+
     companion object {
         private val BOT_PERM = "%s I need the %s permission in this %s!"
         private val USER_PERM = "%s You must have the %s permission in this %s to use that!"
@@ -84,74 +105,84 @@ abstract class Command {
         const val TOO_FEW_ARGS_ERROR = "**Too Few Arguments!**\n%s"
         const val TOO_FEW_ARGS_HELP = "**Too Few Arguments!**\n$SEE_HELP"
 
-        private object DefaultSubHelp : (CommandEvent, Command) -> Unit {
-            override fun invoke(p1: CommandEvent, p2: Command) {}
-            override fun equals(other: Any?) = other is DefaultSubHelp
-        }
-
-        infix fun standardSubHelp(explanation: String?): (CommandEvent, Command) -> Unit = { event, command ->
-            val b = StringBuilder()
-            val aliases = command.aliases
-            val help = command.help
-            val arguments = command.arguments
-            val children = command.children
-            val ownerId = event.client.devId
-            val serverInvite = event.client.server
-            b.append("Available help for **${command.name} command** in " +
-                    "${if(event.isFromType(ChannelType.PRIVATE)) "DM" else "<#" + event.channel.id + ">"}\n")
-
-            b.append("\n**Usage:** `")
-                    .append(event.client.prefix)
-                    .append((if(command.fullname!="null") command.fullname else command.name).toLowerCase())
-                    .append(if(arguments.isNotEmpty()) " $arguments`" else "`")
-                    .append("\n")
-
-            if(aliases.isNotEmpty()) {
-                b.append("\n**Alias${if(aliases.size>1) "es" else ""}:** `")
-                for(i in aliases.indices) {
-                    b.append("${aliases[i]}`")
-                    if(i != aliases.size - 1)
-                        b.append(", `")
+        fun sendSubHelp(event: CommandEvent, command: Command) {
+            val helpMessage = buildString {
+                val aliases = command.aliases
+                val help = command.help
+                val arguments = command.arguments
+                val children = command.children.filter {
+                    if(event.guild == null)
+                        it.category?.test(event) ?: !it.guildOnly
+                    else
+                        SQLLevel.getLevel(event.guild, it).test(event)
                 }
-                b.append("\n")
-            }
+                val ownerId = event.client.devId
+                val serverInvite = event.client.server
 
-            if(help != "no help available")
-                b.append("\n$help\n")
-            if(explanation != null)
-                b.append("\n$explanation\n")
+                append("__Available help for **${command.name} Command** in " +
+                       "${if(event.isFromType(ChannelType.PRIVATE)) "DM" else "<#" + event.channel.id + ">"}__\n")
 
-            if(children.isNotEmpty()) {
-                b.append("\n**Sub-Commands:**\n\n")
-                var cat : Category? = null
-                for(c in children) {
-                    if(cat!=c.category) {
-                        if(!c.category!!.test(event))
-                            continue
-                        cat = c.category
-                        if(cat!=null)
-                            b.append("\n__${cat.title}__\n\n")
+                append("\n**Usage:** `")
+                append(event.client.prefix)
+                append((if(command.fullname != "null") command.fullname else command.name).toLowerCase())
+                append(if(arguments.isNotEmpty()) " $arguments`" else "`")
+
+                if(aliases.isNotEmpty()) {
+                    append("\n**Alias${if(aliases.size>1) "es" else ""}:** `")
+                    for(i in aliases.indices) {
+                        append("${aliases[i]}`")
+                        if(i != aliases.size - 1)
+                            append(", `")
                     }
-                    b.append("`").append(event.client.prefix).append(c.fullname.toLowerCase())
-                            .append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
-                            .append("` - ").append(c.help).append("\n")
                 }
+
+                if(help != "No help available.")
+                    append("\n**Function:** `$help`\n")
+
+                command.documentation?.let { append("\n$it\n") }
+
+                if(children.isNotEmpty()) {
+                    append("\n**Sub-Commands:**\n\n")
+                    var cat: Category? = null
+                    for((i, c) in children.withIndex()) {
+                        if(cat != c.category) {
+                            if(c.category?.test(event) == false)
+                                continue
+
+                            cat = c.category
+
+                            if(cat != null) {
+                                if(i != 0)
+                                    append("\n")
+                                append("__${cat.title}__\n\n")
+                            }
+                        }
+                        append("`").append(event.client.prefix).append(c.fullname.toLowerCase())
+                        append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
+                        append("` - ").append(c.help)
+
+                        if(i + 1 < children.size)
+                            append("\n")
+                    }
+                }
+
+                val owner = event.jda.getUserById(ownerId)
+                if(owner != null) {
+                    append("\n\nFor additional help, contact **")
+                    append(owner.name)
+                    append("**#")
+                    append(owner.discriminator)
+                    append(" or join his support server ")
+                } else {
+                    append("\n\nFor additional help, join my support server ")
+                }
+                append(serverInvite)
             }
 
-            val owner = event.jda.getUserById(ownerId)
-            if(owner != null)
-                b.append("\n\nFor additional help, contact **")
-                        .append(owner.name)
-                        .append("**#")
-                        .append(owner.discriminator)
-                        .append(" or join his support server ")
-                        .append(serverInvite)
-            else
-                b.append("\n\nFor additional help, join my support server ")
-                        .append(serverInvite)
             if(event.isFromType(ChannelType.TEXT))
                 event.reactSuccess()
-            event.replyInDm(b.toString())
+
+            event.replyInDm(helpMessage)
         }
     }
 
@@ -166,7 +197,8 @@ abstract class Command {
             }
         }
 
-        if(devOnly && !event.isDev) return
+        if(devOnly && !event.isDev)
+            return
 
         if(event.isFromType(ChannelType.TEXT)) {
             // Level has been set differently
@@ -174,10 +206,13 @@ abstract class Command {
                 return
         }
 
-        if(category!=null && category!!.canStopRun && !category!!.test(event)) return
+        category?.let {
+            if(it.canStopRun && !it.test(event))
+                return
+        }
 
         if(event.args.startsWith("help",true))
-            if(helpBiConsumer != DefaultSubHelp) return helpBiConsumer(event, this)
+            return sendSubHelp(event, this)
 
         if(guildOnly && !event.isFromType(ChannelType.TEXT))
             return event terminate "${event.client.error} This command cannot be used in Direct messages"
@@ -217,14 +252,18 @@ abstract class Command {
             }
         }
 
-        this::class.annotations.forEach {
-            if(it is AutoInvokeCooldown && key!=null)
-                event.client.applyCooldown(key, cooldown)
-            if(event.args.isEmpty() && it is MustHaveArguments) {
-                return if(it.error.isNotEmpty())
-                    event.replyError(TOO_FEW_ARGS_ERROR.format(it.error))
-                else
+        if(autoInvokeCooldown && key != null) {
+            event.client.applyCooldown(key, cooldown)
+        }
+
+        if(event.args.isEmpty()) {
+            val error = noArgError // Custom getters/setters and delegates don't smart cast
+            if(error != null) {
+                return if(error.isNotEmpty()) {
+                    event.replyError(TOO_FEW_ARGS_ERROR.format(error))
+                } else {
                     event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix, fullname.toLowerCase()))
+                }
             }
         }
 

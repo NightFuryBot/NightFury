@@ -23,13 +23,13 @@ import xyz.nightfury.entities.await
 import java.util.*
 
 infix fun Guild.refreshMutedRole(role: Role) {
-    categories.forEach    { it muteRole role }
-    textChannels.forEach  { it muteRole role }
-    voiceChannels.forEach { it muteRole role }
+    categories.forEach    { it.muteRole(role) }
+    textChannels.forEach  { it.muteRole(role) }
+    voiceChannels.forEach { it.muteRole(role) }
 }
 
-infix fun Category.muteRole(role: Role) {
-    if(!guild.selfMember.hasPermission(MANAGE_PERMISSIONS))
+fun Category.muteRole(role: Role) {
+    if(!guild.selfMember.hasPermission(this, MANAGE_PERMISSIONS))
         return
     val overrides = getPermissionOverride(role)
     val denied = overrides?.denied
@@ -51,8 +51,8 @@ infix fun Category.muteRole(role: Role) {
     } else createPermissionOverride(role).setDeny(MESSAGE_WRITE, MESSAGE_ADD_REACTION, VOICE_SPEAK).queue()
 }
 
-infix fun TextChannel.muteRole(role: Role) {
-    if(!guild.selfMember.hasPermission(MANAGE_PERMISSIONS))
+fun TextChannel.muteRole(role: Role) {
+    if(!guild.selfMember.hasPermission(this, MANAGE_PERMISSIONS))
         return
     val overrides = getPermissionOverride(role)
     val denied = overrides?.denied
@@ -71,8 +71,8 @@ infix fun TextChannel.muteRole(role: Role) {
     } else createPermissionOverride(role).setDeny(MESSAGE_WRITE, MESSAGE_ADD_REACTION).queue()
 }
 
-infix fun VoiceChannel.muteRole(role: Role) {
-    if(!guild.selfMember.hasPermission(MANAGE_PERMISSIONS))
+fun VoiceChannel.muteRole(role: Role) {
+    if(!guild.selfMember.hasPermission(this, MANAGE_PERMISSIONS))
         return
     val overrides = getPermissionOverride(role)
     val denied = overrides?.denied
@@ -91,14 +91,14 @@ fun Message.removeMenuReactions() {
         clearReactions().queue()
     } else reactions.forEach {
         if(it.isSelf)
-            it.removeReaction(this.author).queue()
+            it.removeReaction(author).queue()
     }
 }
 
-infix fun Member.canView(channel: TextChannel) = getPermissions(channel).contains(MESSAGE_READ)
-infix fun Role.canView(channel: TextChannel) = hasPermission(channel, MESSAGE_READ)
-infix fun Member.canJoin(channel: VoiceChannel) = getPermissions(channel).contains(VOICE_CONNECT)
-infix fun Role.canJoin(channel: VoiceChannel) = hasPermission(channel, VOICE_CONNECT)
+infix fun Member.canView(channel: TextChannel): Boolean = hasPermission(channel, MESSAGE_READ)
+infix fun Role.canView(channel: TextChannel): Boolean = hasPermission(channel, MESSAGE_READ)
+infix fun Member.canJoin(channel: VoiceChannel): Boolean = hasPermission(channel, VOICE_CONNECT)
+infix fun Role.canJoin(channel: VoiceChannel): Boolean = hasPermission(channel, VOICE_CONNECT)
 
 infix inline fun AuditLogPaginationAction.limit(lazy: () -> Int) : AuditLogPaginationAction = limit(lazy())
 infix inline fun AuditLogPaginationAction.action(lazy: () -> ActionType) : AuditLogPaginationAction = type(lazy())

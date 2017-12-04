@@ -47,6 +47,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.nightfury.db.SQLPrefixes
 import xyz.nightfury.db.SQLWelcomes
+import xyz.nightfury.extensions.formattedName
 import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -146,8 +147,21 @@ class Client internal constructor(val prefix: String,      val devId: Long,
             is GuildMemberJoinEvent -> onGuildMemberJoin(event)
             is ReadyEvent           -> onReady(event)
             is GuildJoinEvent       -> {
-                if(event.guild.selfMember.joinDate.plusMinutes(5).isAfter(OffsetDateTime.now()))
-                    if(event.guild.isGood) updateStats(event.jda) else event.guild.leave().queue()
+                if(event.guild.selfMember.joinDate.plusMinutes(5).isAfter(OffsetDateTime.now())) {
+                    val guild = event.guild
+                    val guildDesc =
+                        "Name: ${guild.name}\n" +
+                        "ID: ${guild.idLong}\n" +
+                        "Owner: ${guild.owner.user.formattedName(false)} (ID: ${guild.owner.user.idLong})\n" +
+                        "Members: ${guild.memberCache.size()} (Bots: ${guild.memberCache.filter { it.user.isBot }.size})"
+                    if(guild.isGood) {
+                        log.info("New Guild!\n$guildDesc")
+                        updateStats(event.jda)
+                    } else {
+                        log.warn("Bad Guild!\n$guildDesc")
+                        event.guild.leave().queue()
+                    }
+                }
             }
             is GuildLeaveEvent      -> updateStats(event.jda)
             is ShutdownEvent        -> onShutdown(event)
@@ -257,7 +271,7 @@ class Client internal constructor(val prefix: String,      val devId: Long,
 
     private fun onGuildMemberJoin(event: GuildMemberJoinEvent) {
         // If there's no welcome channel then we just return.
-        val welcomeChannel = Database.getWelcomeChannel(event.guild) ?: return
+        val welcomeChannel = SQLWelcomes.getChannel(event.guild) ?: return
 
         // We can't even send messages to the channel so we return
         if(!welcomeChannel.canTalk()) return

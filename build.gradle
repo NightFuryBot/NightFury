@@ -23,14 +23,16 @@ class Version {
 }
 
 buildscript {
-    ext.kotlin_version = '1.2.0'
-    ext.kotlinx_version = '0.19.3'
-    ext.shadow_version = '2.0.1'
-    ext.jda_version = '1fe4e3c'
-    ext.jda_utilities_version = 'f9a0402'
-    ext.lavaplayer_version = '1.2.45'
-    ext.h2_version = '1.4.196'
-    ext.logback_version = '1.2.3'
+    ext {
+        kotlin_version = '1.2.0'
+        kotlinx_version = '0.19.3'
+        shadow_version = '2.0.1'
+        jda_version = '1fe4e3c'
+        jda_utilities_version = 'f9a0402'
+        lavaplayer_version = '1.2.45'
+        h2_version = '1.4.196'
+        logback_version = '1.2.3'
+    }
 
     repositories {
         jcenter()
@@ -48,14 +50,15 @@ apply plugin: 'idea'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-def versionObj = new Version(major: 0, minor: 8, build: 4)
+def versionObj = new Version(major: 0, minor: 8, build: 5)
 group = 'xyz.nightfury'
 version = versionObj.toString()
 mainClassName = "${group}.${rootProject.name}Kt"
 
 sourceSets {
-    test.kotlin.srcDirs += 'src/test/kotlin'
     test {
+        kotlin.srcDirs += 'src/test/kotlin'
+
         compileClasspath = main.output + main.resources
         runtimeClasspath = main.output + main.resources
     }
@@ -99,6 +102,7 @@ shadowJar {
 
     exclude('com/jagrosh/jdautilities/commandclient/**')
     exclude('android/**')
+    exclude('README.md')
 
     manifest {
         attributes 'Manifest-Version': "${versionObj.major}.${versionObj.minor}"
@@ -174,7 +178,7 @@ allprojects {
 }
 
 wrapper {
-    gradleVersion '4.0'
+    gradleVersion '4.3.1'
 }
 
 build {

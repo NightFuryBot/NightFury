@@ -19,16 +19,13 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.NoBaseExecutionCommand
-import xyz.nightfury.db.Database
 import xyz.nightfury.db.SQLRolePersist
 
 /**
  * @author Kaidan Gustave
  */
-class ToggleCmd : NoBaseExecutionCommand()
-{
-    init
-    {
+class ToggleCmd : NoBaseExecutionCommand() {
+    init {
         name = "Toggle"
         arguments = "[Function]"
         help = "Toggles sensitive server functions. [BETA]"
@@ -38,10 +35,8 @@ class ToggleCmd : NoBaseExecutionCommand()
     }
 }
 
-private class ToggleRolePersistCmd : Command()
-{
-    init
-    {
+private class ToggleRolePersistCmd : Command() {
+    init {
         name = "RolePersist"
         fullname = "Toggle RolePersist"
         help = "Toggles RolePersist for the server."
@@ -49,17 +44,13 @@ private class ToggleRolePersistCmd : Command()
         category = Category.SERVER_OWNER
     }
 
-    override fun execute(event: CommandEvent)
-    {
-        if(Database.isRolePersist(event.guild))
-        {
-            Database.setIsRolePersist(event.guild, false)
+    override fun execute(event: CommandEvent) {
+        if(SQLRolePersist.isRolePersist(event.guild)) {
+            SQLRolePersist.setIsRolePersist(event.guild, false)
             SQLRolePersist.removeAllRolePersist(event.guild)
             event.replySuccess("RolePersist has been toggled `OFF`!")
-        }
-        else
-        {
-            Database.setIsRolePersist(event.guild, true)
+        } else {
+            SQLRolePersist.setIsRolePersist(event.guild, true)
             event.replySuccess("RolePersist has been toggled `ON`!")
         }
     }

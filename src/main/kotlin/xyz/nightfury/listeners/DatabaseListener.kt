@@ -146,12 +146,12 @@ class DatabaseListener : EventListener {
     }
 
     fun onGuildMemberLeave(event: GuildMemberLeaveEvent) {
-        if(Database.isRolePersist(event.guild))
+        if(SQLRolePersist.isRolePersist(event.guild))
             SQLRolePersist.setRolePersist(event.member)
     }
 
     fun onGuildMemberJoin(event: GuildMemberJoinEvent) {
-        if(Database.isRolePersist(event.guild)) {
+        if(SQLRolePersist.isRolePersist(event.guild)) {
             val roles = SQLRolePersist.getRolePersist(event.member)
             if(roles.isNotEmpty()) {
                 event.guild.controller.addRolesToMember(event.member, roles).queue()

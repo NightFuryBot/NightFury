@@ -29,11 +29,9 @@ object SQLCustomCommands : Table() {
 
     fun getAll(guild: Guild) : Set<String> {
         val all = HashSet<String>()
-        using(connection.prepareStatement(getAll))
-        {
+        using(connection.prepareStatement(getAll)) {
             this[1] = guild.idLong
-            using(executeQuery())
-            {
+            using(executeQuery()) {
                 while(next())
                     all += getString("NAME")
             }
@@ -42,20 +40,17 @@ object SQLCustomCommands : Table() {
     }
 
     fun getContentFor(name : String, guild: Guild): String {
-        return using(connection.prepareStatement(getContent), default = "")
-        {
+        return using(connection.prepareStatement(getContent), default = "") {
             this[1] = name
             this[2] = guild.idLong
-            using(executeQuery())
-            {
+            using(executeQuery()) {
                 if(next()) getString("CONTENT") else ""
             }
         }
     }
 
     fun add(name: String, content: String, guild: Guild) {
-        using(connection.prepareStatement(add))
-        {
+        using(connection.prepareStatement(add)) {
             this[1] = name
             this[2] = content
             this[3] = guild.idLong
@@ -64,8 +59,7 @@ object SQLCustomCommands : Table() {
     }
 
     fun remove(name: String, guild: Guild) {
-        using(connection.prepareStatement(remove))
-        {
+        using(connection.prepareStatement(remove)) {
             this[1] = name
             this[2] = guild.idLong
             execute()

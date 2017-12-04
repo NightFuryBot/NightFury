@@ -29,19 +29,17 @@ object SQLCases : Table() {
     private val get = "SELECT * FROM CASES WHERE GUILD_ID = ?"
     private val getByUser = "SELECT * FROM CASES WHERE GUILD_ID = ? AND MOD_ID = ? ORDER BY NUMBER DESC"
     private val getNumber = "SELECT * FROM CASES WHERE GUILD_ID = ? AND NUMBER = ?"
-    private val add = "INSERT INTO CASES (NUMBER, GUILD_ID, MESSAGE_ID, MOD_ID, TARGET_ID, IS_ON_USER, ACTION, REASON) "+
+    private val add = "INSERT INTO CASES (NUMBER, GUILD_ID, MESSAGE_ID, MOD_ID, TARGET_ID, IS_ON_USER, ACTION, REASON) " +
                       "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     private val update = "UPDATE CASES SET REASON = ? WHERE GUILD_ID = ? AND NUMBER = ?"
 
     fun getCases(guild: Guild): List<Case> {
         val list = ArrayList<Case>()
-        using(connection.prepareStatement(get))
-        {
+        using(connection.prepareStatement(get)) {
             this[1] = guild.idLong
 
-            using(executeQuery())
-            {
-                while(next())
+            using(executeQuery()) {
+                while(next()) {
                     list += Case().apply {
                         number = getInt("NUMBER")
                         guildId = getLong("GUILD_ID")
@@ -52,19 +50,18 @@ object SQLCases : Table() {
                         action = LogAction.getActionByAct(getString("ACTION"))
                         reason = getString("REASON")
                     }
+                }
             }
         }
         return list
     }
 
     fun getCaseNumber(guild: Guild, number: Int): Case? {
-        return using(connection.prepareStatement(getNumber))
-        {
+        return using(connection.prepareStatement(getNumber)) {
             this[1] = guild.idLong
             this[2] = number
 
-            using(executeQuery())
-            {
+            using(executeQuery()) {
                 if(next()) {
                     Case().apply {
                         this.number = getInt("NUMBER")
@@ -85,14 +82,11 @@ object SQLCases : Table() {
 
     fun getCasesByUser(guild: Guild, user: User): List<Case> {
         val list = ArrayList<Case>()
-        using(connection.prepareStatement(getByUser))
-        {
+        using(connection.prepareStatement(getByUser)) {
             this[1] = guild.idLong
             this[2] = user.idLong
-            using(executeQuery())
-            {
-                while(next())
-                {
+            using(executeQuery()) {
+                while(next()) {
                     list += Case().apply {
                         number = getInt("NUMBER")
                         guildId = getLong("GUILD_ID")
@@ -110,8 +104,7 @@ object SQLCases : Table() {
     }
 
     fun addCase(case: Case) {
-        using(connection.prepareStatement(add))
-        {
+        using(connection.prepareStatement(add)) {
             this[1] = case.number
             this[2] = case.guildId
             this[3] = case.messageId
@@ -126,8 +119,7 @@ object SQLCases : Table() {
     }
 
     fun updateCase(case: Case) {
-        using(connection.prepareStatement(update))
-        {
+        using(connection.prepareStatement(update)) {
             this[1] = case.reason
             this[2] = case.guildId
             this[3] = case.number

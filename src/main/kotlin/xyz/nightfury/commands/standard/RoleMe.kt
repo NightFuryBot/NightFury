@@ -39,16 +39,16 @@ class RoleMeCmd(waiter: EventWaiter) : Command() {
         this.name = "RoleMe"
         this.arguments = "[Role]"
         this.help = "Give yourself or remove a RoleMe role."
-        this.helpBiConsumer = Command standardSubHelp
-                        "RoleMe roles are self-give/remove roles for normal members of a server.\n" +
-                        "Simply using `RoleMe [Role]` will give the user the `[Role]` requested or remove " +
-                        "it if they already possess the `[Role]`, so long as it is a registered RoleMe role.\n\n" +
+        this.documentation =
+            "RoleMe roles are self-give/remove roles for normal members of a server.\n" +
+            "Simply using `RoleMe [Role]` will give the user the `[Role]` requested or remove " +
+            "it if they already possess the `[Role]`, so long as it is a registered RoleMe role.\n\n" +
 
-                        "RoleMe roles must be registered by an Administrator using the `Add` sub-command.\n" +
-                        "Conversely, registered RoleMe roles can be unregistered by an Administrator using " +
-                        "the `Remove` sub-command.\n" +
-                        "For those looking to limit the number of RoleMe roles a user can have, the `Limit` " +
-                        "sub-command provides a means of doing this."
+            "RoleMe roles must be registered by an Administrator using the `Add` sub-command.\n" +
+            "Conversely, registered RoleMe roles can be unregistered by an Administrator using " +
+            "the `Remove` sub-command.\n" +
+            "For those looking to limit the number of RoleMe roles a user can have, the `Limit` " +
+            "sub-command provides a means of doing this."
         this.cooldown = 10
         this.guildOnly = true
         this.cooldownScope = CooldownScope.USER_GUILD
@@ -110,13 +110,13 @@ private class RoleMeAddCmd : Command() {
         this.fullname = "RoleMe Add"
         this.arguments = "[Role]"
         this.help = "Adds a RoleMe role for the server."
-        this.helpBiConsumer = Command standardSubHelp
-                        "Roles added will be available to all members on the server via the `RoleMe` " +
-                        "command, except in cases that NightFury cannot give roles to or remove roles from " +
-                        "the member using the command!\n\n" +
+        this.documentation =
+            "Roles added will be available to all members on the server via the `RoleMe` " +
+            "command, except in cases that NightFury cannot give roles to or remove roles from " +
+            "the member using the command!\n\n" +
 
-                        "**NightFury is not responsible for any dangerous permissions given with these," +
-                        "nor the consequences of the aforementioned!**"
+            "**NightFury is not responsible for any dangerous permissions given with these," +
+            "nor the consequences of the aforementioned!**"
 
         this.cooldown = 30
         this.cooldownScope = CooldownScope.GUILD
@@ -154,8 +154,8 @@ private class RoleMeRemoveCmd : Command() {
         this.fullname = "RoleMe Remove"
         this.arguments = "[Role]"
         this.help = "Removes a RoleMe role for the server."
-        this.helpBiConsumer = Command standardSubHelp
-                "**Using this will not remove the RoleMe role from members who previously had it!**"
+        this.documentation =
+            "**Using this will not remove the RoleMe role from members who previously had it!**"
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.MANAGE_ROLES)
         this.category = Category.ADMIN
@@ -215,8 +215,8 @@ private class RoleMeLimitCmd : Command() {
         this.fullname = "RoleMe Limit"
         this.arguments = "[Number]"
         this.help = "Sets the limit of RoleMe roles a user can have on the server."
-        this.helpBiConsumer = Command standardSubHelp
-                "Note that providing `0` as the limit will set no limit for the server."
+        this.documentation =
+            "Note that providing `0` as the limit will set no limit for the server."
         this.cooldown = 20
         this.cooldownScope = CooldownScope.USER_GUILD
         this.category = Category.ADMIN

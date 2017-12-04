@@ -23,9 +23,9 @@ import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.api.GoogleImageAPI
 import xyz.nightfury.extensions.embed
 import xyz.nightfury.extensions.message
-import xyz.nightfury.resources.Algorithms
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
+import xyz.nightfury.resources.Arguments
 
 /**
  * @author Kaidan Gustave
@@ -54,13 +54,37 @@ class ImageCmd(private val api: GoogleImageAPI) : Command() {
                         embed  {
                             if(event.isFromType(ChannelType.TEXT))
                                 color { event.member.color }
-                            image { Algorithms.selectResultURL(query, results) }
+                            image { selectResultURL(query, results) }
                         }
                     })
                 }
             }
             event.invokeCooldown()
         }
+    }
+
+    fun selectResultURL(query: String, results: List<String>): String {
+        // Start with last index of the results
+        var index = results.size - 1
+
+        // Subtract the length of the query
+        index -= query.length
+
+        // If the index has fallen below or is at 0 return the first result
+        if(index <= 0)
+            return results[0]
+
+        // If there is more than 2 spaces, divide the results by the number of them
+        val spaces = query.split(Arguments.commandArgs).size
+        if(spaces > 2)
+            index /= spaces - 1
+
+        // Once again, grab first index if it's below or at 0
+        if(index <= 0)
+            return results[0]
+
+        // return a random result between first index and the calculated maximum
+        return results[(Math.random() * (index)).toInt()]
     }
 
     @[APICache Suppress("unused")]

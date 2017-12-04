@@ -56,11 +56,11 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter) : Command()
         this.guildOnly = true
         this.category = Category.NSFW
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
-        this.helpBiConsumer = Command standardSubHelp
-                        "Only up to 6 tags are allowed per request. The maximum number of posts " +
-                        "retrievable is 320 and the default 100.\n\n" +
+        this.documentation =
+            "Only up to 6 tags are allowed per request. The maximum number of posts " +
+            "retrievable is 320 and the default 100.\n\n" +
 
-                        "**This command is only available in NSFW channels.**"
+            "**This command is only available in NSFW channels.**"
     }
 
     override fun execute(event: CommandEvent)

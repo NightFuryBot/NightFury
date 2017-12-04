@@ -31,19 +31,16 @@ object SQLWelcomes : Table() {
     fun hasWelcome(guild: Guild): Boolean = getChannel(guild) == null
 
     fun getMessage(guild: Guild): String? {
-        return using(connection.prepareStatement(getMessage))
-        {
+        return using(connection.prepareStatement(getMessage)) {
             this[1] = guild.idLong
             using(executeQuery()) { if(next()) getString("MESSAGE") else null }
         }
     }
 
     fun getChannel(guild: Guild): TextChannel? {
-        return using(connection.prepareStatement(getChannel))
-        {
+        return using(connection.prepareStatement(getChannel)) {
             this[1] = guild.idLong
-            using(executeQuery())
-            {
+            using(executeQuery()) {
                 if(next())
                     guild.getTextChannelById(getLong("CHANNEL_ID"))
                 else null
@@ -52,8 +49,7 @@ object SQLWelcomes : Table() {
     }
 
     fun setWelcome(channel: TextChannel, message: String) {
-        using(connection.prepareStatement(setWelcome))
-        {
+        using(connection.prepareStatement(setWelcome)) {
             this[1] = channel.guild.idLong
             this[2] = channel.idLong
             this[3] = message
@@ -62,8 +58,7 @@ object SQLWelcomes : Table() {
     }
 
     fun removeWelcome(guild: Guild) {
-        using(connection.prepareStatement(removeWelcome))
-        {
+        using(connection.prepareStatement(removeWelcome)) {
             this[1] = guild.idLong
             execute()
         }

@@ -32,16 +32,14 @@ object SQLGlobalTags : Table() {
     private val getAll        = "SELECT NAME FROM GLOBAL_TAGS WHERE OWNER_ID = ?"
 
     fun isTag(name: String): Boolean {
-        return using(connection.prepareStatement(isTag), default = false)
-        {
+        return using(connection.prepareStatement(isTag), default = false) {
             this[1] = name
             using(executeQuery()) { next() }
         }
     }
 
     fun addTag(name: String, ownerId: Long, content: String) {
-        using(connection.prepareStatement(addTag))
-        {
+        using(connection.prepareStatement(addTag)) {
             this[1] = name
             this[2] = ownerId
             this[3] = content
@@ -50,8 +48,7 @@ object SQLGlobalTags : Table() {
     }
 
     fun editTag(newContent: String, name: String, ownerId: Long) {
-        using(connection.prepareStatement(editTag))
-        {
+        using(connection.prepareStatement(editTag)) {
             this[1] = newContent
             this[2] = name
             this[3] = ownerId
@@ -60,8 +57,7 @@ object SQLGlobalTags : Table() {
     }
 
     fun deleteTag(name: String, ownerId: Long) {
-        using(connection.prepareStatement(deleteTag))
-        {
+        using(connection.prepareStatement(deleteTag)) {
             this[1] = name
             this[2] = ownerId
             execute()
@@ -69,24 +65,21 @@ object SQLGlobalTags : Table() {
     }
 
     fun getOriginalName(name: String): String {
-        return using(connection.prepareStatement(getTagName), default = "")
-        {
+        return using(connection.prepareStatement(getTagName), default = "") {
             this[1] = name
             using(executeQuery()) { if(next()) getString("NAME")?: "" else "" }
         }
     }
 
     fun getTagContent(name: String): String {
-        return using(connection.prepareStatement(getTagContent), default = "")
-        {
+        return using(connection.prepareStatement(getTagContent), default = "") {
             this[1] = name
             using(executeQuery()) { if(next()) getString("CONTENT")?:"" else "" }
         }
     }
 
     fun getTagOwnerId(name: String): Long {
-        return using(connection.prepareStatement(getTagOwnerId), default = 0L)
-        {
+        return using(connection.prepareStatement(getTagOwnerId), default = 0L) {
             this[1] = name
             using(executeQuery()) { if(next()) getLong("OWNER_ID") else 0L }
         }
@@ -94,11 +87,9 @@ object SQLGlobalTags : Table() {
 
     fun getAllTags(userId: Long) : Set<String> {
         val names = HashSet<String>()
-        using(connection.prepareStatement(getAll))
-        {
+        using(connection.prepareStatement(getAll)) {
             this[1] = userId
-            using(executeQuery())
-            {
+            using(executeQuery()) {
                 while(next())
                     names += getString("NAME")
             }
@@ -123,8 +114,7 @@ object SQLLocalTags : Table() {
     private val overrideTag    = "UPDATE LOCAL_TAGS SET CONTENT = ?, OWNER_ID = ? WHERE LOWER(NAME) = LOWER(?) AND OWNER_ID = ? AND GUILD_ID = ?"
 
     fun isTag(name: String, guild: Guild): Boolean {
-        return using(connection.prepareStatement(isTag), default = false)
-        {
+        return using(connection.prepareStatement(isTag), default = false) {
             this[1] = name
             this[2] = guild.idLong
             using(executeQuery()) { next() }
@@ -132,8 +122,7 @@ object SQLLocalTags : Table() {
     }
 
     fun addTag(name: String, ownerId: Long, content: String, guild: Guild) {
-        using(connection.prepareStatement(addTag))
-        {
+        using(connection.prepareStatement(addTag)) {
             this[1] = name
             this[2] = guild.idLong
             this[3] = ownerId
@@ -143,8 +132,7 @@ object SQLLocalTags : Table() {
     }
 
     fun editTag(newContent: String, name: String, ownerId: Long, guild: Guild) {
-        using(connection.prepareStatement(editTag))
-        {
+        using(connection.prepareStatement(editTag)) {
             this[1] = newContent
             this[2] = name
             this[3] = ownerId
@@ -154,8 +142,7 @@ object SQLLocalTags : Table() {
     }
 
     fun deleteTag(name: String, ownerId: Long, guild: Guild) {
-        using(connection.prepareStatement(deleteTag))
-        {
+        using(connection.prepareStatement(deleteTag)) {
             this[1] = name
             this[2] = ownerId
             this[3] = guild.idLong
@@ -164,8 +151,7 @@ object SQLLocalTags : Table() {
     }
 
     fun getOriginalName(name: String, guild: Guild): String {
-        return using(connection.prepareStatement(getTagName), default = "")
-        {
+        return using(connection.prepareStatement(getTagName), default = "") {
             this[1] = name
             this[2] = guild.idLong
             using(executeQuery()) { if(next()) getString("NAME")?:"" else "" }
@@ -173,8 +159,7 @@ object SQLLocalTags : Table() {
     }
 
     fun getTagContent(name: String, guild: Guild): String {
-        return using(connection.prepareStatement(getTagContent), default = "")
-        {
+        return using(connection.prepareStatement(getTagContent), default = "") {
             this[1] = name
             this[2] = guild.idLong
             using(executeQuery()) { if(next()) getString("CONTENT")?:"" else "" }
@@ -182,8 +167,7 @@ object SQLLocalTags : Table() {
     }
 
     fun getTagOwnerId(name: String, guild: Guild): Long {
-        return using(connection.prepareStatement(getTagOwnerId), default = 0L)
-        {
+        return using(connection.prepareStatement(getTagOwnerId), default = 0L) {
             this[1] = name
             this[2] = guild.idLong
             using(executeQuery()) { if(next()) getLong("OWNER_ID") else 0L }
@@ -193,11 +177,9 @@ object SQLLocalTags : Table() {
     @Suppress("UNUSED")
     fun getAllTags(guild: Guild) : Set<String> {
         val names = HashSet<String>()
-        using(connection.prepareStatement(getAllForGuild))
-        {
+        using(connection.prepareStatement(getAllForGuild)) {
             this[1] = guild.idLong
-            using(executeQuery())
-            {
+            using(executeQuery()) {
                 while(next())
                     names += getString("NAME")
             }
@@ -207,12 +189,10 @@ object SQLLocalTags : Table() {
 
     fun getAllTags(userId: Long, guild: Guild) : Set<String> {
         val names = HashSet<String>()
-        using(connection.prepareStatement(getAll))
-        {
+        using(connection.prepareStatement(getAll)) {
             this[1] = userId
             this[2] = guild.idLong
-            using(executeQuery())
-            {
+            using(executeQuery()) {
                 while(next())
                     names += getString("NAME")
             }
@@ -221,8 +201,7 @@ object SQLLocalTags : Table() {
     }
 
     fun overrideTag(newContent: String, name: String, originalOwnerId: Long, guild: Guild) {
-        using(connection.prepareStatement(overrideTag))
-        {
+        using(connection.prepareStatement(overrideTag)) {
             this[1] = newContent
             this[2] = 1L
             this[3] = name

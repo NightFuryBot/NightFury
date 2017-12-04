@@ -29,8 +29,7 @@ abstract class SQLGuilds(type: String) : Table() {
     private val delete = "DELETE FROM GUILDS WHERE GUILD_ID = ? AND TYPE = '$type'"
 
     fun isGuild(guild: Guild): Boolean {
-        return using(connection.prepareStatement(get), default = false)
-        {
+        return using(connection.prepareStatement(get), default = false) {
             this[1] = guild.idLong
             using(executeQuery()) { next() }
         }
@@ -38,8 +37,7 @@ abstract class SQLGuilds(type: String) : Table() {
 
     fun getGuilds(jda: JDA): Set<Guild> {
         val set = HashSet<Guild>()
-        using(connection.prepareStatement(getAll))
-        {
+        using(connection.prepareStatement(getAll)) {
             using(executeQuery())
             {
                 while(next())
@@ -51,10 +49,8 @@ abstract class SQLGuilds(type: String) : Table() {
 
     fun getGuildIds(): Set<Long> {
         val set = HashSet<Long>()
-        using(connection.prepareStatement(getAll))
-        {
-            using(executeQuery())
-            {
+        using(connection.prepareStatement(getAll)) {
+            using(executeQuery()) {
                 while(next())
                     set += getLong("GUILD_ID")
             }
@@ -63,16 +59,14 @@ abstract class SQLGuilds(type: String) : Table() {
     }
 
     fun addGuild(guild: Guild) {
-        using(connection.prepareStatement(add))
-        {
+        using(connection.prepareStatement(add)) {
             this[1] = guild.idLong
             execute()
         }
     }
 
     fun removeGuild(guild: Guild) {
-        using(connection.prepareStatement(delete))
-        {
+        using(connection.prepareStatement(delete)) {
             this[1] = guild.idLong
             execute()
         }

@@ -43,7 +43,7 @@ class ModeratorCmd : NoBaseExecutionCommand()
         this.help = "Add, remove, and manage moderators for this ser"
         this.guildOnly = true
         this.category = Category.ADMIN
-        this.helpBiConsumer = Command standardSubHelp
+        this.documentation =
             "You can use this command to manage moderators on the server.\n\n" +
 
             "`|Add` can be used to add a member as a moderator, while `|Remove` " +

@@ -21,23 +21,23 @@ import kotlin.reflect.KProperty
 /**
  * @author Kaidan Gustave
  */
-class OneTimeLateinit<in I: Any, T: Any>(val default: T?) {
+class OneTimeInit<in I: Any, T: Any>(val default: T?) {
 
     lateinit var variable: T
 
     operator fun getValue(instance: I, property: KProperty<*>): T {
         if(!::variable.isInitialized) {
             return requireNotNull(default?.also { setValue(instance, property, it) }) {
-                "Cannot get OneTimeLateinit delegated property without first initializing!"
+                "Cannot get OneTimeInit delegated property without first initializing!"
             }
         }
         return variable
     }
 
     operator fun setValue(instance: I, property: KProperty<*>, value: T) {
-        require(!::variable.isInitialized) { "Cannot instantiate OneTimeLateinit variable more than once!" }
+        require(!::variable.isInitialized) { "Cannot instantiate OneTimeInit variable more than once!" }
         variable = value
     }
 }
 
-inline fun <reified I: Any, reified T: Any> onlyInitializingOnce(default: T? = null) = OneTimeLateinit<I, T>(default)
+inline fun <reified I: Any, reified T: Any> onlyInitializingOnce(default: T? = null) = OneTimeInit<I, T>(default)

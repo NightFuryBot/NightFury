@@ -32,8 +32,7 @@ object SQLLimits : Table() {
     fun hasLimit(guild: Guild, command: String) = getLimit(guild, command) != 0
 
     fun getLimit(guild: Guild, command: String): Int {
-        return using(connection.prepareStatement(get), default = 0)
-        {
+        return using(connection.prepareStatement(get), default = 0) {
             this[1] = guild.idLong
             this[2] = command
             using(executeQuery(), default = 0) { if(next()) getInt("LIMIT_NUMBER") else 0 }
@@ -41,20 +40,15 @@ object SQLLimits : Table() {
     }
 
     fun setLimit(guild: Guild, command: String, limit: Int) {
-        if(hasLimit(guild, command))
-        {
-            using(connection.prepareStatement(set))
-            {
+        if(hasLimit(guild, command)) {
+            using(connection.prepareStatement(set)) {
                 this[1] = limit
                 this[2] = guild.idLong
                 this[3] = command
                 execute()
             }
-        }
-        else
-        {
-            using(connection.prepareStatement(add))
-            {
+        } else {
+            using(connection.prepareStatement(add)) {
                 this[1] = guild.idLong
                 this[2] = command
                 this[3] = limit
@@ -64,8 +58,7 @@ object SQLLimits : Table() {
     }
 
     fun removeLimit(guild: Guild, command: String) {
-        using(connection.prepareStatement(remove))
-        {
+        using(connection.prepareStatement(remove)) {
             this[1] = guild.idLong
             this[2] = command
             execute()
@@ -83,8 +76,7 @@ object SQLEnables : Table() {
     private val add = "INSERT INTO ENABLES (GUILD_ID, ENABLE_TYPE, STATUS) VALUES (?,?,?)"
 
     fun hasStatusFor(guild: Guild, type: Type): Boolean {
-        return using(connection.prepareStatement(has), default = false)
-        {
+        return using(connection.prepareStatement(has), default = false) {
             this[1] = guild.idLong
             this[2] = type
             using(executeQuery()) { next() }
@@ -92,34 +84,30 @@ object SQLEnables : Table() {
     }
 
     fun getStatusFor(guild: Guild, type: Type): Boolean {
-        return using(connection.prepareStatement(get), default = false)
-        {
+        return using(connection.prepareStatement(get), default = false) {
             this[1] = guild.idLong
             this[2] = type
             using(executeQuery()) { if(next()) getBoolean("STATUS") else false }
         }
     }
 
-    fun setStatusFor(guild: Guild, type: Type, status: Boolean)
-    {
-        if(hasStatusFor(guild, type))
-            using(connection.prepareStatement(set))
-            {
+    fun setStatusFor(guild: Guild, type: Type, status: Boolean) {
+        if(hasStatusFor(guild, type)) {
+            using(connection.prepareStatement(set)) {
                 this[1] = status
                 this[2] = guild.idLong
                 this[3] = type
             }
-        else
-            using(connection.prepareStatement(add))
-            {
+        } else {
+            using(connection.prepareStatement(add)) {
                 this[1] = guild.idLong
                 this[2] = type
                 this[3] = status
             }
+        }
     }
 
-    enum class Type
-    {
+    enum class Type {
         ROLE_PERSIST, ANTI_ADS
     }
 }
@@ -133,59 +121,44 @@ object SQLLevel : Table() {
     private val update = "UPDATE COMMAND_LEVELS SET LEVEL = ? WHERE GUILD_ID = ? AND LOWER(COMMAND) = LOWER(?)"
 
     fun hasLevel(guild: Guild, command: Command): Boolean {
-        return using(connection.prepareStatement(get), false)
-        {
+        return using(connection.prepareStatement(get), false) {
             this[1] = guild.idLong
             this[2] = command.name
-            using(executeQuery())
-            {
-                next()
-            }
+            using(executeQuery()) { next() }
         }
     }
 
     fun getLevel(guild: Guild, command: Command): CommandLevel {
-        return using(connection.prepareStatement(get), command.defaultLevel)
-        {
+        return using(connection.prepareStatement(get), command.defaultLevel) {
             this[1] = guild.idLong
             this[2] = command.name
-            using(executeQuery())
-            {
-                if(next())
-                {
+            using(executeQuery()) {
+                if(next()) {
                     val levelString = getString("LEVEL")
-                    if(levelString != null)
+                    if(levelString != null) {
                         try {
                             CommandLevel.valueOf(levelString.toUpperCase())
                         } catch (e: Throwable) { null }
-                    else
-                        null
-                }
-                else null
+                    } else null
+                } else null
             }
         }
     }
 
     fun setLevel(guild: Guild, command: Command, level: CommandLevel) {
-        if(hasLevel(guild, command))
-        {
-            using(connection.prepareStatement(update))
-            {
+        if(hasLevel(guild, command)) {
+            using(connection.prepareStatement(update)) {
                 this[1] = level
                 this[2] = guild.idLong
                 this[3] = command.name
             }
-        }
-        else
-        {
-            using(connection.prepareStatement(set))
-            {
+        } else {
+            using(connection.prepareStatement(set)) {
                 this[1] = guild.idLong
                 this[2] = command.name
                 this[3] = level
                 execute()
             }
         }
-
     }
 }

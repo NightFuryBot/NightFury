@@ -45,9 +45,10 @@ object Emojis {
         USA("\uD83C\uDDFA\uD83C\uDDF8", "America"),
         CANADA("\uD83C\uDDE8\uD83C\uDDE6"),
         AFRICA("\uD83C\uDDE6\uD83C\uDDEB"),
-        // TODO GERMANY(),
-        // TODO ENGLAND(),
-        // TODO RUSSIA()
+        GERMANY("\uD83C\uDDE9\uD83C\uDDEA"),
+        ENGLAND("\uD83C\uDDEC\uD83C\uDDE7"),
+        RUSSIA("\uD83C\uDDF7\uD83C\uDDFA"),
+        FRANCE("\uD83C\uDDEB\uD83C\uDDF7")
         // TODO Add more countries
         ;
 
@@ -78,7 +79,7 @@ object Emojis {
         SPARKLES("\u2728", 16);
 
         companion object {
-            fun forCount(count: Int): Star = values().first { count <= it.threshold }
+            fun forCount(count: Int): Star = values().firstOrNull { count <= it.threshold } ?: SPARKLES
         }
     }
 }

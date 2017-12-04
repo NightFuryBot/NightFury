@@ -30,8 +30,7 @@ object SQLPrefixes : Table() {
 
     fun isPrefix(guild: Guild, prefix: String) = isPrefix(guild.idLong, prefix)
     fun isPrefix(guildId: Long, prefix: String): Boolean {
-        return using(connection.prepareStatement(isPrefix), default = false)
-        {
+        return using(connection.prepareStatement(isPrefix), default = false) {
             this[1] = guildId
             this[2] = prefix
             using(executeQuery()) { next() }
@@ -41,11 +40,9 @@ object SQLPrefixes : Table() {
     fun getPrefixes(guild: Guild): Set<String> = getPrefixes(guild.idLong)
     fun getPrefixes(guildId: Long): Set<String> {
         val prefixes = HashSet<String>()
-        using(connection.prepareStatement(get))
-        {
+        using(connection.prepareStatement(get)) {
             this[1] = guildId
-            using(executeQuery())
-            {
+            using(executeQuery()) {
                 while(next())
                     prefixes += getString("PREFIX")
             }
@@ -55,8 +52,7 @@ object SQLPrefixes : Table() {
 
     fun addPrefix(guild: Guild, prefix: String) = addPrefix(guild.idLong, prefix)
     fun addPrefix(guildId: Long, prefix: String) {
-        using(connection.prepareStatement(add))
-        {
+        using(connection.prepareStatement(add)) {
             this[1] = guildId
             this[2] = prefix.toLowerCase()
             execute()
@@ -65,8 +61,7 @@ object SQLPrefixes : Table() {
 
     fun removePrefix(guild: Guild, prefix: String) = removePrefix(guild.idLong, prefix)
     fun removePrefix(guildId: Long, prefix: String) {
-        using(connection.prepareStatement(remove))
-        {
+        using(connection.prepareStatement(remove)) {
             this[1] = guildId
             this[2] = prefix
             execute()
@@ -75,8 +70,7 @@ object SQLPrefixes : Table() {
 
     fun removeAllPrefixes(guild: Guild) = removeAllPrefixes(guild.idLong)
     fun removeAllPrefixes(guildId: Long) {
-        using(connection.prepareStatement(removeAll))
-        {
+        using(connection.prepareStatement(removeAll)) {
             this[1] = guildId
             execute()
         }

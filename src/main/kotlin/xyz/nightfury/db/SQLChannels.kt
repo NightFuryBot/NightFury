@@ -31,11 +31,9 @@ abstract class SQLChannel(type: String): Table() {
     fun hasChannel(guild: Guild): Boolean = getChannel(guild) != null
 
     fun getChannel(guild: Guild): TextChannel? {
-        return using(connection.prepareStatement(get))
-        {
+        return using(connection.prepareStatement(get)) {
             this[1] = guild.idLong
-            using(executeQuery())
-            {
+            using(executeQuery()) {
                 if(next())
                     guild.getTextChannelById(getLong("CHANNEL_ID"))
                 else null
@@ -44,18 +42,13 @@ abstract class SQLChannel(type: String): Table() {
     }
 
     fun setChannel(channel: TextChannel) {
-        if(hasChannel(channel.guild))
-        {
-            using(connection.prepareStatement(set))
-            {
+        if(hasChannel(channel.guild)) {
+            using(connection.prepareStatement(set)) {
                 this[1] = channel.idLong
                 execute()
             }
-        }
-        else
-        {
-            using(connection.prepareStatement(add))
-            {
+        } else {
+            using(connection.prepareStatement(add)) {
                 this[1] = channel.guild.idLong
                 this[2] = channel.idLong
                 execute()
@@ -64,8 +57,7 @@ abstract class SQLChannel(type: String): Table() {
     }
 
     fun deleteChannel(guild: Guild) {
-        using(connection.prepareStatement(delete))
-        {
+        using(connection.prepareStatement(delete)) {
             this[1] = guild.idLong
             execute()
         }
@@ -82,8 +74,7 @@ abstract class SQLChannels(type: String) : Table() {
     private val delete = "DELETE FROM CHANNELS WHERE GUILD_ID = ? AND CHANNEL_ID = ? AND TYPE = '$type'"
 
     fun isChannel(channel: TextChannel): Boolean {
-        return using(connection.prepareStatement(isChan), default = false)
-        {
+        return using(connection.prepareStatement(isChan), default = false) {
             this[1] = channel.guild.idLong
             this[2] = channel.idLong
             using(executeQuery()) { next() }
@@ -92,11 +83,9 @@ abstract class SQLChannels(type: String) : Table() {
 
     fun getChannels(guild: Guild): Set<TextChannel> {
         val set = HashSet<TextChannel>()
-        using(connection.prepareStatement(get))
-        {
+        using(connection.prepareStatement(get)) {
             this[1] = guild.idLong
-            using(executeQuery())
-            {
+            using(executeQuery()) {
                 while(next())
                     set += (guild.getTextChannelById(getLong("CHANNEL_ID"))?:continue)
             }
@@ -105,8 +94,7 @@ abstract class SQLChannels(type: String) : Table() {
     }
 
     fun addChannel(channel: TextChannel) {
-        using(connection.prepareStatement(add))
-        {
+        using(connection.prepareStatement(add)) {
             this[1] = channel.guild.idLong
             this[2] = channel.idLong
             execute()
@@ -114,8 +102,7 @@ abstract class SQLChannels(type: String) : Table() {
     }
 
     fun deleteChannel(channel: TextChannel) {
-        using(connection.prepareStatement(delete))
-        {
+        using(connection.prepareStatement(delete)) {
             this[1] = channel.guild.idLong
             this[2] = channel.idLong
             execute()

@@ -29,8 +29,7 @@ abstract class SQLRoles(type: String) : Table() {
     private val delete = "DELETE FROM ROLES WHERE GUILD_ID = ? AND ROLE_ID = ? AND TYPE = '$type'"
 
     fun isRole(role: Role): Boolean {
-        return using(connection.prepareStatement(isRole), default = false)
-        {
+        return using(connection.prepareStatement(isRole), default = false) {
             this[1] = role.guild.idLong
             this[2] = role.idLong
             using(executeQuery()) { next() }
@@ -39,11 +38,9 @@ abstract class SQLRoles(type: String) : Table() {
 
     fun getRoles(guild: Guild): Set<Role> {
         val set = HashSet<Role>()
-        using(connection.prepareStatement(get))
-        {
+        using(connection.prepareStatement(get)) {
             this[1] = guild.idLong
-            using(executeQuery())
-            {
+            using(executeQuery()) {
                 while(next())
                     set += (guild.getRoleById(getLong("ROLE_ID"))?:continue)
             }
@@ -52,8 +49,7 @@ abstract class SQLRoles(type: String) : Table() {
     }
 
     fun addRole(role: Role) {
-        using(connection.prepareStatement(add))
-        {
+        using(connection.prepareStatement(add)) {
             this[1] = role.guild.idLong
             this[2] = role.idLong
             execute()
@@ -61,8 +57,7 @@ abstract class SQLRoles(type: String) : Table() {
     }
 
     fun deleteRole(role: Role) {
-        using(connection.prepareStatement(delete))
-        {
+        using(connection.prepareStatement(delete)) {
             this[1] = role.guild.idLong
             this[2] = role.idLong
             execute()
@@ -82,11 +77,9 @@ abstract class SQLRole(type: String) : Table() {
     fun hasRole(guild: Guild): Boolean = getRole(guild) != null
 
     fun getRole(guild: Guild): Role? {
-        return using(connection.prepareStatement(get))
-        {
+        return using(connection.prepareStatement(get)) {
             this[1] = guild.idLong
-            using(executeQuery())
-            {
+            using(executeQuery()) {
                 if(next())
                     guild.getRoleById(getLong("ROLE_ID"))
                 else null
@@ -95,19 +88,14 @@ abstract class SQLRole(type: String) : Table() {
     }
 
     fun setRole(role: Role) {
-        if(hasRole(role.guild))
-        {
-            using(connection.prepareStatement(set))
-            {
+        if(hasRole(role.guild)) {
+            using(connection.prepareStatement(set)) {
                 this[1] = role.idLong
                 this[2] = role.guild.idLong
                 execute()
             }
-        }
-        else
-        {
-            using(connection.prepareStatement(add))
-            {
+        } else {
+            using(connection.prepareStatement(add)) {
                 this[1] = role.guild.idLong
                 this[2] = role.idLong
                 execute()
@@ -116,8 +104,7 @@ abstract class SQLRole(type: String) : Table() {
     }
 
     fun deleteRole(guild: Guild) {
-        using(connection.prepareStatement(delete))
-        {
+        using(connection.prepareStatement(delete)) {
             this[1] = guild.idLong
             execute()
         }

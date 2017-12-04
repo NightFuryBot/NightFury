@@ -173,6 +173,7 @@ class NightFury {
     @Suppress("UNUSED")
     private inline fun <reified T: JDABuilder> T.buildAsync(shards: Int, lazy: JDABuilder.() -> Unit) {
         lazy()
+        javaClass.getResource("..")
         setShardedRateLimiter(ShardedRateLimiter())
         setReconnectQueue(SessionReconnectQueue())
         for(i in 0 until shards) {

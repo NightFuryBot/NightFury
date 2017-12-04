@@ -60,8 +60,8 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command() {
         this.aliases = arrayOf("i", "information")
         this.arguments = "<User>"
         this.help = "Gets info on a user."
-        this.helpBiConsumer = Command standardSubHelp
-                        "Not specifying a user will get info on the person using the command."
+        this.documentation =
+            "Not specifying a user will get info on the person using the command."
         this.cooldown = 5
         this.cooldownScope = CooldownScope.USER_GUILD
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)

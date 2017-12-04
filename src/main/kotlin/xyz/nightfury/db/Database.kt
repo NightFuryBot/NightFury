@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("Unused")
 package xyz.nightfury.db
 
-import xyz.nightfury.entities.Case
-import net.dv8tion.jda.core.entities.*
 import java.io.Closeable
 import java.sql.Connection
 import java.sql.DriverManager
@@ -46,7 +43,7 @@ object Database : Closeable {
         init = true
 
         for(data in TableData.values()) {
-            if(!(connection createTable data)) {
+            if(!(connection.createTable(data))) {
                 connection.close()
                 throw SQLException("Failed to set up vital DB Data!")
             }
@@ -58,9 +55,9 @@ object Database : Closeable {
         connection.close()
     }
 
-    private infix fun Connection.createTable(data: TableData): Boolean {
+    private fun Connection.createTable(data: TableData): Boolean {
         try {
-            return if(this hasTableNamed data.name) { true } else {
+            return if(hasTableNamed(data.name)) { true } else {
                 val params = data.parameters
                 // Automatically builds a statement out of parameter data
                 val statement = buildString {
@@ -78,68 +75,8 @@ object Database : Closeable {
         }
     }
 
-    private infix fun Connection.hasTableNamed(name: String) =
+    private fun Connection.hasTableNamed(name: String) =
         metaData.getTables(null, null, name, null).use { it.next() }
-
-    infix fun isRoleMe(role: Role) = SQLRoleMe.isRole(role)
-    infix fun getRoleMes(guild: Guild) = SQLRoleMe.getRoles(guild)
-    infix fun addRoleMe(role: Role) = SQLRoleMe.addRole(role)
-    infix fun removeRoleMe(role: Role) = SQLRoleMe.deleteRole(role)
-
-    infix fun isColorMe(role: Role) = SQLColorMe.isRole(role)
-    infix fun getColorMes(guild: Guild) = SQLColorMe.getRoles(guild)
-    infix fun addColorMe(role: Role) = SQLColorMe.addRole(role)
-    infix fun removeColorMe(role: Role) = SQLColorMe.deleteRole(role)
-
-    infix fun hasModRole(guild: Guild) = SQLModeratorRole.hasRole(guild)
-    infix fun getModRole(guild: Guild) = SQLModeratorRole.getRole(guild)
-    infix fun setModRole(role: Role) = SQLModeratorRole.setRole(role)
-    infix fun resetModRole(guild: Guild) = SQLModeratorRole.deleteRole(guild)
-
-    infix fun hasMutedRole(guild: Guild) = SQLMutedRole.hasRole(guild)
-    infix fun getMutedRole(guild: Guild) = SQLMutedRole.getRole(guild)
-    infix fun setMutedRole(role: Role) = SQLMutedRole.setRole(role)
-    infix fun resetMutedRole(guild: Guild) = SQLMutedRole.deleteRole(guild)
-
-    infix fun hasModLog(guild: Guild) = SQLModeratorLog.hasChannel(guild)
-    infix fun getModLog(guild: Guild) = SQLModeratorLog.getChannel(guild)
-    infix fun setModLog(channel: TextChannel) = SQLModeratorLog.setChannel(channel)
-    infix fun resetModLog(guild: Guild) = SQLModeratorLog.deleteChannel(guild)
-
-    infix fun isIgnoredChannel(channel: TextChannel) = SQLIgnoredChannels.isChannel(channel)
-    infix fun getIgnoredChannels(guild: Guild) = SQLIgnoredChannels.getChannels(guild)
-    infix fun addIgnoredChannel(channel: TextChannel) = SQLIgnoredChannels.addChannel(channel)
-    infix fun removeIgnoredChannel(channel: TextChannel) = SQLIgnoredChannels.deleteChannel(channel)
-
-    fun getCaseNumber(guild: Guild, number: Int) = SQLCases.getCaseNumber(guild, number)
-    fun getCasesByUser(member: Member) = getCasesByUser(member.guild, member.user)
-    fun getCasesByUser(guild: Guild, user: User) = SQLCases.getCasesByUser(guild, user)
-    fun getCases(guild: Guild) = SQLCases.getCases(guild)
-    fun addCase(case: Case) = SQLCases.addCase(case)
-    fun updateCase(case: Case) = SQLCases.updateCase(case)
-
-    fun isPrefixFor(guild: Guild, prefix: String) = SQLPrefixes.isPrefix(guild, prefix)
-    fun getPrefixes(guild: Guild) = SQLPrefixes.getPrefixes(guild)
-    fun addPrefix(guild: Guild, prefix: String) = SQLPrefixes.addPrefix(guild, prefix)
-    fun removePrefix(guild: Guild, prefix: String) = SQLPrefixes.removePrefix(guild, prefix)
-
-    fun hasWelcome(guild: Guild) = SQLWelcomes.hasWelcome(guild)
-    fun resetWelcome(guild: Guild) = SQLWelcomes.removeWelcome(guild)
-    fun getWelcomeChannel(guild: Guild) = SQLWelcomes.getChannel(guild)
-    fun setWelcome(channel: TextChannel, message: String) = SQLWelcomes.setWelcome(channel, message)
-    fun getWelcomeMessage(guild: Guild) = SQLWelcomes.getMessage(guild)
-
-    fun hasLimit(guild: Guild, command: String) = SQLLimits.hasLimit(guild, command.toLowerCase())
-    fun getLimit(guild: Guild, command: String) = SQLLimits.getLimit(guild, command.toLowerCase())
-    fun setLimit(guild: Guild, command: String, limit: Int) = SQLLimits.setLimit(guild, command, limit)
-    fun removeLimit(guild: Guild, command: String) = SQLLimits.removeLimit(guild, command.toLowerCase())
-
-    fun isRolePersist(guild: Guild) = SQLEnables.getStatusFor(guild, SQLEnables.Type.ROLE_PERSIST)
-    fun setIsRolePersist(guild: Guild, boolean: Boolean) = SQLEnables.setStatusFor(guild, SQLEnables.Type.ROLE_PERSIST, boolean)
-    fun getRolePersistence(member: Member) = SQLRolePersist.getRolePersist(member)
-    fun addRolePersist(member: Member) = SQLRolePersist.setRolePersist(member)
-    fun removeRolePersist(member: Member) = SQLRolePersist.removeRolePersist(member)
-    fun removeAllRolePersist(guild: Guild) = SQLRolePersist.removeAllRolePersist(guild)
 
     @[Suppress("Unused") Throws(SQLException::class)]
     fun evaluate(string: String) = using(connection.prepareStatement(string)) { execute() }

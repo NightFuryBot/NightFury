@@ -29,17 +29,27 @@ object SQLRolePersist : Table() {
     private val remove = "DELETE FROM ROLE_PERSIST WHERE GUILD_ID = ? AND USER_ID = ?"
     private val removeAll = "DELETE FROM ROLE_PERSIST WHERE GUILD_ID = ?"
 
+    fun isRolePersist(guild: Guild): Boolean = SQLEnables.hasStatusFor(guild, SQLEnables.Type.ROLE_PERSIST)
+
+    fun setIsRolePersist(guild: Guild, status: Boolean) {
+        SQLEnables.setStatusFor(guild, SQLEnables.Type.ROLE_PERSIST, status)
+    }
+
     fun getRolePersist(member: Member): Set<Role> {
         val set = HashSet<Role>()
-        using(connection.prepareStatement(get))
-        {
+        using(connection.prepareStatement(get)) {
             this[1] = member.guild.idLong
             this[2] = member.user.idLong
 
-            using(executeQuery())
-            {
-                if(next())
-                    getString("ROLE_IDS").split(Regex("\\|")).mapNotNullTo(set) { member.guild.getRoleById(it) }
+            using(executeQuery()) {
+                if(next()) {
+                    getString("ROLE_IDS").split(Regex("\\|")).mapNotNullTo(set) {
+                        // Make sure it's a valid long and not something like, an empty string
+                        val id = try { it.toLong() } catch(e: NumberFormatException) { return@mapNotNullTo null }
+
+                        return@mapNotNullTo member.guild.getRoleById(id)
+                    }
+                }
             }
         }
         return set
@@ -49,8 +59,7 @@ object SQLRolePersist : Table() {
         if(getRolePersist(member).isNotEmpty())
             removeRolePersist(member)
 
-        using(connection.prepareStatement(add))
-        {
+        using(connection.prepareStatement(add)) {
             this[1] = member.guild.idLong
             this[2] = member.user.idLong
             this[3] = member.roles.joinToString(separator = "|") { it.idLong.toString() }
@@ -59,8 +68,7 @@ object SQLRolePersist : Table() {
     }
 
     fun removeRolePersist(member: Member) {
-        using(connection.prepareStatement(remove))
-        {
+        using(connection.prepareStatement(remove)) {
             this[1] = member.guild.idLong
             this[2] = member.user.idLong
             execute()
@@ -68,8 +76,7 @@ object SQLRolePersist : Table() {
     }
 
     fun removeAllRolePersist(guild: Guild) {
-        using(connection.prepareStatement(removeAll))
-        {
+        using(connection.prepareStatement(removeAll)) {
             this[1] = guild.idLong
             execute()
         }

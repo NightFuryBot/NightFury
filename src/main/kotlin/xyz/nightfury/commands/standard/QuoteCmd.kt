@@ -25,7 +25,9 @@ import xyz.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.TextChannel
+import xyz.nightfury.annotations.HasDocumentation
 
+@HasDocumentation
 @MustHaveArguments("Please specify a message ID to quote!")
 class QuoteCmd : Command() {
     init {

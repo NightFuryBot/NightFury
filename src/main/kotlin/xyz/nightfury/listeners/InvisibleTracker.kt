@@ -33,13 +33,12 @@ class InvisibleTracker : EventListener {
 
     override fun onEvent(event: Event?) {
         if(event is UserOnlineStatusUpdateEvent) {
-            if(event.user.isInvisible) {
+            if(isInvisible(event.user)) {
                 synchronized(map) {
                     map.remove(event.user.idLong)
                 }
             }
-        }
-        if(event is UserTypingEvent) {
+        } else if(event is UserTypingEvent) {
             if(event.isPrivate)
                 return
             if(event.member.onlineStatus == OnlineStatus.OFFLINE) {
@@ -50,24 +49,20 @@ class InvisibleTracker : EventListener {
         }
     }
 
-    @get:JvmName("getIsInvisible") // Change JVM name to prevent conflicts
-    private inline val User.isInvisible
-        inline get() = synchronized(map) {
-            if(map.contains(idLong)) {
-                if(map[idLong]?.plusMinutes(5)?.isAfter(OffsetDateTime.now()) == true)
-                    true // Is invisible
-                else {
-                    map.remove(idLong)
-                    false // Was invisible but past the 5 minute mark
-                }
+    fun isInvisible(user: User): Boolean = synchronized(map) {
+        if(map.contains(user.idLong)) {
+            if(map[user.idLong]?.plusMinutes(5)?.isAfter(OffsetDateTime.now()) == true)
+                true // Is invisible
+            else {
+                map.remove(user.idLong)
+                false // Was invisible but past the 5 minute mark
             }
-            else false // Was not invisible
         }
+        else false // Was not invisible
+    }
 
-    fun isInvisible(user: User) = user.isInvisible
-
-    fun getLastTimeTyping(user: User) : Long? {
-        if(!user.isInvisible)
+    fun getLastTimeTyping(user: User): Long? {
+        if(!isInvisible(user))
             return null
         synchronized(map) {
             return map[user.idLong]?.until(OffsetDateTime.now(), ChronoUnit.MINUTES)
