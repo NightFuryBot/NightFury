@@ -75,6 +75,9 @@ dependencies {
     compile "com.github.JDA-Applications:JDA-Utilities:$jda_utilities_version"
     compile "com.sedmelluq:lavaplayer:$lavaplayer_version"
 
+    // Config
+    compile "ninja.leaping.configurate:configurate-hocon:3.3"
+
     // API Requests
     compile 'org.jsoup:jsoup:1.10.2'
     compile 'com.google.apis:google-api-services-youtube:v3-rev183-1.22.0'
@@ -118,8 +121,8 @@ allprojects {
     apply plugin: 'idea'
     apply plugin: 'com.github.johnrengelman.shadow'
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    sourceCompatibility = 9
+    targetCompatibility = 9
 
     repositories {
         jcenter()

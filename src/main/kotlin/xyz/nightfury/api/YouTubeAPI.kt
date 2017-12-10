@@ -24,7 +24,7 @@ import java.io.IOException
 /**
  * @author Kaidan Gustave
  */
-class YouTubeAPI(apiKey : String) : AbstractAPICache<List<String>>()
+class YouTubeAPI(apiKey : String?) : AbstractAPICache<List<String>>()
 {
     private companion object
     {
@@ -37,6 +37,8 @@ class YouTubeAPI(apiKey : String) : AbstractAPICache<List<String>>()
 
     override val hoursToDecay: Long = 1
 
+    val isEnabled: Boolean = apiKey != null
+
     init {
         search = try {
             youtube.search().list("id,snippet")
@@ -44,6 +46,7 @@ class YouTubeAPI(apiKey : String) : AbstractAPICache<List<String>>()
             ytLog.error("Failed to initialize search: $e")
             null
         }
+
 
         if(search != null) with(search)
         {
@@ -56,7 +59,8 @@ class YouTubeAPI(apiKey : String) : AbstractAPICache<List<String>>()
     fun search(query : String) : List<String>?
     {
         if(search == null) {
-            ytLog.warn("YouTube searcher initialization failed, search could not be performed!")
+            if(isEnabled)
+                ytLog.warn("YouTube searcher initialization failed, search could not be performed!")
             return null
         }
         val cached = getFromCache(query)

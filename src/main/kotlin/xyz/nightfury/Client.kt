@@ -64,7 +64,7 @@ import kotlin.streams.toList
 class Client internal constructor(val prefix: String,      val devId: Long,
                                   val success: String,     val warning: String,
                                   val error: String,       val server: String,
-                                  val dBotsKey: String,    val dBorgKey: String,
+                                  val dBotsKey: String?,   val dBorgKey: String?,
                                   val waiter: EventWaiter, val parser: Parser,
                                   vararg commands: Command): EventListener {
 
@@ -340,37 +340,41 @@ class Client internal constructor(val prefix: String,      val devId: Long,
         if(jda.shardInfo != null)
             body.put("shard_id", jda.shardInfo.shardId).put("shard_count", jda.shardInfo.shardTotal)
 
-        // Create POST request to bots.discord.pw
-        client.newRequest({
-            post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
-            url("https://bots.discord.pw/api/bots/${jda.selfUser.id}/stats")
-            header("Authorization", dBotsKey)
-            header("Content-Type", "application/json")
-        }).enqueue(object : Callback {
-            override fun onResponse(call: Call, response: Response) = response.close()
+        if(dBotsKey != null) {
+            // Create POST request to bots.discord.pw
+            client.newRequest({
+                post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
+                url("https://bots.discord.pw/api/bots/${jda.selfUser.id}/stats")
+                header("Authorization", dBotsKey)
+                header("Content-Type", "application/json")
+            }).enqueue(object : Callback {
+                override fun onResponse(call: Call, response: Response) = response.close()
 
-            override fun onFailure(call: Call, e: IOException)
-            {
-                log.error("Failed to send information to bots.discord.pw", e)
-            }
-        })
+                override fun onFailure(call: Call, e: IOException)
+                {
+                    log.error("Failed to send information to bots.discord.pw", e)
+                }
+            })
+        }
 
-        // Send POST request to discordbots.org
-        client.newRequest({
-            post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
-            url("https://discordbots.org/api/bots/${jda.selfUser.id}/stats")
-            header("Authorization", dBorgKey)
-            header("Content-Type", "application/json")
-        }).enqueue(object : Callback {
-            override fun onResponse(call: Call, response: Response) = response.close()
+        if(dBorgKey != null) {
+            // Send POST request to discordbots.org
+            client.newRequest({
+                post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
+                url("https://discordbots.org/api/bots/${jda.selfUser.id}/stats")
+                header("Authorization", dBorgKey)
+                header("Content-Type", "application/json")
+            }).enqueue(object : Callback {
+                override fun onResponse(call: Call, response: Response) = response.close()
 
-            override fun onFailure(call: Call, e: IOException) {
-                log.error("Failed to send information to discordbots.org", e)
-            }
-        })
+                override fun onFailure(call: Call, e: IOException) {
+                    log.error("Failed to send information to discordbots.org", e)
+                }
+            })
+        }
 
         // If we're not sharded there's no reason to send a GET request
-        if(jda.shardInfo == null) {
+        if(jda.shardInfo == null || dBotsKey == null) {
             totalGuilds = jda.guilds.size
             return
         }

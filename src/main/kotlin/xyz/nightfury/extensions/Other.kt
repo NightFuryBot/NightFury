@@ -17,7 +17,6 @@
 package xyz.nightfury.extensions
 
 import net.dv8tion.jda.core.OnlineStatus
-import sun.util.calendar.ZoneInfo
 import java.sql.Date
 import java.sql.Timestamp
 import java.time.OffsetDateTime
@@ -55,7 +54,7 @@ fun Date.toOffsetDateTime(): OffsetDateTime = toLocalDate().atTime(OffsetTime.MI
 
 // We don't use ZoneInfo.getTimeZone(String) directly
 // for native nullability issues.
-fun timeZone(identifier: String?): TimeZone? = ZoneInfo.getTimeZone(identifier)
+fun timeZone(identifier: String?): TimeZone? = TimeZone.getTimeZone(identifier)
 
 fun thread(start: Boolean = true,
            isDaemon: Boolean = false,

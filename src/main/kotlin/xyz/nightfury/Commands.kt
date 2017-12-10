@@ -76,7 +76,7 @@ abstract class Command {
     val docs: String? by lazy {
         this::class.findAnnotation<HasDocumentation>() ?: return@lazy null
 
-        javaClass.getResourceAsStream(("/${category?.title?.toLowerCase()?.replace(' ', '-') ?: "standard"}" +
+        javaClass.getResourceAsStream(("/${category?.title?.toLowerCase()?.replace(Arguments.commandArgs, "-") ?: "standard"}" +
                                       "/${fullname.replace(Arguments.commandArgs, "-").toLowerCase()}.md").also {println(it)}).use {
             InputStreamReader(it).use {
                 it.readText().split(Regex("\n\n")).joinToString(separator = "\n\n") {

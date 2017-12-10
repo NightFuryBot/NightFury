@@ -8,6 +8,9 @@
 /.gradle/
 /build/
 
+# Configurations
+/src/main/resources/bot.conf
+
 # Data Files
 /logs/
 *.txt

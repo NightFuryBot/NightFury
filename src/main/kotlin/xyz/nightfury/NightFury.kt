@@ -18,7 +18,6 @@ package xyz.nightfury
 import com.jagrosh.jagtag.JagTag
 import net.dv8tion.jda.core.*
 import net.dv8tion.jda.core.requests.SessionReconnectQueue
-import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.nightfury.api.E621API
@@ -40,15 +39,10 @@ import xyz.nightfury.listeners.DatabaseListener
 import xyz.nightfury.listeners.InvisibleTracker
 import xyz.nightfury.listeners.StarboardListener
 import xyz.nightfury.music.MusicManager
-import java.io.File
 import java.io.IOException
-import java.nio.file.Paths
-import java.util.logging.Level
 
 fun main(args: Array<String>?) {
     NightFury.LOG.info("Starting NightFury...")
-
-    java.util.logging.Logger.getLogger("org.apache.http.client.protocol.ResponseProcessCookies").level = Level.OFF
 
     try {
         NightFury()
@@ -56,6 +50,8 @@ fun main(args: Array<String>?) {
         NightFury.LOG.error("Failed to get configurations!",e)
     } catch(e: Exception) {
         NightFury.LOG.error("An error occurred!",e)
+    } catch(e: ConfigException) {
+        NightFury.LOG.error("The bot.conf file was missing a value, or an error occur while reading!", e)
     }
 }
 
@@ -69,21 +65,21 @@ class NightFury {
         val LOG: Logger = LoggerFactory.getLogger("NightFury")
 
         fun shutdown(exit: Int) {
-            LOG.info("Shutdown Complete! "+if(exit == 0)"Restarting..." else "Exiting...")
+            LOG.info("Shutdown Complete! ${if(exit == 0) "Restarting..." else "Exiting..."}")
             System.exit(exit)
         }
     }
 
     init {
-        val config = Config()
+        val config = BotConfig()
 
         // Make initial connection
-        Database.connect(config.dbURL, config.dbUser, config.dbPass)
+        Database.connect(config.databaseURL, config.databaseUser, config.databasePass)
 
         val e621 = E621API()
         val google = GoogleAPI()
         val image = GoogleImageAPI()
-        val yt = YouTubeAPI(config.ytApiKey)
+        val yt = YouTubeAPI(config.ytKey)
 
         val parser = JagTag.newDefaultBuilder().addMethods(tagMethods).build()
 
@@ -94,7 +90,7 @@ class NightFury {
         val client = Client(
             config.prefix, config.devId,
             config.success, config.warning, config.error,
-            config.server, config.dbotsKey, config.dborgKey,
+            config.server, config.dbotsKey, config.dbotslistKey,
             waiter, parser,
 
             AboutCmd(*config.permissions),
@@ -173,7 +169,6 @@ class NightFury {
     @Suppress("UNUSED")
     private inline fun <reified T: JDABuilder> T.buildAsync(shards: Int, lazy: JDABuilder.() -> Unit) {
         lazy()
-        javaClass.getResource("..")
         setShardedRateLimiter(ShardedRateLimiter())
         setReconnectQueue(SessionReconnectQueue())
         for(i in 0 until shards) {
@@ -182,81 +177,5 @@ class NightFury {
             LOG.info("Shard [$i / ${shards - 1}] now building...")
             Thread.sleep(5000) // Five second backoff
         }
-    }
-}
-
-class Config {
-    companion object {
-        @JvmStatic var testing: Boolean = false
-    }
-
-    private val file: File = Paths.get(System.getProperty("user.dir"), "config.json").toFile()
-    private val json: JSONObject = JSONObject(file.readText(Charsets.UTF_8))
-
-    val token: String
-        get() = (if(testing) json.getString("test_bot_token") else json.getString("bot_token")) ?: nulled()
-
-    val devId: Long = 211393686628597761L
-
-    val dbotsKey: String = json.getString("dbots_key") ?: nulled()
-
-    val dborgKey: String = json.getString("discord_bots_list_key") ?: nulled()
-
-    val dbURL: String
-        get() = buildString {
-            val db = json.getJSONObject("db") ?: nulled()
-            append(db.getString("prefix") ?: nulled())
-
-            if(testing)
-                append(db.getString("test_url") ?: nulled())
-            else
-                append(db.getString("url") ?: nulled())
-
-            for((key, value) in db.getJSONObject("configurations")?.toMap() ?: nulled()) {
-                append(";")
-                append(key.toUpperCase())
-                append("=")
-                append(value.toString().toUpperCase())
-            }
-        }
-
-    val dbUser: String = json.getJSONObject("db")?.getString("user") ?: nulled()
-
-    val dbPass: String = json.getJSONObject("db")?.getString("pass") ?: nulled()
-
-    val ytApiKey: String = json.getString("yt_api_key") ?: nulled()
-
-    val prefix: String
-        get() = if(testing) "||" else "|"
-
-    val success: String = "\uD83D\uDC32"
-    val warning: String = "\uD83D\uDC22"
-    val error: String = "\uD83D\uDD25"
-
-    val server: String = "https://discord.gg/xkkw54u"
-
-    val permissions: Array<Permission> = arrayOf(
-
-        Permission.MESSAGE_HISTORY,
-        Permission.MESSAGE_EMBED_LINKS,
-        Permission.MESSAGE_ATTACH_FILES,
-        Permission.MESSAGE_ADD_REACTION,
-
-        Permission.MANAGE_PERMISSIONS,
-        Permission.MANAGE_ROLES,
-        Permission.MANAGE_CHANNEL,
-        Permission.NICKNAME_MANAGE,
-        Permission.MESSAGE_MANAGE,
-
-        Permission.KICK_MEMBERS,
-        Permission.BAN_MEMBERS,
-
-        Permission.VIEW_AUDIT_LOGS
-
-    )
-
-    // This prevents npe with native java code
-    private inline fun <reified T> nulled(): T {
-        throw IllegalStateException("${file.name} did not have a specified token!")
     }
 }

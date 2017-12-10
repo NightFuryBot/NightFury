@@ -15,14 +15,13 @@
  */
 package xyz.nightfury
 
-import kotlinx.coroutines.experimental.launch
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.ShutdownEvent
 import net.dv8tion.jda.core.hooks.EventListener
 import net.dv8tion.jda.core.hooks.IEventManager
-import xyz.nightfury.resources.CachedThreadPoolDispatcher
-import xyz.nightfury.resources.newCachedThreadContext
 import java.util.concurrent.CopyOnWriteArraySet
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors.*
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -33,11 +32,12 @@ class AsyncEventManager: IEventManager {
         @JvmField val THREAD_NUMBER: AtomicInteger = AtomicInteger(1)
     }
 
-    private val context: CachedThreadPoolDispatcher = newCachedThreadContext factory@ {
+    private val executor: ExecutorService = newCachedThreadPool {
         val thisThreadName = "EventThread-${THREAD_NUMBER.getAndIncrement()}".also {
             NightFury.LOG.debug("Creating new thread: '$it'")
         }
-        return@factory Thread(it, thisThreadName).also { it.isDaemon = true }
+
+        Thread(it, thisThreadName).also { it.isDaemon = true }
     }
 
     var isShutdown: Boolean = false
@@ -48,7 +48,7 @@ class AsyncEventManager: IEventManager {
         if(isShutdown || event == null)
             return
 
-        launch(context) {
+        executor.execute {
             listeners.forEach {
                 try {
                     it.onEvent(event)
