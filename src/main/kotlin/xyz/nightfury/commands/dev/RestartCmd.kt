@@ -39,7 +39,7 @@ class RestartCmd : Command()
     {
         event.replyWarning("Restarting...")
         event.jda.presence.status = OnlineStatus.DO_NOT_DISTURB
-        event.jda.presence.game = Game.of("Restarting...")
+        event.jda.presence.game = Game.playing("Restarting...")
         NightFury.LOG.info("Restarting...")
         synchronized(this) {
             try { Thread.sleep(2500) } catch (ignored: InterruptedException) {}

@@ -34,7 +34,11 @@ fun client(accountType: AccountType, init: JDABuilder.() -> Unit): JDA
 infix inline fun <reified T: JDABuilder> T.token(lazyToken: () -> String): T
     = this.setToken(lazyToken()) as T
 infix inline fun <reified T: JDABuilder> T.game(lazy: () -> String): T
-    = this.setGame(Game.of(lazy())) as T
+    = this.setGame(Game.playing(lazy())) as T
+infix inline fun <reified T: JDABuilder> T.listening(lazy: () -> String): T
+    = this.setGame(Game.listening(lazy())) as T
+infix inline fun <reified T: JDABuilder> T.watching(lazy: () -> String): T
+    = this.setGame(Game.watching(lazy())) as T
 infix inline fun <reified T: JDABuilder> T.status(lazy: () -> OnlineStatus): T
     = this.setStatus(lazy()) as T
 infix inline fun <reified T: JDABuilder> T.manager(lazy: () -> IEventManager): T

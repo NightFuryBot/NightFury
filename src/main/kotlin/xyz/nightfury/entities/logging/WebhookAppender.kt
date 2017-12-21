@@ -22,27 +22,39 @@ import ch.qos.logback.core.AppenderBase
 import xyz.nightfury.entities.KEmbedBuilder
 import net.dv8tion.jda.webhook.WebhookClient
 import net.dv8tion.jda.webhook.WebhookClientBuilder
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader
 import java.awt.Color
-import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.util.*
 
 /**
  * @author Kaidan Gustave
  */
-class WebhookAppender: AppenderBase<ILoggingEvent>()
-{
-    private val client: WebhookClient
+class WebhookAppender: AppenderBase<ILoggingEvent>() {
+
+    private lateinit var client: WebhookClient
 
     init {
-        val lines = Paths.get(System.getProperty("user.dir"), "webhook.txt").toFile().readLines()
-        client = WebhookClientBuilder(lines[0].toLong(), lines[1])
+        val hocon = HoconConfigurationLoader.builder()
+            .setSource { this::class.java.getResourceAsStream("/bot.conf").bufferedReader(Charsets.UTF_8) }
+            .build().load()
+
+        val idNode = hocon.getNode("webhook", "id")
+        val tokenNode = hocon.getNode("webhook", "token")
+
+        if(idNode.isVirtual || tokenNode.isVirtual) {
+            isInitialized = false
+        } else {
+            isInitialized = true
+            client = WebhookClientBuilder(idNode.long, tokenNode.string)
                 .setThreadFactory { Thread(it, "WebhookLogger").apply { isDaemon = true } }
                 .build()
+        }
     }
 
     override fun append(event: ILoggingEvent?) {
         event ?: return
+        if(!isInitialized) return
         try {
             client.send {
                 title { event.loggerName.split(packageRegex).run { this[size - 1] } }
@@ -67,6 +79,8 @@ class WebhookAppender: AppenderBase<ILoggingEvent>()
     }
 
     companion object {
+        var isInitialized: Boolean = true
+
         private val packageRegex: Regex = Regex("\\.")
 
         private fun colorFromLevel(level: Level) = when(level) {

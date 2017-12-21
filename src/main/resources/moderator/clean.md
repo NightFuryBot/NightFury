@@ -18,4 +18,5 @@ An example is that by using the `bots` flag, you will inevitably delete all
 will not produce an effect where only messages from bots containing files are 
 deleted.
 
-As a final note, discord prevents the bulk deletion of messages older than 2 weeks by bots. As a result, NightFury, nor any other bot, is able to bulk clean a channel of messages that were sent two weeks prior to the command being used.
+As a final note, discord prevents the bulk deletion of messages older than 2 weeks by bots. As a result, NightFury, 
+nor any other bot, is able to bulk clean a channel of messages that were sent two weeks prior to the command being used.

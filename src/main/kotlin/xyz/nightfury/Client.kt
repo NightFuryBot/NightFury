@@ -172,7 +172,7 @@ class Client internal constructor(val prefix: String,      val devId: Long,
 
     private fun onReady(event: ReadyEvent) {
         event.jda.presence.status = OnlineStatus.ONLINE
-        event.jda.presence.game = Game.of("Type ${prefix}help")
+        event.jda.presence.game = Game.listening("type ${prefix}help")
 
         val si = event.jda.shardInfo
         log.info("${if(si == null) "NightFury" else "[${si.shardId} / ${si.shardTotal - 1}]"} is Online!")

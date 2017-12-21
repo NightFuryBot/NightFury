@@ -206,10 +206,7 @@ abstract class Command {
                 return
         }
 
-        category?.let {
-            if(it.canStopRun && !it.test(event))
-                return
-        }
+        category?.let { if(!it.test(event)) return }
 
         if(event.args.startsWith("help",true))
             return sendSubHelp(event, this)
@@ -388,23 +385,23 @@ enum class CommandLevel(private val predicate: (CommandEvent) -> Boolean) {
 }
 
 enum class Category(val title: String,
-                    private val predicate: (CommandEvent) -> Boolean,
-                    val canStopRun: Boolean = false) {
+                    private val predicate: (CommandEvent) -> Boolean) {
     // Primary Hierarchy
     SHENGAERO("Developer", { it.isDev }),
 
-    SERVER_OWNER("Server Owner", { SHENGAERO test it || (it.isFromType(ChannelType.TEXT) && it.member.isOwner) }),
+    SERVER_OWNER("Server Owner", { SHENGAERO.test(it) || (it.isFromType(ChannelType.TEXT) && it.member.isOwner) }),
 
-    ADMIN("Administrator", { SERVER_OWNER test it || (it.isFromType(ChannelType.TEXT) && it.member.hasPermission(Permission.ADMINISTRATOR)) }),
+    ADMIN("Administrator", { SERVER_OWNER.test(it) || (it.isFromType(ChannelType.TEXT) &&
+                                                       it.member.hasPermission(Permission.ADMINISTRATOR)) }),
 
-    MODERATOR("Moderator", { ADMIN test it || (it.isFromType(ChannelType.TEXT) &&
+    MODERATOR("Moderator", { ADMIN.test(it) || (it.isFromType(ChannelType.TEXT) &&
                              SQLModeratorRole.getRole(it.guild).run { this != null && it.member.roles.contains(this) })
     }),
 
     // Other Categories
 
-    MUSIC("Music", { SHENGAERO test it || (it.isFromType(ChannelType.TEXT) && SQLMusicWhitelist.isGuild(it.guild)) }, true),
-    NSFW("NSFW", { SHENGAERO test it || (it.isFromType(ChannelType.TEXT) && it.textChannel.isNSFW) }, true);
+    MUSIC("Music", { SHENGAERO test it || (it.isFromType(ChannelType.TEXT) && SQLMusicWhitelist.isGuild(it.guild)) }),
+    NSFW("NSFW", { SHENGAERO test it || (it.isFromType(ChannelType.TEXT) && it.textChannel.isNSFW) });
 
     infix fun test(event: CommandEvent) = predicate.invoke(event)
 }

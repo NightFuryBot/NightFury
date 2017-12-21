@@ -18,7 +18,6 @@ package xyz.nightfury
 
 import net.dv8tion.jda.core.Permission
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader
-import java.nio.file.Paths
 
 private typealias ConfigNode = ninja.leaping.configurate.commented.CommentedConfigurationNode
 
@@ -26,8 +25,9 @@ private typealias ConfigNode = ninja.leaping.configurate.commented.CommentedConf
  * @author Kaidan Gustave
  */
 class BotConfig {
+
     val conf: ConfigNode = hocon {
-        setPath(Paths.get(this::class.java.getResource("/bot.conf").toURI()))
+        setSource { this@BotConfig::class.java.getResourceAsStream("/bot.conf").bufferedReader(Charsets.UTF_8) }
         parseOptions.allowMissing = false
         renderOptions.comments = true
     }.load()
@@ -36,7 +36,7 @@ class BotConfig {
     private val database: ConfigNode = conf.getNode("database")
     private val databaseOptions: ConfigNode = database.getNode("options")
 
-    val prefix: String = bot.getNode("prefix").takeUnless { it.isVirtual }?.string ?: "|" // Default to |
+    val prefix: String = bot.getNode("prefix").takeUnless { it.isVirtual }?.string ?: "|"
     val devId: Long = bot.getNode("devID").takeUnless { it.isVirtual }?.long
                       ?: fail("Developer ID Node (bot.devID) was not detected!")
 
@@ -47,7 +47,7 @@ class BotConfig {
         ?.getList { it as String }?.joinToString(".")
     val dbotslistKey: String? = bot.getNode("keys", "dbotslist").takeUnless { it.isVirtual }
         ?.getList { it as String }?.joinToString(".")
-    val ytKey: String? = bot.getNode("keys", "ytkey").takeUnless { it.isVirtual }?.string
+    val ytKey: String? = bot.getNode("keys", "youtube").takeUnless { it.isVirtual }?.string
 
     val databaseURL: String = run {
         if(database.getNode("url").isVirtual)

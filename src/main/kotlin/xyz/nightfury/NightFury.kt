@@ -31,6 +31,7 @@ import xyz.nightfury.commands.music.*
 import xyz.nightfury.commands.other.E621Cmd
 import xyz.nightfury.commands.standard.*
 import xyz.nightfury.db.Database
+import xyz.nightfury.entities.logging.WebhookAppender
 import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.extensions.*
 import xyz.nightfury.jagtag.tagMethods
@@ -71,6 +72,10 @@ class NightFury {
     }
 
     init {
+        if(!WebhookAppender.isInitialized) {
+            LOG.info("Webhook Appender was not initialized!")
+        }
+
         val config = BotConfig()
 
         // Make initial connection
@@ -157,7 +162,7 @@ class NightFury {
             listener { DatabaseListener() }
             token    { config.token }
             status   { OnlineStatus.DO_NOT_DISTURB }
-            game     { "Starting Up..." }
+            watching { "Everything Start Up..." }
         }
     }
 

@@ -24,11 +24,11 @@ class Version {
 
 buildscript {
     ext {
-        kotlin_version = '1.2.0'
+        kotlin_version = '1.2.10'
         kotlinx_version = '0.19.3'
         shadow_version = '2.0.1'
-        jda_version = '1fe4e3c'
-        jda_utilities_version = 'f9a0402'
+        jda_version = '3.3.1_316'
+        jda_utilities_version = '1.9'
         lavaplayer_version = '1.2.45'
         h2_version = '1.4.196'
         logback_version = '1.2.3'
@@ -71,7 +71,7 @@ dependencies {
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
 
     // JDA
-    compile "com.github.Dv8FromTheWorld:JDA:$jda_version"
+    compile "net.dv8tion:JDA:$jda_version"
     compile "com.github.JDA-Applications:JDA-Utilities:$jda_utilities_version"
     compile "com.sedmelluq:lavaplayer:$lavaplayer_version"
 
@@ -80,7 +80,7 @@ dependencies {
 
     // API Requests
     compile 'org.jsoup:jsoup:1.10.2'
-    compile 'com.google.apis:google-api-services-youtube:v3-rev183-1.22.0'
+    compile 'com.google.apis:google-api-services-youtube:v3-rev189-1.23.0'
 
     // h2
     compile "com.h2database:h2:$h2_version"
@@ -135,7 +135,7 @@ allprojects {
         compileOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
         compileOnly "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
 
-        compileOnly "com.github.Dv8FromTheWorld:JDA:$jda_version"
+        compileOnly "net.dv8tion:JDA:$jda_version"
 
         // Logging
         compileOnly "ch.qos.logback:logback-classic:$logback_version"

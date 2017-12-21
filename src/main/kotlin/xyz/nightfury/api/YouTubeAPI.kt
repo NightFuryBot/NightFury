@@ -15,68 +15,70 @@
  */
 package xyz.nightfury.api
 
+import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.youtube.YouTube
 import org.slf4j.LoggerFactory
 import java.io.IOException
+import java.net.InetAddress
 
 /**
  * @author Kaidan Gustave
  */
-class YouTubeAPI(apiKey : String?) : AbstractAPICache<List<String>>()
-{
-    private companion object
-    {
+class YouTubeAPI(private val apiKey: String?): AbstractAPICache<List<String>>() {
+    private companion object {
         private val ytLog = LoggerFactory.getLogger("YouTube")
-        private var maxSearchResults = 20L
+        private val netTransport = NetHttpTransport()
+        private val jsonFactory = JacksonFactory.getDefaultInstance()
+        private val hostAddress = InetAddress.getLocalHost().hostAddress
+
+        var maxSearchResults = 20L
     }
-
-    private val youtube = YouTube.Builder(NetHttpTransport(),JacksonFactory(),{}).setApplicationName("NightFury").build()
-    private val search : YouTube.Search.List?
-
-    override val hoursToDecay: Long = 1
 
     val isEnabled: Boolean = apiKey != null
 
-    init {
-        search = try {
+    private val youtube = YouTube.Builder(netTransport, jsonFactory, {})
+        .setApplicationName("NightFury").build()
+
+    private val search : YouTube.Search.List? = if(apiKey == null) null else
+        try {
             youtube.search().list("id,snippet")
         } catch (e : IOException) {
             ytLog.error("Failed to initialize search: $e")
             null
         }
 
+    override val hoursToDecay = 1L
 
-        if(search != null) with(search)
-        {
+    fun search(query: String): List<String>? {
+        if(search == null) {
+            if(isEnabled) {
+                ytLog.warn("YouTube searcher initialization failed, search could not be performed!")
+            }
+
+            return null
+        }
+
+        getFromCache(query)?.let { return it }
+
+        with(search) {
+            q = query
+            maxResults = maxSearchResults
             key = apiKey
+            userIp = hostAddress
             type = "video"
             fields = "items(id/kind,id/videoId,snippet/title,snippet/thumbnails/default/url)"
         }
-    }
-
-    fun search(query : String) : List<String>?
-    {
-        if(search == null) {
-            if(isEnabled)
-                ytLog.warn("YouTube searcher initialization failed, search could not be performed!")
-            return null
-        }
-        val cached = getFromCache(query)
-        if(cached!=null)
-            return cached
-        val results = ArrayList<String>()
-        search.q = query
-        search.maxResults = maxSearchResults
 
         val response = try {
             search.execute()
-        } catch (e : IOException) {
-            ytLog.error("Search failure: $e")
+        } catch(e: GoogleJsonResponseException) {
+            ytLog.error("Search failure: ${e.message} - ${e.details.message}")
             return null
         }
-        response.items.stream().forEach { results.add(it.id.videoId) }
+
+        val results = response.items.map { it.id.videoId }
         addToCache(query,results)
         return results
     }

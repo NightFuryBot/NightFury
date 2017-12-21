@@ -39,7 +39,7 @@ class ShutdownCmd : Command()
     {
         event.replyWarning("Shutting Down...")
         event.jda.presence.status = OnlineStatus.DO_NOT_DISTURB
-        event.jda.presence.game = Game.of("Shutting Down...")
+        event.jda.presence.game = Game.playing("Shutting Down...")
         NightFury.LOG.info("Shutting Down...")
         synchronized(this) {
             try { Thread.sleep(2500) } catch (ignored: InterruptedException) {}
