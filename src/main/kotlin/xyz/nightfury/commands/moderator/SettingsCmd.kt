@@ -20,10 +20,7 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.entities.embed
 import net.dv8tion.jda.core.Permission
-import xyz.nightfury.db.SQLCases
-import xyz.nightfury.db.SQLModeratorRole
-import xyz.nightfury.db.SQLMutedRole
-import xyz.nightfury.db.SQLPrefixes
+import xyz.nightfury.db.*
 
 /**
  * @author Kaidan Gustave
@@ -59,19 +56,19 @@ class SettingsCmd : Command()
             field {
                 val modRole = SQLModeratorRole.getRole(guild)
                 this.name = "Moderator Role"
-                this.value = if(modRole!=null) modRole.name else "None"
+                this.value = modRole?.name ?: "None"
                 this.inline = true
             }
             field {
-                val modLog = SQLModeratorRole.getRole(guild)
-                this.name = "Moderator Log"
-                this.value = if(modLog!=null) modLog.asMention else "None"
+                val modLog = SQLModeratorLog.getChannel(guild)
+                this.name = "Moderation Log"
+                this.value = modLog?.name ?: "None"
                 this.inline = true
             }
             field {
                 val mutedRole = SQLMutedRole.getRole(guild)
                 this.name = "Muted Role"
-                this.value = if(mutedRole!=null) mutedRole.name else "None"
+                this.value = mutedRole?.name ?: "None"
                 this.inline = true
             }
             field {
