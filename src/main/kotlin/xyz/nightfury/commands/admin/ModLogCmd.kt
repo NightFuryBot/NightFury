@@ -61,6 +61,10 @@ private class ModLogSetCmd : Command()
             return@with this[0]
         }
 
+        if(!channel.canTalk()) {
+            return event.replyError("I cannot log moderation actions in ${channel.asMention} because I do not have the permission to send messages there!")
+        }
+
         SQLModeratorLog.setChannel(channel)
         event.replySuccess("Moderation log was set to ${channel.asMention}!")
     }

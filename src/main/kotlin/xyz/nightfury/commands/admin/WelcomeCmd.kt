@@ -72,7 +72,9 @@ private class WelcomeSetCmd : Command()
             return@with this[0]
         }
 
-        if(!channel.canTalk()) return event.replyError("I cannot set the welcome channel to ${channel.asMention} because I do not have the permission to send messages there!")
+        if(!channel.canTalk()) {
+            return event.replyError("I cannot set the welcome channel to ${channel.asMention} because I do not have the permission to send messages there!")
+        }
 
         SQLWelcomes.setWelcome(channel, args[1])
         event.replySuccess("Successfully set welcome message for this server!")

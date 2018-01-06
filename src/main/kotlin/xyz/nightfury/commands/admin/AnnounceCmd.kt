@@ -53,8 +53,7 @@ class AnnounceCmd : Command() {
                                                  "Use `$name channel` to set the announcements channel for this server!")
 
         if(!channel.canTalk()) {
-            return event.replyError("I cannot announce to ${channel.asMention} because I do not have permission to " +
-                                    "send messages there!")
+            return event.replyError("I cannot announce to ${channel.asMention} because I do not have permission to send messages there!")
         }
 
         val split = event.args.split(Arguments.commandArgs, 2)
