@@ -1,0 +1,1 @@
+This displays the specified user's avatar, or your own if no user is provided.

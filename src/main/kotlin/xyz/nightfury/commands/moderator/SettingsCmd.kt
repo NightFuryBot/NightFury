@@ -20,11 +20,13 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.entities.embed
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.*
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class SettingsCmd : Command()
 {
     init {

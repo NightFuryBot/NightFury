@@ -1,0 +1,1 @@
+This sets the moderation log for the server. NightFury will log moderation actions taken on the server such as kicks, bans, mutes, and cleans, as well as the reasons for the actions.

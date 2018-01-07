@@ -21,12 +21,14 @@ import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLCustomCommands
 import xyz.nightfury.*
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLGlobalTags
 import xyz.nightfury.db.SQLLocalTags
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class CustomCommandCmd(waiter: EventWaiter) : NoBaseExecutionCommand()
 {
     init {
@@ -34,13 +36,6 @@ class CustomCommandCmd(waiter: EventWaiter) : NoBaseExecutionCommand()
         this.aliases = arrayOf("cc", "customcommand")
         this.arguments = "[Function]"
         this.help = "Manage the server's custom commands."
-        this.documentation =
-            "Custom Commands are an easy way to create super simple" +
-            "commands for a server.\n" +
-            "In addition to this, custom commands use JagTag syntax in " +
-            "order to process syntax structures such as `{@user}` into a " +
-            "user mention. Listings and descriptions for all structures is " +
-            "available at ${NightFury.GITHUB}wiki"
         this.guildOnly = true
         this.category = Category.ADMIN
         this.children = arrayOf(

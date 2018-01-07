@@ -16,6 +16,7 @@
 package xyz.nightfury.commands.admin
 
 import xyz.nightfury.*
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLLevel
 import xyz.nightfury.resources.Arguments
@@ -23,6 +24,7 @@ import xyz.nightfury.resources.Arguments
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class LevelCmd : NoBaseExecutionCommand()
 {
     init {

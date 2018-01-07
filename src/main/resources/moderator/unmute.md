@@ -1,0 +1,1 @@
+This will remove the muted role from the specified user.

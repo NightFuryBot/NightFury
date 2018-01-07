@@ -21,6 +21,7 @@ import net.dv8tion.jda.core.entities.Member
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLProfiles
 import xyz.nightfury.entities.Profile
@@ -31,6 +32,7 @@ import java.time.*
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class ProfileCmd : Command() {
     init {
         this.name = "Profile"
@@ -175,7 +177,7 @@ private class ProfileSetCmd : Command() {
                     try {
                         val groups = birthdayMatch.groupValues
                         val yearInt = groups[1].toInt()
-                        // lets be real, no 87 year old is using discord
+                        // lets be real, no 88 year old is using discord
                         if(Year.now().value < yearInt || yearInt < 1930) {
                             return event.replyError("`$yearInt` is not a valid year!")
                         }

@@ -1,0 +1,1 @@
+This will kick a user from the server. They can still rejoin with a new invite.

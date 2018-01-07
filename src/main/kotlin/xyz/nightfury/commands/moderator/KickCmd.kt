@@ -23,11 +23,13 @@ import xyz.nightfury.entities.then
 import xyz.nightfury.extensions.kick
 import xyz.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.entities.ModLogger
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @MustHaveArguments("Mention a user or provide a user ID to kick.")
 class KickCmd : Command() {
 

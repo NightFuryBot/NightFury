@@ -23,12 +23,14 @@ import xyz.nightfury.entities.then
 import xyz.nightfury.extensions.removeRole
 import xyz.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLMutedRole
 import xyz.nightfury.entities.ModLogger
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @MustHaveArguments("Mention a user or provide a user ID to unmute.")
 class UnmuteCmd : Command()
 {

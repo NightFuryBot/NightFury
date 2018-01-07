@@ -19,11 +19,13 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.NoBaseExecutionCommand
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLRolePersist
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class ToggleCmd : NoBaseExecutionCommand() {
     init {
         name = "Toggle"

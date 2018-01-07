@@ -1,0 +1,1 @@
+This searches the web for the given query and returns the top result.

@@ -16,6 +16,7 @@
 package xyz.nightfury.commands.admin
 
 import xyz.nightfury.*
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLWelcomes
 import xyz.nightfury.extensions.findTextChannels
@@ -25,6 +26,7 @@ import xyz.nightfury.extensions.noMatch
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class WelcomeCmd : NoBaseExecutionCommand()
 {
     init {

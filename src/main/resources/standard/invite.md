@@ -1,0 +1,1 @@
+This gets an invite link for NightFury.

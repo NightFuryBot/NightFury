@@ -17,9 +17,14 @@ package xyz.nightfury.commands.standard
 
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.extensions.edit
 import java.time.temporal.ChronoUnit
 
+/**
+ * @author Kaidan Gustave
+ */
+@HasDocumentation
 class PingCmd : Command() {
     init {
         this.name = "Ping"

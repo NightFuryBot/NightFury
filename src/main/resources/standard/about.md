@@ -1,0 +1,1 @@
+This displays information about the bot and statistics.

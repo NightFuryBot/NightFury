@@ -22,10 +22,12 @@ import xyz.nightfury.extensions.readableFormat
 import xyz.nightfury.resources.Arguments
 import xyz.nightfury.resources.Emojis
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.annotations.HasDocumentation
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class EmoteCmd : Command() {
     companion object {
         private val bullet = "\uD83D\uDD39"

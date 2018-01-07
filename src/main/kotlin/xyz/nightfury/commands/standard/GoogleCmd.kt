@@ -19,12 +19,14 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.APICache
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.api.GoogleAPI
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @[APICache MustHaveArguments("Specify what to search Google for.")]
 class GoogleCmd(private val api: GoogleAPI) : Command() {
     init {

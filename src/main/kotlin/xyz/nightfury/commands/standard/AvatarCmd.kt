@@ -22,10 +22,12 @@ import xyz.nightfury.entities.embed
 import xyz.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
+import xyz.nightfury.annotations.HasDocumentation
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class AvatarCmd : Command() {
     init {
         this.name = "Avatar"

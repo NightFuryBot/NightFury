@@ -29,6 +29,7 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.extensions.randomNextInt
 import java.awt.Color
 import java.util.concurrent.TimeUnit
@@ -36,6 +37,7 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @APICache
 @AutoInvokeCooldown
 @MustHaveArguments("Provide up to 6 tags or a number of posts followed by the tags.")
@@ -56,11 +58,6 @@ class E621Cmd(val e621 : E621API, val waiter: EventWaiter) : Command()
         this.guildOnly = true
         this.category = Category.NSFW
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)
-        this.documentation =
-            "Only up to 6 tags are allowed per request. The maximum number of posts " +
-            "retrievable is 320 and the default 100.\n\n" +
-
-            "**This command is only available in NSFW channels.**"
     }
 
     override fun execute(event: CommandEvent)

@@ -26,6 +26,7 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLLimits
 import xyz.nightfury.db.SQLRoleMe
 import kotlin.streams.toList
@@ -33,22 +34,13 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @MustHaveArguments("Specify a RoleMe role to give or remove!")
 class RoleMeCmd(waiter: EventWaiter) : Command() {
     init {
         this.name = "RoleMe"
         this.arguments = "[Role]"
         this.help = "Give yourself or remove a RoleMe role."
-        this.documentation =
-            "RoleMe roles are self-give/remove roles for normal members of a server.\n" +
-            "Simply using `RoleMe [Role]` will give the user the `[Role]` requested or remove " +
-            "it if they already possess the `[Role]`, so long as it is a registered RoleMe role.\n\n" +
-
-            "RoleMe roles must be registered by an Administrator using the `Add` sub-command.\n" +
-            "Conversely, registered RoleMe roles can be unregistered by an Administrator using " +
-            "the `Remove` sub-command.\n" +
-            "For those looking to limit the number of RoleMe roles a user can have, the `Limit` " +
-            "sub-command provides a means of doing this."
         this.cooldown = 10
         this.guildOnly = true
         this.cooldownScope = CooldownScope.USER_GUILD

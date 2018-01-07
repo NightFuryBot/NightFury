@@ -1,0 +1,1 @@
+This will give the Muted role to the specified user. The Muted role may be setup however you wish, although it is recommended to use `|mute setup`. 
