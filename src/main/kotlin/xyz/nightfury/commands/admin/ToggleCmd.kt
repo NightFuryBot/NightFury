@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 Kaidan Gustave
+ * Copyright 2017 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,9 @@ class ToggleCmd : NoBaseExecutionCommand() {
         help = "Toggles sensitive server functions. [BETA]"
         category = Category.SERVER_OWNER
         guildOnly = true
-        children = arrayOf(ToggleRolePersistCmd())
+        children = arrayOf(
+                ToggleRolePersistCmd()
+        )
     }
 }
 
