@@ -19,12 +19,14 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.APICache
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.api.YouTubeAPI
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @[APICache MustHaveArguments("Specify what to search YouTube for.")]
 class YouTubeCmd(val ytAPI: YouTubeAPI) : Command() {
     init {

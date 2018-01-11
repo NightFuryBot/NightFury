@@ -77,7 +77,7 @@ abstract class Command {
         this::class.findAnnotation<HasDocumentation>() ?: return@lazy null
 
         javaClass.getResourceAsStream(("/${category?.title?.toLowerCase()?.replace(Arguments.commandArgs, "-") ?: "standard"}" +
-                                      "/${fullname.replace(Arguments.commandArgs, "-").toLowerCase()}.md").also {println(it)}).use {
+                                      "/${fullname.replace(Arguments.commandArgs, "-").toLowerCase()}.md"))?.use {
             InputStreamReader(it).use {
                 it.readText().split(Regex("\n\n")).joinToString(separator = "\n\n") {
                     it.replace(Regex("\\s*\n\\s*"), "\n").replace("\n", " ").replace("<br> ", "\n")
@@ -139,7 +139,7 @@ abstract class Command {
                 if(help != "No help available.")
                     append("\n**Function:** `$help`\n")
 
-                command.documentation?.let { append("\n$it\n") }
+                command.docs?.let { append("\n$it\n") }
 
                 if(children.isNotEmpty()) {
                     append("\n**Sub-Commands:**\n\n")

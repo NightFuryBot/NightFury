@@ -24,10 +24,12 @@ import net.dv8tion.jda.core.JDAInfo
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import org.slf4j.LoggerFactory
+import xyz.nightfury.annotations.HasDocumentation
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class AboutCmd(vararg val permissions : Permission) : Command() {
     private var oauthLink: String? = null
     private var isPublic: Boolean = true

@@ -1,0 +1,1 @@
+This will unban a user from the server, allowing them to rejoin the server.

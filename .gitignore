@@ -3,6 +3,7 @@
 /out/
 /src/test/
 /src/main/java/
+*.iml
 
 # Gradle Files
 /.gradle/
@@ -19,6 +20,7 @@
 *.h2.db
 *.lock.db
 *.trace.db
+.DS_STORE
 
 # Misc Files
 /wiki/

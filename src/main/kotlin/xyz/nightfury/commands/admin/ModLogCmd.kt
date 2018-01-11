@@ -23,11 +23,13 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.NoBaseExecutionCommand
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLModeratorLog
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class ModLogCmd : NoBaseExecutionCommand()
 {
     init {
@@ -35,7 +37,9 @@ class ModLogCmd : NoBaseExecutionCommand()
         this.help = "Manages the server's moderation log."
         this.category = Category.ADMIN
         this.guildOnly = true
-        this.children = arrayOf(ModLogSetCmd())
+        this.children = arrayOf(
+                ModLogSetCmd()
+        )
     }
 }
 
@@ -59,6 +63,10 @@ private class ModLogSetCmd : Command()
             if(this.size>1)
                 return event.replyError(this.multipleTextChannels(event.args))
             return@with this[0]
+        }
+
+        if(!channel.canTalk()) {
+            return event.replyError("I cannot log moderation actions in ${channel.asMention} because I do not have the permission to send messages there!")
         }
 
         SQLModeratorLog.setChannel(channel)

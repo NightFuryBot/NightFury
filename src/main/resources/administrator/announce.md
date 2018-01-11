@@ -1,0 +1,1 @@
+This makes an announcement that mentions all users with the provided role, even if the role is not normally mentionable. The message will be appended with the role mention.

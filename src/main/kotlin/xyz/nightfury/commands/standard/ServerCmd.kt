@@ -30,6 +30,7 @@ import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.User
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.*
 import xyz.nightfury.entities.promise
 import xyz.nightfury.extensions.*
@@ -39,16 +40,13 @@ import java.util.Comparator
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class ServerCmd(waiter: EventWaiter, invisTracker: InvisibleTracker) : Command() {
     init {
         this.name = "Server"
         this.aliases = arrayOf("guild")
         this.arguments = "<Info Category>"
         this.help = "Gets info on the server."
-        this.documentation =
-            "What the command outputs is based on one of the sub-commands listed " +
-            "below. If no sub-command is specified, this will generate a menu where you can select which " +
-            "category to get info from."
         this.guildOnly = true
         this.cooldown = 10
         this.cooldownScope = CooldownScope.USER_GUILD

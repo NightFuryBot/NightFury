@@ -27,12 +27,14 @@ import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.User
+import xyz.nightfury.annotations.HasDocumentation
 import java.time.format.DateTimeFormatter
 import java.util.Comparator
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @AutoInvokeCooldown
 class InfoCmd(private val invisTracker: InvisibleTracker) : Command() {
     companion object {
@@ -60,8 +62,6 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command() {
         this.aliases = arrayOf("i", "information")
         this.arguments = "<User>"
         this.help = "Gets info on a user."
-        this.documentation =
-            "Not specifying a user will get info on the person using the command."
         this.cooldown = 5
         this.cooldownScope = CooldownScope.USER_GUILD
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)

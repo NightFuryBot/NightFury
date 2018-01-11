@@ -21,6 +21,7 @@ import net.dv8tion.jda.core.entities.TextChannel
 import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLAnnouncementChannel
 import xyz.nightfury.db.SQLAnnouncementRoles
@@ -30,6 +31,7 @@ import xyz.nightfury.resources.Arguments
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @MustHaveArguments
 class AnnounceCmd : Command() {
     init {
@@ -49,12 +51,11 @@ class AnnounceCmd : Command() {
 
     override fun execute(event: CommandEvent) {
         val channel = SQLAnnouncementChannel.getChannel(event.guild)
-                      ?: return event.replyError("**No announcements channel has been set!**\n" +
+                      ?: return event.replyError("**No announcement channel has been set!**\n" +
                                                  "Use `$name channel` to set the announcements channel for this server!")
 
         if(!channel.canTalk()) {
-            return event.replyError("I cannot announce to ${channel.asMention} because I do not have permission to " +
-                                    "send messages there!")
+            return event.replyError("I cannot announce to ${channel.asMention} because I do not have permission to send messages there!")
         }
 
         val split = event.args.split(Arguments.commandArgs, 2)
@@ -111,7 +112,7 @@ class AnnounceCmd : Command() {
                 append(msg)
             } then {
                 if(index == msgs.size - 1) {
-                    event.replySuccess("Successfully send announcement to ${channel.asMention}!")
+                    event.replySuccess("Successfully sent announcement to ${channel.asMention}!")
                 }
             } catch {
                 if(isOkay)
@@ -154,8 +155,7 @@ private class AnnounceChannelCmd : Command() {
                 if(it == channel) {
                     return event.replyError("${it.asMention} is already the announcement channel for this server!")
                 } else if(!it.canTalk()) {
-                    return event.replyError("${it.asMention} cannot be set as the announcement channel because " +
-                                            "I do not have permission to send messages to it!")
+                    return event.replyError("${it.asMention} cannot be set as the announcement channel because I do not have permission to send messages there!")
                 }
             }
         }

@@ -19,10 +19,12 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import net.dv8tion.jda.core.entities.ChannelType
+import xyz.nightfury.annotations.HasDocumentation
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class HelpCmd : Command() {
     init {
         this.name = "Help"

@@ -25,16 +25,20 @@ import xyz.nightfury.extensions.embed
 import xyz.nightfury.extensions.message
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.resources.Arguments
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @[APICache MustHaveArguments("Specify what to search for.")]
 class ImageCmd(private val api: GoogleImageAPI) : Command() {
     init {
         this.name = "Image"
+        this.aliases = arrayOf("img")
         this.arguments = "[Query]"
+        this.help = "Searches for an image."
         this.guildOnly = false
         this.cooldown = 60
         this.cooldownScope = CooldownScope.USER

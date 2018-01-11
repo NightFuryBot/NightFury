@@ -19,10 +19,12 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.annotations.HasDocumentation
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class InviteCmd(vararg requestedPerms : Permission) : Command() {
     companion object {
         private var perms : Long = 0

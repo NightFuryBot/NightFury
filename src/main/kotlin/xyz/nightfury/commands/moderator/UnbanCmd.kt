@@ -24,10 +24,12 @@ import xyz.nightfury.extensions.formattedName
 import xyz.nightfury.extensions.multipleUsers
 import xyz.nightfury.extensions.noMatch
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.annotations.HasDocumentation
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @MustHaveArguments("Specify a banned user to unban!")
 class UnbanCmd : Command()
 {

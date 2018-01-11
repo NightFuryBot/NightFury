@@ -32,11 +32,13 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.resources.Arguments
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @MustHaveArguments("Specify the name of a tag to call.")
 class TagCommand(waiter: EventWaiter): Command() {
     init {
@@ -44,13 +46,6 @@ class TagCommand(waiter: EventWaiter): Command() {
         this.aliases = arrayOf("t")
         this.arguments = "[Tag Name] <Tag Args>"
         this.help = "Calls a tag."
-        this.documentation =
-            "Tags are a way to store text in a easy-to-call way.\n" +
-            "In addition to this, tags use JagTag syntax in order to " +
-            "process syntax structures such as `{@user}` into a user " +
-            "mention.\n" +
-            "Listings and descriptions for all structures is " +
-            "available at **${NightFury.GITHUB}wiki**"
         this.guildOnly = false
         this.children = arrayOf(
                 TagCreateGlobalCmd(),

@@ -20,11 +20,13 @@ import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.embed
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLPrefixes
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class PrefixCmd : NoBaseExecutionCommand() {
     init {
         this.name = "Prefix"
@@ -33,7 +35,6 @@ class PrefixCmd : NoBaseExecutionCommand() {
         this.guildOnly = true
         this.category = Category.ADMIN
         this.children = arrayOf(
-
                 PrefixListCmd(),
 
                 PrefixAddCmd(),

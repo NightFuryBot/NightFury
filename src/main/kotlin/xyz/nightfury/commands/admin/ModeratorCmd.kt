@@ -27,6 +27,7 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.NoBaseExecutionCommand
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLModeratorRole
 import java.util.Comparator
 import kotlin.streams.toList
@@ -34,6 +35,7 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class ModeratorCmd : NoBaseExecutionCommand()
 {
     init {
@@ -43,18 +45,6 @@ class ModeratorCmd : NoBaseExecutionCommand()
         this.help = "Add, remove, and manage moderators for this ser"
         this.guildOnly = true
         this.category = Category.ADMIN
-        this.documentation =
-            "You can use this command to manage moderators on the server.\n\n" +
-
-            "`|Add` can be used to add a member as a moderator, while `|Remove` " +
-            "can be used to remove one.\n" +
-            "Server moderation is an integral part of communities in discord.\n" +
-            "Check out the links below for more info on how to properly structure " +
-            "your server's permission hierarchy and roles.\n\n" +
-
-            "https://support.discordapp.com/hc/en-us/articles/211056628--Video-Make-an-Admin-Mod-and-Private-Channel-with-Discord-Permissions\n" +
-            "https://support.discordapp.com/hc/en-us/articles/206141927-How-is-the-permission-hierarchy-structured-\n" +
-            "https://support.discordapp.com/hc/en-us/articles/206029707-How-do-I-set-up-Permissions-"
         this.children = arrayOf(
                 ModeratorListBaseCmd.ModeratorListCmd(),
                 ModeratorOnlineCmd(),

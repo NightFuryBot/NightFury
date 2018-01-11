@@ -21,11 +21,13 @@ import xyz.nightfury.extensions.multipleTextChannels
 import xyz.nightfury.extensions.noMatch
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.*
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.entities.starboard.StarboardHandler
 
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @Suppress("unused")
 class StarboardCmd : NoBaseExecutionCommand() {
     init {

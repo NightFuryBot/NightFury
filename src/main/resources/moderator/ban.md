@@ -1,0 +1,1 @@
+This will ban a user from the server and delete their messages within the past 7 days.

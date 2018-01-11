@@ -18,6 +18,7 @@ package xyz.nightfury.commands.moderator
 import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLCases
 import xyz.nightfury.db.SQLModeratorLog
@@ -30,6 +31,7 @@ import xyz.nightfury.extensions.isSelf
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @MustHaveArguments("Provide a reason to give or specify a case number followed by a reason.")
 class ReasonCmd : Command() {
     companion object {

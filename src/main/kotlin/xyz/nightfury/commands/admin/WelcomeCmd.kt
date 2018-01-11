@@ -16,6 +16,7 @@
 package xyz.nightfury.commands.admin
 
 import xyz.nightfury.*
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLWelcomes
 import xyz.nightfury.extensions.findTextChannels
@@ -25,6 +26,7 @@ import xyz.nightfury.extensions.noMatch
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 class WelcomeCmd : NoBaseExecutionCommand()
 {
     init {
@@ -72,7 +74,9 @@ private class WelcomeSetCmd : Command()
             return@with this[0]
         }
 
-        if(!channel.canTalk()) return event.replyError("I cannot speak in the channel you specified!")
+        if(!channel.canTalk()) {
+            return event.replyError("I cannot set the welcome channel to ${channel.asMention} because I do not have the permission to send messages there!")
+        }
 
         SQLWelcomes.setWelcome(channel, args[1])
         event.replySuccess("Successfully set welcome message for this server!")

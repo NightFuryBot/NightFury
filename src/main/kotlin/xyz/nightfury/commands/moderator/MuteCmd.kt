@@ -22,6 +22,7 @@ import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.then
 import xyz.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLMutedRole
 import xyz.nightfury.entities.ModLogger
 import java.awt.Color
@@ -29,6 +30,7 @@ import java.awt.Color
 /**
  * @author Kaidan Gustave
  */
+@HasDocumentation
 @MustHaveArguments("Mention a user or provide a user ID to mute.")
 class MuteCmd : Command() {
 
