@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,3 +81,4 @@ fun thread(start: Boolean = true,
 @Suppress("NOTHING_TO_INLINE")
 infix inline fun String.doesNotMatch(regex: Regex) = !(this matches regex)
 
+inline fun <reified T> Boolean.then(value: T, otherwise: T): T = if(this) value else otherwise

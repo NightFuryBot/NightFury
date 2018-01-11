@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package xyz.nightfury.commands.dev
 import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
+import xyz.nightfury.db.SQLJoinWhitelist
 import xyz.nightfury.music.MusicManager
 import xyz.nightfury.db.SQLMusicWhitelist
 
@@ -55,8 +56,19 @@ class WhitelistCmd(private val musicManager: MusicManager) : Command()
                     }
                 }
             }
+            Type.JOIN -> {
+                SQLJoinWhitelist.apply {
+                    if(isGuild(event.guild)) {
+                        removeGuild(event.guild)
+                        event.replySuccess("Removed join whitelisting from **${event.guild.name}**!")
+                    } else {
+                        addGuild(event.guild)
+                        event.replySuccess("Added join whitelisting to **${event.guild.name}**!")
+                    }
+                }
+            }
         }
     }
 
-    enum class Type { MUSIC }
+    enum class Type { MUSIC, JOIN }
 }

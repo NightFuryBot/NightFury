@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,9 @@ class EmoteCmd : Command() {
                 color { event.member?.color }
 
                 append("$bullet **Name:** ${emote.name}\n")
-                if(emote.guild != null)
-                    append("$bullet **Guild:** ${emote.guild.name} (ID: ${emote.guild.id})\n")
+
+                emote.guild?.let { append("$bullet **Guild:** ${it.name} (ID: ${it.id})\n") }
+
                 append("$bullet **Creation Date:** ${emote.creationTime.readableFormat}\n")
                 append("$bullet **ID:** ${emote.id}\n")
                 append("$bullet **Managed:** ${if(emote.isManaged) Emojis.GREEN_TICK else Emojis.RED_TICK}")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package xyz.nightfury.entities
 
+import net.dv8tion.jda.core.Permission
 import xyz.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Member
@@ -74,7 +75,7 @@ object ModLogger {
             case.reason = reason
 
         val log = SQLModeratorLog.getChannel(guild) ?: return
-        if(log.canTalk()) {
+        if(guild.selfMember.hasPermission(log, Permission.MESSAGE_WRITE)) {
             val formatted = Case.FORMAT.format(
                 case.number,
                 case.action.emoji,
@@ -82,7 +83,7 @@ object ModLogger {
                 case.action.action,
                 target.name,
                 target.idLong,
-                reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
+                reason ?: "${guild.getMember(mod)!!.asMention} please use `reason` command at your earliest convenience!"
             )
 
             log.sendMessage(formatted) then {
@@ -107,7 +108,7 @@ object ModLogger {
             case.reason = reason
 
         val log = SQLModeratorLog.getChannel(guild) ?: return
-        if(log.canTalk()) {
+        if(guild.selfMember.hasPermission(log, Permission.MESSAGE_WRITE)) {
             val formatted = Case.FORMAT.format(
                 case.number,
                 case.action.emoji,
@@ -115,7 +116,7 @@ object ModLogger {
                 case.action.action,
                 target.name,
                 target.idLong,
-                reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
+                reason ?: "${guild.getMember(mod)!!.asMention} please use `reason` command at your earliest convenience!"
             )
 
             log.sendMessage(formatted) then {
@@ -139,7 +140,7 @@ object ModLogger {
             case.reason = reason
 
         val log = SQLModeratorLog.getChannel(guild) ?: return
-        if(log.canTalk()) {
+        if(guild.selfMember.hasPermission(log, Permission.MESSAGE_WRITE)) {
             val formatted = Case.FORMAT.format(
                 case.number,
                 case.action.emoji,
@@ -147,7 +148,7 @@ object ModLogger {
                 case.action.action,
                 target.name,
                 target.idLong,
-                reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
+                reason ?: "${guild.getMember(mod)!!.asMention} please use `reason` command at your earliest convenience!"
             )
 
             log.sendMessage(formatted) then {
@@ -171,7 +172,7 @@ object ModLogger {
             case.reason = reason
 
         val log = SQLModeratorLog.getChannel(guild) ?: return
-        if(log.canTalk()) {
+        if(guild.selfMember.hasPermission(log, Permission.MESSAGE_WRITE)) {
             val formatted = Case.FORMAT.format(
                 case.number,
                 case.action.emoji,
@@ -179,7 +180,7 @@ object ModLogger {
                 case.action.action,
                 target.name,
                 target.idLong,
-                reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
+                reason ?: "${guild.getMember(mod)!!.asMention} please use `reason` command at your earliest convenience!"
             )
 
             log.sendMessage(formatted) then {
@@ -203,7 +204,7 @@ object ModLogger {
             case.reason = reason
 
         val log = SQLModeratorLog.getChannel(guild) ?: return
-        if(log.canTalk()) {
+        if(guild.selfMember.hasPermission(log, Permission.MESSAGE_WRITE)) {
             val formatted = Case.FORMAT.format(
                 case.number,
                 case.action.emoji,
@@ -211,7 +212,7 @@ object ModLogger {
                 case.action.action,
                 target.name,
                 target.idLong,
-                reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
+                reason ?: "${guild.getMember(mod)!!.asMention} please use `reason` command at your earliest convenience!"
             )
 
             log.sendMessage(formatted) then {
@@ -234,7 +235,7 @@ object ModLogger {
             case.reason = reason
 
         val log = SQLModeratorLog.getChannel(guild) ?: return
-        if(log.canTalk()) {
+        if(guild.selfMember.hasPermission(log, Permission.MESSAGE_WRITE)) {
             val formatted = Case.FORMAT.format(
                 case.number,
                 case.action.emoji,
@@ -242,7 +243,7 @@ object ModLogger {
                 case.action.action.format(number),
                 target.name,
                 target.idLong,
-                reason ?: "${guild.getMember(mod).asMention} please use `reason` command at your earliest convenience!"
+                reason ?: "${guild.getMember(mod)!!.asMention} please use `reason` command at your earliest convenience!"
             )
             log.sendMessage(formatted) then {
                 case.messageId = this?.idLong ?: return@then

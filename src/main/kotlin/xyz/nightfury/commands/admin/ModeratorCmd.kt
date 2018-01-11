@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -202,7 +202,7 @@ abstract class ModeratorListBaseCmd : Command()
             title { "**Moderators On ${event.guild.name}**" }
             color = event.selfMember.color
             mods.forEach {
-                append("${event.jda.getEmoteById(it.onlineStatus.emoteId).asMention} ")
+                append("${event.jda.getEmoteById(it.onlineStatus.emoteId)!!.asMention} ")
                 append(it.user.formattedName(true))
                 when
                 {
@@ -261,7 +261,7 @@ private class ModeratorOnlineCmd : Command()
             title { "**Moderators On ${event.guild.name}**" }
             color = event.selfMember.color
             mods.forEach {
-                append("${event.jda.getEmoteById(it.onlineStatus.emoteId).asMention} ")
+                append("${event.jda.getEmoteById(it.onlineStatus.emoteId)!!.asMention} ")
                 append(it.user.formattedName(true))
                 when
                 {

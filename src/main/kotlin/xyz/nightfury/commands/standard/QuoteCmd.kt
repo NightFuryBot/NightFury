@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ class QuoteCmd : Command() {
             1 -> {
                 channel = event.textChannel
                 message = try {
-                    channel.getMessageById(split[0].toLong())?.complete()
+                    channel.getMessageById(split[0].toLong()).complete()
                 } catch (e: NumberFormatException) {
                     return event.replyError(INVALID_ARGS_ERROR.format("\"${split[0]}\" is not a valid message ID"))
                 } catch (e : Exception) {
@@ -66,7 +66,7 @@ class QuoteCmd : Command() {
                 }
 
                 message = try {
-                    channel.getMessageById(split[1].toLong())?.complete()
+                    channel.getMessageById(split[1].toLong()).complete()
                 } catch (e: NumberFormatException) {
                     return event.replyError(INVALID_ARGS_ERROR.format("\"${split[1]}\" is not a valid message ID"))
                 } catch (e : Exception) {
@@ -87,7 +87,7 @@ class QuoteCmd : Command() {
 
             description {  message.contentRaw  }
             time        { message.creationTime }
-            color       { message.member.color }
+            color       { message.member?.color }
         })
 
         event.invokeCooldown()

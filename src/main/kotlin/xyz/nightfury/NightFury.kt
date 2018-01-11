@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package xyz.nightfury
 
 import com.jagrosh.jagtag.JagTag
 import net.dv8tion.jda.core.*
-import net.dv8tion.jda.core.requests.SessionReconnectQueue
+import net.dv8tion.jda.core.utils.SessionControllerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.nightfury.api.E621API
@@ -152,17 +152,18 @@ class NightFury {
             WhitelistCmd(musicManager))
 
         JDABuilder(AccountType.BOT) buildAsync {
-            manager  { AsyncEventManager() }
-            listener { client }
-            listener { invisTracker }
-            listener { musicManager }
-            listener { StarboardListener() }
-            listener { waiter }
-            listener { AutoLoggingListener() }
-            listener { DatabaseListener() }
-            token    { config.token }
-            status   { OnlineStatus.DO_NOT_DISTURB }
-            watching { "Everything Start Up..." }
+            contextMap { null }
+            manager    { AsyncEventManager() }
+            listener   { client }
+            listener   { invisTracker }
+            listener   { musicManager }
+            listener   { StarboardListener() }
+            listener   { waiter }
+            listener   { AutoLoggingListener() }
+            listener   { DatabaseListener() }
+            token      { config.token }
+            status     { OnlineStatus.DO_NOT_DISTURB }
+            watching   { "Everything Start Up..." }
         }
     }
 
@@ -174,8 +175,7 @@ class NightFury {
     @Suppress("UNUSED")
     private inline fun <reified T: JDABuilder> T.buildAsync(shards: Int, lazy: JDABuilder.() -> Unit) {
         lazy()
-        setShardedRateLimiter(ShardedRateLimiter())
-        setReconnectQueue(SessionReconnectQueue())
+        sessionController { SessionControllerAdapter() }
         for(i in 0 until shards) {
             useSharding(i, shards)
             buildAsync()

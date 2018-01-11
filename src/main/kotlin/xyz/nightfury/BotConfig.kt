@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,7 @@ import ninja.leaping.configurate.hocon.HoconConfigurationLoader
 
 private typealias ConfigNode = ninja.leaping.configurate.commented.CommentedConfigurationNode
 
-/**
- * @author Kaidan Gustave
- */
 class BotConfig {
-
     val conf: ConfigNode = hocon {
         setSource { this@BotConfig::class.java.getResourceAsStream("/bot.conf").bufferedReader(Charsets.UTF_8) }
         parseOptions.allowMissing = false

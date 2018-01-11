@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,7 @@ import xyz.nightfury.db.SQLLocalTags
  * @author Kaidan Gustave
  */
 @HasDocumentation
-class CustomCommandCmd(waiter: EventWaiter) : NoBaseExecutionCommand()
-{
+class CustomCommandCmd(waiter: EventWaiter): NoBaseExecutionCommand() {
     init {
         this.name = "CCommand"
         this.aliases = arrayOf("cc", "customcommand")
@@ -49,8 +48,7 @@ class CustomCommandCmd(waiter: EventWaiter) : NoBaseExecutionCommand()
 }
 
 @MustHaveArguments("Specify arguments in the format `[Command Name] [Command Content]`.")
-private class CustomCommandAddCmd : Command()
-{
+private class CustomCommandAddCmd : Command() {
     init {
         this.name = "Add"
         this.fullname = "CCommand Add"
@@ -62,12 +60,10 @@ private class CustomCommandAddCmd : Command()
         this.guildOnly = true
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val parts = event.args.split(Regex("\\s+"),2)
 
-        val error = when
-        {
+        val error = when {
             parts[0].length>50 ->
                 "**Custom Command names cannot exceed 50 characters in length!**\n${SEE_HELP.format(event.client.prefix, fullname)}"
             event.client.commands[parts[0]]!=null ->
@@ -95,8 +91,7 @@ private class CustomCommandAddCmd : Command()
 }
 
 @MustHaveArguments("Specify a custom command you own to remove.")
-private class CustomCommandRemoveCmd : Command()
-{
+private class CustomCommandRemoveCmd : Command() {
     init {
         this.name = "Remove"
         this.fullname = "CCommand Remove"
@@ -106,8 +101,7 @@ private class CustomCommandRemoveCmd : Command()
         this.guildOnly = true
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val name = event.args.split(Regex("\\s+"))[0]
         if(event.customCommands.getContentFor(name, event.guild).isNotEmpty()) {
             event.customCommands.remove(name, event.guild)
@@ -119,8 +113,7 @@ private class CustomCommandRemoveCmd : Command()
 }
 
 @MustHaveArguments("Specify the name of the tag to import.")
-private class CustomCommandImportCmd : Command()
-{
+private class CustomCommandImportCmd : Command() {
     init {
         this.name = "Import"
         this.fullname = "CCommand Import"
@@ -132,8 +125,7 @@ private class CustomCommandImportCmd : Command()
         this.guildOnly = true
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val name = event.args
         if(!SQLLocalTags.isTag(name, event.guild)) {
             if(!SQLGlobalTags.isTag(name)) {
@@ -162,8 +154,7 @@ private class CustomCommandImportCmd : Command()
 }
 
 @AutoInvokeCooldown
-private class CustomCommandListCmd(waiter: EventWaiter) : Command()
-{
+private class CustomCommandListCmd(waiter: EventWaiter): Command() {
     init {
         this.name = "List"
         this.fullname = "CCommand List"
@@ -180,14 +171,12 @@ private class CustomCommandListCmd(waiter: EventWaiter) : Command()
             .showPageNumbers  { true }
             .numberItems      { true }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val ccs = event.customCommands.getAll(event.guild)
         if(ccs.isEmpty())
             return event.replyError("There are no custom commands on this server!")
         builder.clearItems()
-        with(builder)
-        {
+        with(builder) {
             text        { _,_ -> "Custom Commands on ${event.guild.name}" }
             items       { addAll(ccs) }
             finalAction { event.linkMessage(it) }

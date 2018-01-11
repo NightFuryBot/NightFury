@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,23 +24,20 @@ import java.sql.SQLException
  * @author Kaidan Gustave
  */
 object Database : Closeable {
-    var init: Boolean = false
-
     @Suppress("ObjectPropertyName")
     lateinit private var _connection: Connection
 
     val connection: Connection
         get() {
-            if(!init)
+            if(!::_connection.isInitialized)
                 throw UninitializedPropertyAccessException("Connection has not been opened yet!")
             return _connection
         }
 
     fun connect(url: String, user: String, pass: String) {
-        Class.forName("org.h2.Driver").newInstance()
+        Class.forName("org.h2.Driver").getConstructor().newInstance()
 
         _connection = DriverManager.getConnection(url, user, pass)
-        init = true
 
         for(data in TableData.values()) {
             if(!(connection.createTable(data))) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ package xyz.nightfury.listeners
 // P.S. Yes I actually yelled this out at the top of my lungs when I finished this.
 
 import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.run
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Guild
+import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.message.guild.GenericGuildMessageEvent
 import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent
@@ -34,9 +34,10 @@ import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEv
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveAllEvent
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveEvent
 import net.dv8tion.jda.core.hooks.EventListener
+import xyz.nightfury.entities.await
+import xyz.nightfury.entities.promise
 import xyz.nightfury.entities.starboard.StarboardHandler
 import xyz.nightfury.entities.starboard.isStarReaction
-import xyz.nightfury.entities.promise
 
 /**
  * @author Kaidan Gustave
@@ -76,11 +77,11 @@ class StarboardListener : EventListener {
                     val starMessage = synchronized(starboard) { starboard[event.messageIdLong] ?: return }
 
                     launch {
-                        val updated = run(coroutineContext) {
-                            try {
-                                event.channel.getMessageById(event.messageIdLong).complete()
-                            } catch(e: Exception) { null }
-                        } ?: return@launch
+                        val updated: Message = try {
+                            // This shouldn't ever return null
+                            event.channel.getMessageById(event.messageIdLong).await()!!
+                        } catch(e: Exception) { return@launch }
+
                         var noneRemain = true
 
                         @Suppress("LoopToCallChain") // Nice try foxbot.
@@ -91,15 +92,16 @@ class StarboardListener : EventListener {
                             }
                         }
 
-                        if(noneRemain)
+                        if(noneRemain) {
                             starMessage.removeStar(event.user)
+                        }
                     }
                 }
-
-                is GuildMessageReactionRemoveAllEvent -> {
-                    starboard.deletedMessage((event as GuildMessageReactionRemoveAllEvent).messageIdLong)
-                }
             }
+        } else if(event is GuildMessageReactionRemoveAllEvent) {
+            // If all the reactions are removed we just delete the message
+            // because that means that all the reactions were removed.
+            starboard.deletedMessage(event.messageIdLong)
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,12 @@ val tagMethods: Collection<Method> by lazy {
 
             Method("nick", ParseFunction { env ->
                 if(!env.contains("guild")) env.get<User>("user").name
-                else env.get<Guild>("guild").getMember(env.get<User>("user")).run { nickname?:user.name }
+                else env.get<Guild>("guild").getMember(env.get<User>("user"))!!.run { nickname?:user.name }
             }, ParseBiFunction { env, input ->
                 if(input[0].isEmpty())
                     throw ParseException("Invalid 'nick' statement")
                 if(!env.contains("guild")) userSearch(env, input).name
-                else env.get<Guild>("guild").getMember(userSearch(env, input)).run { nickname?:user.name }
+                else env.get<Guild>("guild").getMember(userSearch(env, input))!!.run { nickname?:user.name }
             }),
 
             Method("discrim", ParseFunction { env ->
@@ -60,14 +60,14 @@ val tagMethods: Collection<Method> by lazy {
 
             Method("@user", ParseFunction { env ->
                 if(env.contains("guild"))
-                    env.get<Guild>("guild").getMember(env.get<User>("user")).asMention
+                    env.get<Guild>("guild").getMember(env.get<User>("user"))!!.asMention
                 else
                     env.get<User>("user").asMention
             }, ParseBiFunction { env, input ->
                 if(input[0].isEmpty())
                     throw ParseException("Invalid '@user' statement")
                 if(env.contains("guild"))
-                    env.get<Guild>("guild").getMember(userSearch(env, input)).asMention
+                    env.get<Guild>("guild").getMember(userSearch(env, input))!!.asMention
                 else
                     userSearch(env, input).asMention
             }),

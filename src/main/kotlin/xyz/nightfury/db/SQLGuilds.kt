@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,4 +74,5 @@ abstract class SQLGuilds(type: String) : Table() {
 }
 
 object SQLMusicWhitelist : SQLGuilds("music")
+object SQLJoinWhitelist : SQLGuilds("join_whitelist")
 object SQLBlacklist : SQLGuilds("blacklist")

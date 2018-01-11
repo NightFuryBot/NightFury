@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,9 @@ import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.audio.factory.IAudioSendFactory
 import net.dv8tion.jda.core.entities.Game
 import net.dv8tion.jda.core.hooks.IEventManager
+import net.dv8tion.jda.core.utils.SessionController
 import okhttp3.OkHttpClient
+import java.util.concurrent.ConcurrentMap
 
 // Copied from club.minnced.kjda.KJDABuilder
 
@@ -47,20 +49,24 @@ infix inline fun <reified T: JDABuilder> T.listener(lazy: () -> Any): T
     = this.addEventListener(lazy()) as T
 infix inline fun <reified T: JDABuilder> T.audioSendFactory(lazy: () -> IAudioSendFactory): T
     = this.setAudioSendFactory(lazy()) as T
-infix inline fun <reified T: JDABuilder> T.idle(lazy: Boolean): T
-    = this.setIdle(lazy) as T
-infix inline fun <reified T: JDABuilder> T.shutdownHook(lazy: Boolean): T
-    = this.setEnableShutdownHook(lazy) as T
-infix inline fun <reified T: JDABuilder> T.audio(lazy: Boolean): T
-    = this.setAudioEnabled(lazy) as T
-infix inline fun <reified T: JDABuilder> T.autoReconnect(lazy: Boolean): T
-    = this.setAutoReconnect(lazy) as T
+infix inline fun <reified T: JDABuilder> T.idle(lazy: () -> Boolean): T
+    = this.setIdle(lazy()) as T
+infix inline fun <reified T: JDABuilder> T.shutdownHook(lazy: () -> Boolean): T
+    = this.setEnableShutdownHook(lazy()) as T
+infix inline fun <reified T: JDABuilder> T.audio(lazy: () -> Boolean): T
+    = this.setAudioEnabled(lazy()) as T
+infix inline fun <reified T: JDABuilder> T.autoReconnect(lazy: () -> Boolean): T
+    = this.setAutoReconnect(lazy()) as T
 inline fun <reified T: JDABuilder> T.webSocketFactory(factory: WebSocketFactory = WebSocketFactory(),
                                                       init: WebSocketFactory.() -> Unit): T
     = this.setWebsocketFactory(factory.apply(init)) as T
 inline fun <reified T: JDABuilder> T.httpSettings(builder: OkHttpClient.Builder = OkHttpClient.Builder(),
                                                   init: OkHttpClient.Builder.() -> Unit): T
     = this.setHttpClientBuilder(builder.apply(init)) as T
+infix inline fun <reified T: JDABuilder> T.contextMap(lazy: () -> ConcurrentMap<String, String>?): T
+    = this.setContextMap(lazy()) as T
+infix inline fun <reified T: JDABuilder> T.sessionController(lazy: () -> SessionController): T
+    = this.setSessionController(lazy()) as T
 inline fun <reified T: JDABuilder> T.listener(vararg listener: Any): T
         = this.addEventListener(*listener) as T
 inline fun <reified T: JDABuilder> T.removeListener(vararg listener: Any): T

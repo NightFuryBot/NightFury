@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,8 +140,7 @@ class Client internal constructor(val prefix: String,      val devId: Long,
     //////////////////////
 
     override fun onEvent(event: Event?) {
-        when(event)
-        {
+        when(event) {
             is MessageReceivedEvent -> onMessageReceived(event)
             is MessageDeleteEvent   -> onMessageDelete(event)
             is GuildMemberJoinEvent -> onGuildMemberJoin(event)
@@ -221,17 +220,15 @@ class Client internal constructor(val prefix: String,      val devId: Long,
 
         val name = parts[0]
         val args = if(parts.size == 2) parts[1] else ""
-        if(listener.checkCall(event, this, name, args))
-        {
+        if(listener.checkCall(event, this, name, args)) {
             val command = commands[name]
             val commandEvent = CommandEvent(event, args.trim(), this)
-            if(command != null)
-            {
+            if(command != null) {
                 listener.onCommandCall(commandEvent, command)
                 return command.run(commandEvent)
             }
-            if(event.isFromType(ChannelType.TEXT))
-            {
+
+            if(event.isFromType(ChannelType.TEXT)) {
                 val customCommandContent = SQLCustomCommands.getContentFor(name, event.guild)
                 if(customCommandContent.isNotEmpty())
                     return commandEvent.reply(parser.clear()
@@ -274,7 +271,7 @@ class Client internal constructor(val prefix: String,      val devId: Long,
         val welcomeChannel = SQLWelcomes.getChannel(event.guild) ?: return
 
         // We can't even send messages to the channel so we return
-        if(!welcomeChannel.canTalk()) return
+        if(!event.guild.selfMember.hasPermission(welcomeChannel, Permission.MESSAGE_WRITE)) return
 
         // We prevent possible spam by creating a cooldown key 'welcomes|U:<User ID>|G:<Guild ID>'
         val cooldownKey = "welcomes|U:${event.user.idLong}|G:${event.guild.idLong}"
@@ -337,8 +334,7 @@ class Client internal constructor(val prefix: String,      val devId: Long,
         val client = (jda as JDAImpl).httpClientBuilder.build()
         val body = JSONObject().put("server_count", jda.guilds.size)
 
-        if(jda.shardInfo != null)
-            body.put("shard_id", jda.shardInfo.shardId).put("shard_count", jda.shardInfo.shardTotal)
+        jda.shardInfo?.let { body.put("shard_id", it.shardId).put("shard_count", it.shardTotal) }
 
         if(dBotsKey != null) {
             // Create POST request to bots.discord.pw

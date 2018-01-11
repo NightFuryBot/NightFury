@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,7 @@ import net.dv8tion.jda.core.entities.VoiceChannel
 /**
  * @author Kaidan Gustave
  */
-abstract class MusicCmd(protected val musicManager: MusicManager) : Command()
-{
+abstract class MusicCmd(protected val musicManager: MusicManager) : Command() {
     init {
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)
@@ -57,11 +56,14 @@ abstract class MusicCmd(protected val musicManager: MusicManager) : Command()
         } ?: true
 
     inner class SearchResultHandler(
-        val event: CommandEvent, val message: Message, val query: String, var ytSearch: Boolean = false): AudioLoadResultHandler
-    {
+        val event: CommandEvent, val message: Message, val query: String, var ytSearch: Boolean = false
+    ): AudioLoadResultHandler {
         override fun trackLoaded(track: AudioTrack)
         {
-            val position = musicManager.addTrack(event.member.voiceState.channel, MemberTrack(event.member, track))
+            val position = event.member.voiceState.channel?.let {
+                musicManager.addTrack(it, MemberTrack(event.member, track))
+            }!! // TODO Find a safer way
+
             showLoaded(track, position)
         }
 
@@ -81,16 +83,16 @@ abstract class MusicCmd(protected val musicManager: MusicManager) : Command()
             }
         }
 
-        override fun playlistLoaded(playlist: AudioPlaylist)
-        {
-            val voiceChannel = event.member.voiceState.channel
+        override fun playlistLoaded(playlist: AudioPlaylist) {
             if(playlist.tracks.size == 1 || playlist.isSearchResult || playlist.selectedTrack != null)
             {
                 trackLoaded(playlist.selectedTrack ?: playlist.tracks[0])
             }
             else
             {
-                musicManager.addTracks(voiceChannel, playlist.tracks.map { MemberTrack(event.member, it) })
+                event.member.voiceState.channel?.let {
+                    musicManager.addTracks(it, playlist.tracks.map { MemberTrack(event.member, it) })
+                }
                 showLoaded(playlist, musicManager.getQueue(event.guild)!!.size + 1 == playlist.tracks.size)
             }
         }

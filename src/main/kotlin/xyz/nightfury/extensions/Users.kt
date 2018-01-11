@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,10 @@ fun User.banFrom(guild: Guild, delDays: Int, reason: String) = guild.controller.
 // Copied from club.minnced.kjda.entities.KJDAUser
 
 val User.game: Game?
-    get() = mutualGuilds.first().getMember(this).game
+    get() = mutualGuilds.first().getMember(this)!!.game
 
 val User.status: OnlineStatus
-    get() = mutualGuilds.first().getMember(this).onlineStatus
+    get() = mutualGuilds.first().getMember(this)!!.onlineStatus
 
 val User.isSelf: Boolean
     get() = this is SelfUser

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,6 @@
  */
 package xyz.nightfury.commands.standard
 
-import xyz.nightfury.entities.menus.Paginator
-import xyz.nightfury.entities.menus.EventWaiter
-import xyz.nightfury.*
-import xyz.nightfury.annotations.AutoInvokeCooldown
-import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.db.SQLGlobalTags
-import xyz.nightfury.db.SQLLocalTags
-import xyz.nightfury.entities.promise
-import xyz.nightfury.extensions.*
-import xyz.nightfury.jagtag.TagErrorException
 import net.dv8tion.jda.core.entities.ChannelType
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.User
@@ -32,7 +22,16 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
+import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.HasDocumentation
+import xyz.nightfury.annotations.MustHaveArguments
+import xyz.nightfury.db.SQLGlobalTags
+import xyz.nightfury.db.SQLLocalTags
+import xyz.nightfury.entities.menus.EventWaiter
+import xyz.nightfury.entities.menus.Paginator
+import xyz.nightfury.entities.promise
+import xyz.nightfury.extensions.*
+import xyz.nightfury.jagtag.TagErrorException
 import xyz.nightfury.resources.Arguments
 
 /**

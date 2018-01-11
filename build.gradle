@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ buildscript {
         kotlin_version = '1.2.10'
         kotlinx_version = '0.19.3'
         shadow_version = '2.0.1'
-        jda_version = '3.3.1_316'
+        jda_version = '3.5.0_327'
         jda_utilities_version = '1.9'
         lavaplayer_version = '1.2.45'
         h2_version = '1.4.196'

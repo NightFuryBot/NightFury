@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command() {
         val member : Member? = if(temp == null && event.isFromType(ChannelType.TEXT)) event.guild.getMember(user) else temp
 
         event.reply(embed {
-            title = "${if(user.isBot) event.jda.getEmoteById(230105988211015680L).asMention else "\u2139"} " +
+            title = "${if(user.isBot) event.jda.getEmoteById(230105988211015680L)!!.asMention else "\u2139"} " +
                     "__Information on ${user.formattedName(false)}:__"
             thumbnail = if(user.avatarUrl == null) user.defaultAvatarUrl else user.avatarUrl
             append(BULLET).append("**ID:** ${user.id}")
@@ -118,25 +118,26 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command() {
                     appendln()
                 }
                 append(BULLET).append("**Status:** ")
-                if(member.game!=null) {
-                    if(member.game.url!=null) {
-                        append(event.jda.getEmoteById(STREAMING_EMOTE_ID).asMention)
-                        append(" Streaming **[${cleanEscapes(member.game.name)}](${member.game.url})**")
+                val game = member.game
+                if(game != null) {
+                    if(game.url != null) {
+                        append(event.jda.getEmoteById(STREAMING_EMOTE_ID)!!.asMention)
+                        append(" Streaming **[${cleanEscapes(game.name)}](${game.url})**")
                     } else {
-                        append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
-                        append(" Playing **${cleanEscapes(member.game.name)}**")
+                        append(event.jda.getEmoteById(member.onlineStatus.emoteId)!!.asMention)
+                        append(" Playing **${cleanEscapes(game.name)}**")
                     }
                 } else if(member.onlineStatus == OnlineStatus.OFFLINE && invisTracker.isInvisible(member.user)) {
                     val lastTimeTyping = invisTracker.getLastTimeTyping(member.user)
-                    if(lastTimeTyping!=null) {
-                        append(event.jda.getEmoteById(OnlineStatus.INVISIBLE.emoteId).asMention)
+                    if(lastTimeTyping != null) {
+                        append(event.jda.getEmoteById(OnlineStatus.INVISIBLE.emoteId)!!.asMention)
                         append(" *${OnlineStatus.INVISIBLE.name}* (Last seen $lastTimeTyping minutes ago)")
                     } else {
-                        append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
+                        append(event.jda.getEmoteById(member.onlineStatus.emoteId)!!.asMention)
                         append(" *${member.onlineStatus.name}*")
                     }
                 } else {
-                    append(event.jda.getEmoteById(member.onlineStatus.emoteId).asMention)
+                    append(event.jda.getEmoteById(member.onlineStatus.emoteId)!!.asMention)
                     append(" *${member.onlineStatus.name}*")
                 }
                 appendln()

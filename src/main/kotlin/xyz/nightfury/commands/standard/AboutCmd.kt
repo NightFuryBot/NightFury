@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kaidan Gustave
+ * Copyright 2017-2018 Kaidan Gustave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ class AboutCmd(vararg val permissions : Permission) : Command() {
             if(isPublic)
                 appendln("If you want to invite me to your server, click [here]($oauthLink) or use `${event.client.prefix}invite`!")
             val shard = event.jda.shardInfo
-            thumbnail { event.selfUser.avatarUrl }
+            thumbnail { event.selfUser.effectiveAvatarUrl }
             field {
                 this.name = if(shard != null) "This Shard" else "Users"
                 this.value = "${event.jda.users.size} Unique${if(shard != null) " Users" else ""}\n" +
