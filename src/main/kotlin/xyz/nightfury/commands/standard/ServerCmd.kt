@@ -260,19 +260,19 @@ private class ServerSettingsCmd : Command() {
             field {
                 val modRole = SQLModeratorRole.getRole(guild)
                 this.name = "Moderator Role"
-                this.value = if(modRole!=null) modRole.name else "None"
+                this.value = modRole?.name ?: "None"
                 this.inline = true
             }
             field {
                 val modLog = SQLModeratorLog.getChannel(guild)
-                this.name = "Moderator Log"
-                this.value = if(modLog!=null) modLog.asMention else "None"
+                this.name = "Moderation Log"
+                this.value = modLog?.name ?: "None"
                 this.inline = true
             }
             field {
                 val mutedRole = SQLMutedRole.getRole(guild)
                 this.name = "Muted Role"
-                this.value = if(mutedRole!=null) mutedRole.name else "None"
+                this.value = mutedRole?.name ?: "None"
                 this.inline = true
             }
             field {
@@ -320,7 +320,7 @@ private class ServerStatsCmd : Command() {
                 name = "Text Channels"
                 appendln("Total: ${event.guild.textChannels.size}")
                 appendln("Visible: ${event.guild.textChannels.filter { event.member canView it }.size}")
-                appendln("Hidden: ${event.guild.textChannels.filter { it.guild.publicRole canView it }.size}")
+                appendln("Hidden: ${event.guild.textChannels.size - event.guild.textChannels.filter { event.member canView it }.size}")
                 this.inline = true
             }
 
@@ -328,7 +328,7 @@ private class ServerStatsCmd : Command() {
                 name = "Voice Channels"
                 appendln("Total: ${event.guild.voiceChannels.size}")
                 appendln("Unlocked: ${event.guild.voiceChannels.filter { event.member canJoin it }.size}")
-                appendln("Default: ${event.guild.voiceChannels.filter { it.guild.publicRole canJoin it }.size}")
+                appendln("Locked: ${event.guild.voiceChannels.size - event.guild.voiceChannels.filter { event.member canJoin it }.size}")
                 this.inline = true
             }
 
