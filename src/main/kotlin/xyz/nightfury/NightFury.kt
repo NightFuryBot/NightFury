@@ -59,11 +59,12 @@ fun main(args: Array<String>?) {
 /**
  * @author Kaidan Gustave
  */
+@Suppress("MayBeConstant")
 class NightFury {
     companion object {
         val VERSION: String = this::class.java.`package`.implementationVersion ?: "BETA"
         val GITHUB: String = "https://github.com/NightFuryBot/NightFury/"
-        val LOG: Logger = LoggerFactory.getLogger("NightFury")
+        val LOG = createLogger(NightFury::class)
 
         fun shutdown(exit: Int) {
             LOG.info("Shutdown Complete! ${if(exit == 0) "Restarting..." else "Exiting..."}")
@@ -167,7 +168,7 @@ class NightFury {
         }
     }
 
-    private infix inline fun <reified T: JDABuilder> T.buildAsync(lazy: JDABuilder.() -> Unit) {
+    private inline infix fun <reified T: JDABuilder> T.buildAsync(lazy: JDABuilder.() -> Unit) {
         lazy()
         buildAsync()
     }

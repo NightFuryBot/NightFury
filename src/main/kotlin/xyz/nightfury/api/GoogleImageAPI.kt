@@ -16,7 +16,7 @@
 package xyz.nightfury.api
 
 import org.jsoup.Jsoup
-import org.slf4j.LoggerFactory
+import xyz.nightfury.extensions.createLogger
 import java.io.IOException
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -26,28 +26,28 @@ import java.net.URLEncoder
  */
 class GoogleImageAPI : AbstractAPICache<List<String>>()
 {
-    override val hoursToDecay: Long
-        get() = 5
+    override val hoursToDecay = 5L
 
     companion object {
-        private val URL = "https://www.google.com/search?site=imghp&tbm=isch&source=hp&biw=1680&bih=940&q=%s&safe=active"
-        private val LOG = LoggerFactory.getLogger("Google Image")
-        private val ENCODING = "UTF-8"
-        private val USER_AGENT =
-                "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36"
+        private const val URL = "https://www.google.com/search?site=imghp&tbm=isch&source=hp&biw=1680&bih=940&q=%s&safe=active"
+        private const val ENCODING = "UTF-8"
+        private const val USER_AGENT = "Mozilla/5.0 (Windows NT 6.3; WOW64) " +
+                                       "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                                       "Chrome/53.0.2785.116 Safari/537.36"
+
+        private val LOG = createLogger(GoogleImageAPI::class)
     }
 
     fun search(query: String) : List<String>?
     {
-        val cached = getFromCache(query)
-        if(cached!=null)
-            return cached
+        getFromCache(query)?.let { return it }
         val request = try {
             URL.format(URLEncoder.encode(query, ENCODING))
         } catch (e: UnsupportedOperationException) {
             LOG.error("Error processing request: $e")
             return@search null
         }
+
         val result = ArrayList<String>()
         try {
             Jsoup.connect(request).userAgent(USER_AGENT)
@@ -58,9 +58,10 @@ class GoogleImageAPI : AbstractAPICache<List<String>>()
                     .forEach {
                         try {
                             val node = it.childNode(0).toString()
-                            val frontIndex = node.indexOf("\"ou\":")+6 // Find the front index of the json key
+                            val frontIndex = node.indexOf("\"ou\":") + 6 // Find the front index of the json key
 
-                            result += URLDecoder.decode(node.substring(frontIndex, node.indexOf("\",", frontIndex)), ENCODING)
+                            result += URLDecoder.decode(node.substring(frontIndex,
+                                node.indexOf("\",", frontIndex)), ENCODING)
                         } catch (e: UnsupportedOperationException) {
                             LOG.error("An exception was thrown while decoding an image URL: $e")
                         } catch (e: IndexOutOfBoundsException) {
@@ -71,6 +72,7 @@ class GoogleImageAPI : AbstractAPICache<List<String>>()
             LOG.error("Encountered an IOException: $e")
             return@search null
         }
+
         addToCache(query, result)
         return result
     }

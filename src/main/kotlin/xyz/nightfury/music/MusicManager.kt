@@ -32,8 +32,7 @@ import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMuteEvent
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceSuppressEvent
 import net.dv8tion.jda.core.hooks.EventListener
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import xyz.nightfury.extensions.createLogger
 import xyz.nightfury.extensions.formatTrackTime
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -43,7 +42,7 @@ import java.util.concurrent.Executors
  */
 class MusicManager : AudioEventListener, EventListener, AudioPlayerManager by DefaultAudioPlayerManager() {
     companion object {
-        internal val LOG: Logger = LoggerFactory.getLogger("MusicManager")
+        internal val LOG = createLogger(MusicManager::class)
 
         internal val threadpool: ExecutorService by lazy {
             Executors.newSingleThreadExecutor {

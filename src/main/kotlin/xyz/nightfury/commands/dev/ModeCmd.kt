@@ -26,8 +26,7 @@ import xyz.nightfury.listeners.CommandListener
  * @author Kaidan Gustave
  */
 @MustHaveArguments("Specify a mode to set to.")
-class ModeCmd : Command()
-{
+class ModeCmd : Command() {
     init {
         this.name = "Mode"
         this.arguments = "[Standard, Idle, Debug]"
@@ -37,8 +36,7 @@ class ModeCmd : Command()
         this.category = Category.SHENGAERO
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         event.client.mode = CommandListener.Mode.typeOf(event.args)
                 ?: return event.replyWarning("Invalid mode!")
         event.replySuccess("Set mode to `${event.client.mode.niceName}`!")

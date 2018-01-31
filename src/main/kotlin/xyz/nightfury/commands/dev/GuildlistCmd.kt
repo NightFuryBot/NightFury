@@ -26,8 +26,7 @@ import net.dv8tion.jda.core.entities.ChannelType
 /**
  * @author Kaidan Gustave
  */
-class GuildlistCmd(waiter: EventWaiter) : Command()
-{
+class GuildlistCmd(waiter: EventWaiter): Command() {
     init {
         this.name = "Guildlist"
         this.help = "Gets a list of all guilds on this shard."
@@ -37,7 +36,7 @@ class GuildlistCmd(waiter: EventWaiter) : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    private val builder : Paginator.Builder = Paginator.Builder()
+    private val builder: Paginator.Builder = Paginator.Builder()
             .finalAction      { it.delete().queue() }
             .waitOnSinglePage { false }
             .numberItems      { true }
@@ -46,8 +45,7 @@ class GuildlistCmd(waiter: EventWaiter) : Command()
             .waiter           { waiter }
 
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         builder.clearItems()
         event.jda.guilds.forEach { builder.add { "**${it.name}** (ID: ${it.id})" } }
         if(event.isFromType(ChannelType.TEXT))

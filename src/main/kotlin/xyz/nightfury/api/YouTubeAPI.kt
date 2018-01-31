@@ -19,7 +19,7 @@ import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.youtube.YouTube
-import org.slf4j.LoggerFactory
+import xyz.nightfury.extensions.createLogger
 import java.io.IOException
 import java.net.InetAddress
 
@@ -28,7 +28,7 @@ import java.net.InetAddress
  */
 class YouTubeAPI(private val apiKey: String?): AbstractAPICache<List<String>>() {
     private companion object {
-        private val ytLog = LoggerFactory.getLogger("YouTube")
+        private val ytLog = createLogger(YouTubeAPI::class)
         private val netTransport = NetHttpTransport()
         private val jsonFactory = JacksonFactory.getDefaultInstance()
         private val hostAddress = InetAddress.getLocalHost().hostAddress
@@ -36,18 +36,17 @@ class YouTubeAPI(private val apiKey: String?): AbstractAPICache<List<String>>() 
         var maxSearchResults = 20L
     }
 
-    val isEnabled: Boolean = apiKey != null
+    private val isEnabled = apiKey != null
 
     private val youtube = YouTube.Builder(netTransport, jsonFactory, {})
         .setApplicationName("NightFury").build()
 
-    private val search : YouTube.Search.List? = if(apiKey == null) null else
-        try {
-            youtube.search().list("id,snippet")
-        } catch (e : IOException) {
-            ytLog.error("Failed to initialize search: $e")
-            null
-        }
+    private val search: YouTube.Search.List? = if(apiKey == null) null else try {
+        youtube.search().list("id,snippet")
+    } catch (e : IOException) {
+        ytLog.error("Failed to initialize search: $e")
+        null
+    }
 
     override val hoursToDecay = 1L
 

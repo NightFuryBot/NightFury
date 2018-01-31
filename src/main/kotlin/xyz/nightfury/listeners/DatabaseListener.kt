@@ -46,13 +46,13 @@ class DatabaseListener : EventListener {
         }
     }
 
-    fun onReady(event: ReadyEvent) {
-        event.jda.guilds.forEach {
-            it.refreshMutedRole(SQLMutedRole.getRole(it) ?: return@forEach)
+    private fun onReady(event: ReadyEvent) {
+        event.jda.guilds.forEach { guild ->
+            SQLMutedRole.getRole(guild)?.let { guild.refreshMutedRole(it) }
         }
     }
 
-    fun onRoleDelete(event: RoleDeleteEvent) {
+    private fun onRoleDelete(event: RoleDeleteEvent) {
         // RoleMe Deleted
         if(SQLRoleMe.isRole(event.role))
             SQLRoleMe.deleteRole(event.role)
@@ -86,18 +86,28 @@ class DatabaseListener : EventListener {
             SQLAnnouncementRoles.deleteRole(event.role)
     }
 
-    fun onTextChannelCreate(event: TextChannelCreateEvent) {
-        event.channel.muteRole(SQLMutedRole.getRole(event.guild) ?: return)
+    private fun onTextChannelCreate(event: TextChannelCreateEvent) {
+        SQLMutedRole.getRole(event.guild)?.let {
+            event.channel.muteRole(it)
+        }
     }
 
-    fun onVoiceChannelCreate(event: VoiceChannelCreateEvent) {
-        event.channel.muteRole(SQLMutedRole.getRole(event.guild) ?: return)
+    private fun onVoiceChannelCreate(event: VoiceChannelCreateEvent) {
+        SQLMutedRole.getRole(event.guild)?.let {
+            event.channel.muteRole(it)
+        }
+    }
+
+    private fun onCategoryCreate(event: CategoryCreateEvent) {
+        SQLMutedRole.getRole(event.guild)?.let {
+            event.category.muteRole(it)
+        }
     }
 
     // If the guild has a type of channel and it equals the deleted channel, then it's removed
     // if the type of channel is null, but the database contains info regarding that type, it
     // is also removed
-    fun onTextChannelDelete(event: TextChannelDeleteEvent) {
+    private fun onTextChannelDelete(event: TextChannelDeleteEvent) {
         // ModLog Deleted
         val modLog = SQLModeratorLog.getChannel(event.guild)
         if(modLog != null) {
@@ -141,16 +151,13 @@ class DatabaseListener : EventListener {
         }
     }
 
-    fun onCategoryCreate(event: CategoryCreateEvent) {
-        event.category.muteRole(SQLMutedRole.getRole(event.guild) ?: return)
-    }
-
-    fun onGuildMemberLeave(event: GuildMemberLeaveEvent) {
-        if(SQLRolePersist.isRolePersist(event.guild))
+    private fun onGuildMemberLeave(event: GuildMemberLeaveEvent) {
+        if(SQLRolePersist.isRolePersist(event.guild)) {
             SQLRolePersist.setRolePersist(event.member)
+        }
     }
 
-    fun onGuildMemberJoin(event: GuildMemberJoinEvent) {
+    private fun onGuildMemberJoin(event: GuildMemberJoinEvent) {
         if(SQLRolePersist.isRolePersist(event.guild)) {
             val roles = SQLRolePersist.getRolePersist(event.member)
             if(roles.isNotEmpty()) {

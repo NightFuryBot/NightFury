@@ -21,30 +21,25 @@ import kotlin.streams.toList
 /**
  * @author Kaidan Gustave
  */
-abstract class AbstractAPICache<T>
-{
-    private val cache : HashMap<String, Pair<T, OffsetDateTime>> = HashMap()
+abstract class AbstractAPICache<T> {
+    private val cache = HashMap<String, Pair<T, OffsetDateTime>>()
 
-    abstract val hoursToDecay : Long
+    abstract val hoursToDecay: Long
 
-    fun addToCache(query : String, item : T) = synchronized(cache)
-    {
-        cache.put(query.toLowerCase(), item.to(OffsetDateTime.now()))
+    fun addToCache(query: String, item: T) {
+        cache[query.toLowerCase()] = (item to OffsetDateTime.now())
     }
 
-    fun getFromCache(query: String) : T? = synchronized(cache)
-    {
-        cache[query.toLowerCase()]?.takeIf { it.second.plusHours(hoursToDecay).isBefore(OffsetDateTime.now()) }?.first
+    fun getFromCache(query: String): T? {
+        return cache[query.toLowerCase()]?.takeIf {
+            it.second.plusHours(hoursToDecay).isBefore(OffsetDateTime.now())
+        }?.first
     }
 
-    fun clearCache()
-    {
-        synchronized(cache)
-        {
-            val now = OffsetDateTime.now()
-            cache.keys.stream()
-                    .filter { now.isAfter(cache[it]!!.second.plusHours(hoursToDecay)) }
-                    .toList().forEach { cache.remove(it) }
-        }
+    fun clearCache() {
+        val now = OffsetDateTime.now()
+        cache.keys.stream()
+            .filter { now.isAfter(cache[it]!!.second.plusHours(hoursToDecay)) }
+            .toList().forEach { cache.remove(it) }
     }
 }

@@ -25,8 +25,7 @@ import net.dv8tion.jda.core.entities.Game
 /**
  * @author Kaidan Gustave
  */
-class RestartCmd : Command()
-{
+class RestartCmd : Command() {
     init {
         this.name = "Restart"
         this.help = "Restarts NightFury."
@@ -35,8 +34,7 @@ class RestartCmd : Command()
         this.guildOnly = false
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         event.replyWarning("Restarting...")
         event.jda.presence.status = OnlineStatus.DO_NOT_DISTURB
         event.jda.presence.game = Game.playing("Restarting...")

@@ -44,7 +44,7 @@ class UnbanCmd : Command()
 
     override fun execute(event: CommandEvent)
     {
-        val bans = event.guild findBannedUsers event.args
+        val bans = event.guild.findBannedUsers(event.args)
                 ?:return event.replyError("An unexpected error occurred when retrieving banned members!")
         when
         {

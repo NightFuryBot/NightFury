@@ -24,7 +24,7 @@ import xyz.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLMutedRole
-import xyz.nightfury.entities.ModLogger
+import xyz.nightfury.db.entities.ModLogger
 import java.awt.Color
 
 /**
@@ -47,7 +47,7 @@ class MuteCmd : Command() {
     override fun execute(event: CommandEvent)
     {
         val mutedRole = SQLMutedRole.getRole(event.guild)
-                ?:return event.replyError("**Muted role has not been setup!**\n" +
+                        ?: return event.replyError("**Muted role has not been setup!**\n" +
                 "Try using `${event.client.prefix}mute setup` to create a new mute role, or `${event.client.prefix}mute set` to " +
                 "register an existing one!")
 
@@ -135,7 +135,7 @@ private class SetMutedRoleCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        val found = event.guild findRoles query
+        val found = event.guild.findRoles(query)
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)

@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("MemberVisibilityCanBePrivate")
 package xyz.nightfury
 
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.db.*
+import xyz.nightfury.db.SQLModeratorRole
+import xyz.nightfury.db.SQLMusicWhitelist
 import xyz.nightfury.resources.Arguments
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import xyz.nightfury.annotations.HasDocumentation
+import xyz.nightfury.db.SQLLevel
 import xyz.nightfury.resources.onlyInitializingOnce
 import java.io.InputStreamReader
 import kotlin.reflect.full.findAnnotation
@@ -95,8 +98,8 @@ abstract class Command {
     private val autoInvokeCooldown: Boolean by lazy { this::class.findAnnotation<AutoInvokeCooldown>() != null }
 
     companion object {
-        private val BOT_PERM = "%s I need the %s permission in this %s!"
-        private val USER_PERM = "%s You must have the %s permission in this %s to use that!"
+        private const val BOT_PERM = "%s I need the %s permission in this %s!"
+        private const val USER_PERM = "%s You must have the %s permission in this %s to use that!"
 
         const val SEE_HELP = "Use `%s%s help` for more information on this command!"
 
@@ -278,9 +281,9 @@ abstract class Command {
         event.client.incrementUses(this)
     }
 
-    abstract protected fun execute(event: CommandEvent)
+    protected abstract fun execute(event: CommandEvent)
 
-    fun isForCommand(string: String) : Boolean {
+    fun isForCommand(string: String): Boolean {
         if(string.equals(name, true))
             return true
         else if(aliases.isNotEmpty())
@@ -288,7 +291,7 @@ abstract class Command {
         return false
     }
 
-    fun CommandEvent.modSearch() : Pair<Long, String?>? {
+    fun CommandEvent.modSearch(): Pair<Long, String?>? {
         val targetId = Arguments.targetIDWithReason.matchEntire(args)
         val targetMention = Arguments.targetMentionWithReason.matchEntire(args)
 
@@ -309,7 +312,7 @@ abstract class Command {
     val CommandEvent.level: CommandLevel
         get() = SQLLevel.getLevel(guild, this@Command)
 
-    internal val CommandEvent.cooldownKey: String
+    private val CommandEvent.cooldownKey: String
         get() = when(cooldownScope) {
             CooldownScope.USER -> cooldownScope.genKey(name, author.idLong)
             CooldownScope.USER_GUILD ->
@@ -325,7 +328,7 @@ abstract class Command {
             CooldownScope.GLOBAL -> cooldownScope.genKey(name, 0L)
         }
 
-    internal val CommandEvent.cooldownError: String
+    private val CommandEvent.cooldownError: String
         get() {
             if(guild == null) {
                 if(cooldownScope == CooldownScope.USER_GUILD || cooldownScope == CooldownScope.GUILD) {
@@ -395,7 +398,7 @@ enum class Category(val title: String,
                                                        it.member.hasPermission(Permission.ADMINISTRATOR)) }),
 
     MODERATOR("Moderator", { ADMIN.test(it) || (it.isFromType(ChannelType.TEXT) &&
-                             SQLModeratorRole.getRole(it.guild).run { this != null && it.member.roles.contains(this) })
+                                                SQLModeratorRole.getRole(it.guild).run { this != null && it.member.roles.contains(this) })
     }),
 
     // Other Categories
@@ -445,3 +448,4 @@ abstract class NoBaseExecutionCommand : Command() {
             event.replyError(INVALID_ARGS_HELP.format(event.client.prefix, this.name))
     }
 }
+

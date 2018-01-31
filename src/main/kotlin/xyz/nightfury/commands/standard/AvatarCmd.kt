@@ -43,7 +43,7 @@ class AvatarCmd : Command() {
     override fun execute(event: CommandEvent) {
         val user = if(event.isFromType(ChannelType.TEXT)) {
             if(event.args.isNotEmpty()) {
-                val members = event.guild findMembers event.args
+                val members = event.guild.findMembers(event.args)
                 if(members.isEmpty())
                     return event.replyError(noMatch("members", event.args))
                 if(members.size > 1)
@@ -52,7 +52,7 @@ class AvatarCmd : Command() {
             } else event.author
         } else {
             if(event.args.isNotEmpty()) {
-                val users = event.jda findUsers event.args
+                val users = event.jda.findUsers(event.args)
                 if(users.isEmpty()) // None found
                     return event.replyError(noMatch("users", event.args))
                 if(users.size > 1) // More than one found
@@ -66,7 +66,7 @@ class AvatarCmd : Command() {
 
             if(event.isFromType(ChannelType.TEXT)) {
                 val member = event.guild.getMember(user)
-                color { if(member!=null) member.color else event.selfMember.color }
+                color { if(member != null) member.color else event.selfMember.color }
             }
 
             "${user.effectiveAvatarUrl}?size=1024".apply { url { this } image { this } }

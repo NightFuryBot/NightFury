@@ -25,7 +25,7 @@ import xyz.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLMutedRole
-import xyz.nightfury.entities.ModLogger
+import xyz.nightfury.db.entities.ModLogger
 
 /**
  * @author Kaidan Gustave
@@ -46,7 +46,7 @@ class UnmuteCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val mutedRole = SQLMutedRole.getRole(event.guild)
-                ?:return event.replyError("**Muted role has not been setup!**\n" +
+                        ?: return event.replyError("**Muted role has not been setup!**\n" +
                 "Try using `${event.client.prefix}mute setup` to create a new mute role, or `${event.client.prefix}mute set` to " +
                 "register an existing one!")
 

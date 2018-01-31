@@ -25,8 +25,7 @@ import xyz.nightfury.resources.Arguments
  * @author Kaidan Gustave
  */
 @HasDocumentation
-class LevelCmd : NoBaseExecutionCommand()
-{
+class LevelCmd : NoBaseExecutionCommand() {
     init {
         this.name = "Level"
         this.arguments = "[Function]"
@@ -40,8 +39,7 @@ class LevelCmd : NoBaseExecutionCommand()
 }
 
 @MustHaveArguments("Try specifying a level and then a command by full name.")
-private class LevelSetCmd : Command()
-{
+private class LevelSetCmd : Command() {
     init {
         this.name = "Set"
         this.fullname = "Level Set"
@@ -51,8 +49,7 @@ private class LevelSetCmd : Command()
         this.category = Category.SERVER_OWNER
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val split = event.args.split(Arguments.commandArgs, 2)
 
         if(split.size < 2)

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("MemberVisibilityCanBePrivate")
 package xyz.nightfury.music
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
@@ -26,7 +27,8 @@ import net.dv8tion.jda.core.entities.VoiceChannel
  * @author Kaidan Gustave
  */
 class MusicQueue
-constructor(val voiceChannel: VoiceChannel, val audioPlayer: AudioPlayer, firstTrack: MemberTrack): AudioSendHandler,
+constructor(val voiceChannel: VoiceChannel,
+            val audioPlayer: AudioPlayer, firstTrack: MemberTrack): AudioSendHandler,
     MutableList<MemberTrack> by ArrayList() {
     private lateinit var lastFrame: AudioFrame
     private val skipping = ArrayList<Long>()

@@ -98,8 +98,7 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command() {
         val member : Member? = if(temp == null && event.isFromType(ChannelType.TEXT)) event.guild.getMember(user) else temp
 
         event.reply(embed {
-            title = "${if(user.isBot) event.jda.getEmoteById(230105988211015680L)!!.asMention else "\u2139"} " +
-                    "__Information on ${user.formattedName(false)}:__"
+            title = "${if(user.isBot) event.jda.getEmoteById(230105988211015680L)!!.asMention else "\u2139"} " + "__Information on ${user.formattedName(false)}:__"
             thumbnail = if(user.avatarUrl == null) user.defaultAvatarUrl else user.avatarUrl
             append(BULLET).append("**ID:** ${user.id}")
             appendln()
@@ -111,10 +110,9 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command() {
                 }
                 val roles = member.roles
                 if(roles.isNotEmpty()) {
-                    append(BULLET).append("**Role${if (roles.size > 1) "s" else ""}:** ")
+                    append(BULLET).append("**Role${if(roles.size > 1) "s" else ""}:** ")
                     append("`${roles[0].name}`")
-                    for(i in 1 until roles.size)
-                        append(", `${roles[i].name}`")
+                    for(i in 1 until roles.size) append(", `${roles[i].name}`")
                     appendln()
                 }
                 append(BULLET).append("**Status:** ")
@@ -144,29 +142,24 @@ class InfoCmd(private val invisTracker: InvisibleTracker) : Command() {
             }
             append(BULLET).append("**Creation Date:** ").append(user.creationTime.format(DateTimeFormatter.ISO_LOCAL_DATE))
             appendln()
-            if(member!=null) {
+            if(member != null) {
                 append(BULLET).append("**Join Date:** ").append(member.joinDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
                 val joins = ArrayList(event.guild.members)
                 joins.sortWith(Comparator.comparing(Member::getJoinDate))
                 var index = joins.indexOf(member)
-                append(" `[#").append(index+1).append("]`")
+                append(" `[#").append(index + 1).append("]`")
                 appendln()
                 append(BULLET).append("**Join Order:** ")
                 appendln()
                 index -= 3
-                if(index < 0)
-                    index = 0
-                if(joins[index] == member)
-                    append("**[${user.name}]()**")
-                else
-                    append(joins[index].user.name)
+                if(index < 0) index = 0
+                if(joins[index] == member) append("**[${user.name}]()**")
+                else append(joins[index].user.name)
                 for(i in index + 1 until index + 7) {
-                    if(i>=joins.size)
-                        break
+                    if(i >= joins.size) break
                     val m = joins[i]
-                    var name : String = m.user.name
-                    if(member == m)
-                        name = "**[$name]()**"
+                    var name: String = m.user.name
+                    if(member == m) name = "**[$name]()**"
                     append(" > $name")
                 }
             }

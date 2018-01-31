@@ -13,31 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("LiftReturnOrAssignment")
 package xyz.nightfury.api
 
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONTokener
-import org.slf4j.LoggerFactory
+import xyz.nightfury.extensions.createLogger
 
 /**
  * @author Kaidan Gustave
  */
-class E621API : AbstractAPICache<JSONArray>()
-{
-    private companion object
-    {
-        private val BASE_URL = "https://e621.net/post/index.json?"
-        private val LOG = LoggerFactory.getLogger("E621")
+class E621API : AbstractAPICache<JSONArray>() {
+    private companion object {
+        private const val BASE_URL = "https://e621.net/post/index.json?"
+        private val LOG = createLogger(E621API::class)
     }
 
-    override val hoursToDecay : Long = 1
+    override val hoursToDecay = 1L
 
     private val client = OkHttpClient()
 
-    fun search(limit: Int, vararg tags: String) : JSONArray?
-    {
+    fun search(limit: Int, vararg tags: String): JSONArray? {
         require(tags.size <= 6) { "Only 6 tags may be specified!" }
         require(limit <= 320) { "Only a maximum of 320 to retrieve may be specified!" }
 
@@ -46,25 +44,16 @@ class E621API : AbstractAPICache<JSONArray>()
                 append(if (it.startsWith("+") || it.startsWith("-")) it else "+$it")
             }
         }
-        val cached = getFromCache(key)
-        if(cached!=null)
-            return cached
+
+        getFromCache(key)?.let { return it }
+
         try {
-            client.newCall(Request.Builder().get()
-                    .header("User-Agent", "NightFury")
-                    .url(BASE_URL + "tags=$key&limit=$limit").build())
-                    .execute().body()?.charStream()
-                    .use {
-                        return if(it == null) {
-                            LOG.warn("Reader retrieved from e621.net was null!")
-                            null
-                        } else {
-                            val arr = JSONArray(JSONTokener(it))
-                            addToCache(key, arr)
-                            arr
-                        }
-                    }
-        } catch (e : Exception) {
+            return client.newCall(Request.Builder().get()
+                .header("User-Agent", "NightFury")
+                .url(BASE_URL + "tags=$key&limit=$limit").build())
+                .execute().body()?.charStream()
+                .use { it?.let { JSONArray(JSONTokener(it)).also { addToCache(key, it) } } }
+        } catch(e: Exception) {
             LOG.warn("Failed to retrieve from e621.net!",e)
             return null
         }

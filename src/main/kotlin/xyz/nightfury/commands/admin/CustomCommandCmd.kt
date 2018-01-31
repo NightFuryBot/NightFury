@@ -80,10 +80,10 @@ private class CustomCommandAddCmd : Command() {
         val name = parts[0]
         val content = parts[1]
 
-        if(event.customCommands.getContentFor(name, event.guild).isNotEmpty())
+        if(SQLCustomCommands.getContentFor(name, event.guild).isNotEmpty())
             return event.replyError("Custom Command named \"$name\" already exists!")
         else {
-            event.customCommands.add(name, content, event.guild)
+            SQLCustomCommands.add(name, content, event.guild)
             event.replySuccess("Successfully created Custom Command \"**$name**\"!")
             event.invokeCooldown()
         }
@@ -103,8 +103,8 @@ private class CustomCommandRemoveCmd : Command() {
 
     override fun execute(event: CommandEvent) {
         val name = event.args.split(Regex("\\s+"))[0]
-        if(event.customCommands.getContentFor(name, event.guild).isNotEmpty()) {
-            event.customCommands.remove(name, event.guild)
+        if(SQLCustomCommands.getContentFor(name, event.guild).isNotEmpty()) {
+            SQLCustomCommands.remove(name, event.guild)
             event.replySuccess("Successfully removed Custom Command \"**$name**\"!")
         } else {
             event.replyError("There is no custom command named \"**$name\" on this server!")
@@ -136,7 +136,7 @@ private class CustomCommandImportCmd : Command() {
                     return event.replyError("**Illegal Custom Command Name!**\n" +
                             "Custom Commands may not have names that match standard command names!")
                 val cmdCont = SQLGlobalTags.getTagContent(name)
-                event.customCommands.add(cmdName, cmdCont, event.guild)
+                SQLCustomCommands.add(cmdName, cmdCont, event.guild)
                 event.replySuccess("Successfully imported global tag \"$cmdName\" as a Custom Command!")
                 event.invokeCooldown()
             }
@@ -146,7 +146,7 @@ private class CustomCommandImportCmd : Command() {
                 return event.replyError("**Illegal Custom Command Name!**\n" +
                         "Custom Commands may not have names that match standard command names!")
             val cmdCont = SQLLocalTags.getTagContent(name, event.guild)
-            event.customCommands.add(cmdName, cmdCont, event.guild)
+            SQLCustomCommands.add(cmdName, cmdCont, event.guild)
             event.replySuccess("Successfully imported local tag \"$cmdName\" as a Custom Command!")
             event.invokeCooldown()
         }
@@ -172,7 +172,7 @@ private class CustomCommandListCmd(waiter: EventWaiter): Command() {
             .numberItems      { true }
 
     override fun execute(event: CommandEvent) {
-        val ccs = event.customCommands.getAll(event.guild)
+        val ccs = SQLCustomCommands.getAll(event.guild)
         if(ccs.isEmpty())
             return event.replyError("There are no custom commands on this server!")
         builder.clearItems()
@@ -185,7 +185,3 @@ private class CustomCommandListCmd(waiter: EventWaiter): Command() {
         }
     }
 }
-
-@Suppress("Unused")
-private val CommandEvent.customCommands : SQLCustomCommands
-    get() = SQLCustomCommands

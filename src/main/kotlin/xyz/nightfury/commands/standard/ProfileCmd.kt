@@ -24,7 +24,7 @@ import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLProfiles
-import xyz.nightfury.entities.Profile
+import xyz.nightfury.db.entities.Profile
 import xyz.nightfury.extensions.*
 import xyz.nightfury.resources.Arguments
 import java.time.*
@@ -70,7 +70,7 @@ class ProfileCmd : Command() {
                                ?: return event.replyError("**You have not created a profile!**\n" +
                                                           "Use `Profile Create` to create a profile!")
             temp != null -> SQLProfiles.getProfile(temp.user)
-                          ?: return event.replyError("${temp.user.formattedName(true)} has not created a profile!")
+                            ?: return event.replyError("${temp.user.formattedName(true)} has not created a profile!")
             else -> {
                 val found =  event.jda.findUsers(query)
                 when {

@@ -72,7 +72,7 @@ private class ModeratorAddCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val modRole = SQLModeratorRole.getRole(event.guild)
-                ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.client.prefix, fullname)}")
+                      ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.client.prefix, fullname)}")
 
         val parsed = event.modSearch()?:return
 
@@ -117,7 +117,7 @@ private class ModeratorRemoveCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val modRole = SQLModeratorRole.getRole(event.guild)
-                ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.client.prefix, fullname)}")
+                      ?: return event.replyError("**Moderator role has not been set!**\n${SEE_HELP.format(event.client.prefix, fullname)}")
 
         val parsed = event.modSearch()?:return
 
@@ -161,7 +161,7 @@ private class ModeratorSetCmd : Command()
     override fun execute(event: CommandEvent)
     {
         val query = event.args
-        val found = event.guild findRoles query
+        val found = event.guild.findRoles(query)
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)
@@ -204,11 +204,10 @@ abstract class ModeratorListBaseCmd : Command()
             mods.forEach {
                 append("${event.jda.getEmoteById(it.onlineStatus.emoteId)!!.asMention} ")
                 append(it.user.formattedName(true))
-                when
-                {
+                when {
                     it.isOwner -> appendln(" `[OWNER]`")
                     it.isAdmin -> appendln(" `[ADMIN]`")
-                    else ->       appendln(" `[ MOD ]`")
+                    else -> appendln(" `[ MOD ]`")
                 }
             }
             footer { this.value = "Total ${mods.size}" }
@@ -263,11 +262,10 @@ private class ModeratorOnlineCmd : Command()
             mods.forEach {
                 append("${event.jda.getEmoteById(it.onlineStatus.emoteId)!!.asMention} ")
                 append(it.user.formattedName(true))
-                when
-                {
+                when {
                     it.isOwner -> appendln(" `[OWNER]`")
                     it.isAdmin -> appendln(" `[ADMIN]`")
-                    else ->       appendln(" `[ MOD ]`")
+                    else -> appendln(" `[ MOD ]`")
                 }
             }
             footer { this.value = "Total ${mods.size}" }

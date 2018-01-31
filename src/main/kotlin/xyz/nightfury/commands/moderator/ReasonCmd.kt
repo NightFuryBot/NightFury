@@ -22,8 +22,8 @@ import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLCases
 import xyz.nightfury.db.SQLModeratorLog
-import xyz.nightfury.entities.Case
-import xyz.nightfury.entities.then
+import xyz.nightfury.db.entities.Case
+import xyz.nightfury.entities.promise
 import xyz.nightfury.extensions.edit
 import xyz.nightfury.resources.Arguments
 import xyz.nightfury.extensions.isSelf
@@ -35,8 +35,8 @@ import xyz.nightfury.extensions.isSelf
 @MustHaveArguments("Provide a reason to give or specify a case number followed by a reason.")
 class ReasonCmd : Command() {
     companion object {
-        private val reasonRegex: Regex = Regex("\\d{1,5}")
-        private val reasonSplit: Regex = Regex("\n")
+        private val reasonRegex = Regex("\\d{1,5}")
+        private val reasonSplit = Regex("\n")
     }
 
     init {
@@ -49,7 +49,7 @@ class ReasonCmd : Command() {
 
     override fun execute(event: CommandEvent) {
         val modLog = SQLModeratorLog.getChannel(event.guild)
-                ?: return event.replyError("The moderator log channel has not been set!")
+                     ?: return event.replyError("The moderator log channel has not been set!")
         if(event.args.isEmpty())
             return event.replyError(TOO_FEW_ARGS_HELP.format(event.client.prefix, name))
         val parts = event.args.split(Arguments.commandArgs,2)
@@ -59,16 +59,16 @@ class ReasonCmd : Command() {
         // Only one argument or first argument is not a number
         if(parts.size==1 || !(parts[0] matches reasonRegex)) {
             val cases = SQLCases.getCasesByUser(event.member).takeIf { it.isNotEmpty() }
-                    ?: return event.replyError("You have no outstanding cases!")
+                        ?: return event.replyError("You have no outstanding cases!")
             case = cases[0]
             number = case.number
             reason = event.args
         } else {
             number = with(parts[0].toInt()) {
-                if(this > SQLCases.getCases(event.guild).size)
+                if(this > SQLCases.getCases(event.guild).size) {
                     return event.replyError("**Invalid case number!**\n" +
-                            "Specify a case number lower than the latest case number!")
-                else this
+                                            "Specify a case number lower than the latest case number!")
+                } else this
             }
 
             case = SQLCases.getCaseNumber(event.guild, number)
@@ -77,7 +77,7 @@ class ReasonCmd : Command() {
             reason = parts[1].trim()
         }
 
-        if(case.modId!=event.author.idLong)
+        if(case.modId != event.author.idLong)
             return event.replyError("**You are not responsible for case number `$number`!**\n" +
                     "Only the moderator responsible for a case may update it's reason.")
         if(reason.length>200)
@@ -87,11 +87,11 @@ class ReasonCmd : Command() {
                     "This may be because the original case log message was deleted, or never sent at all!")
 
         case.reason = reason
-        modLog.getMessageById(case.messageId) then {
-            if(this == null)
+        modLog.getMessageById(case.messageId).promise() then {
+            if(it == null)
                 return@then event.replyError("An unexpected error occurred while updating the reason for case number `$number`!")
-            if(author.isSelf)
-                this.edit { "${contentRaw.split(reasonSplit,2)[0]}\n`[ REASON ]` $reason" }
+            if(it.author.isSelf)
+                it.edit { "${it.contentRaw.split(reasonSplit,2)[0]}\n`[ REASON ]` $reason" }
             SQLCases.updateCase(case)
             event.replySuccess("Successfully updated reason for case number `$number`!")
         } catch {

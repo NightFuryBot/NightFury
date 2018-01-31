@@ -25,10 +25,9 @@ import net.dv8tion.jda.core.entities.ChannelType
 /**
  * @author Kaidan Gustave
  */
-class MemoryCmd : Command()
-{
+class MemoryCmd : Command() {
     companion object {
-        private val mb = 1024 * 1024
+        private const val mb = 1024 * 1024
     }
 
     init {
@@ -39,20 +38,18 @@ class MemoryCmd : Command()
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val runtime = Runtime.getRuntime()
 
         event.reply(embed {
             title { "NightFury Runtime Statistics" }
-            if(event.isFromType(ChannelType.TEXT))
-                color { event.selfMember.color }
+            if(event.isFromType(ChannelType.TEXT)) color { event.selfMember.color }
             appendln("```ini")
             appendln("[ Current Memory Usage ]     ${(runtime.totalMemory() - runtime.freeMemory()) / mb}mb")
             appendln("[ Free Memory Available ]    ${runtime.freeMemory() / mb}mb")
             appendln("[ Total Memory Usage ]       ${runtime.totalMemory() / mb}mb")
-              append("[ Maximum Memory Available ] ${runtime.maxMemory() / mb}mb")
-              append("```")
+            append("[ Maximum Memory Available ] ${runtime.maxMemory() / mb}mb")
+            append("```")
         })
     }
 }

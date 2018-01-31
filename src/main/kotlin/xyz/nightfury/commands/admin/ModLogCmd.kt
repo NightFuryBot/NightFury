@@ -30,22 +30,20 @@ import xyz.nightfury.db.SQLModeratorLog
  * @author Kaidan Gustave
  */
 @HasDocumentation
-class ModLogCmd : NoBaseExecutionCommand()
-{
+class ModLogCmd : NoBaseExecutionCommand() {
     init {
         this.name = "ModLog"
         this.help = "Manages the server's moderation log."
         this.category = Category.ADMIN
         this.guildOnly = true
         this.children = arrayOf(
-                ModLogSetCmd()
+            ModLogSetCmd()
         )
     }
 }
 
 @MustHaveArguments("Specify a text channel to use as the server's moderation log.")
-private class ModLogSetCmd : Command()
-{
+private class ModLogSetCmd : Command() {
     init {
         this.name = "Set"
         this.fullname = "ModLog Set"
@@ -54,19 +52,19 @@ private class ModLogSetCmd : Command()
         this.guildOnly = true
     }
 
-    override fun execute(event: CommandEvent)
-    {
-        val channel = with(event.guild.findTextChannels(event.args))
-        {
-            if(this.isEmpty())
+    override fun execute(event: CommandEvent) {
+        val channel = with(event.guild.findTextChannels(event.args)) {
+            if(isEmpty())
                 return event.replyError(noMatch("channels", event.args))
-            if(this.size>1)
+            if(size > 1)
                 return event.replyError(this.multipleTextChannels(event.args))
+
             return@with this[0]
         }
 
         if(!channel.canTalk()) {
-            return event.replyError("I cannot log moderation actions in ${channel.asMention} because I do not have the permission to send messages there!")
+            return event.replyError("I cannot log moderation actions in ${channel.asMention} " +
+                                    "because I do not have the permission to send messages there!")
         }
 
         SQLModeratorLog.setChannel(channel)

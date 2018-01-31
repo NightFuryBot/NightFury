@@ -24,11 +24,11 @@ class Version {
 
 buildscript {
     ext {
-        kotlin_version = '1.2.10'
+        kotlin_version = '1.2.21'
         kotlinx_version = '0.19.3'
         shadow_version = '2.0.1'
         jda_version = '3.5.0_327'
-        jda_utilities_version = '1.9'
+        jda_utilities_version = '2.0'
         lavaplayer_version = '1.2.45'
         h2_version = '1.4.196'
         logback_version = '1.2.3'
@@ -50,10 +50,13 @@ apply plugin: 'idea'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-def versionObj = new Version(major: 0, minor: 8, build: 5)
-group = 'xyz.nightfury'
-version = versionObj.toString()
+def ver = new Version(major: 0, minor: 8, build: 5)
+group 'xyz.nightfury'
+version "$ver"
 mainClassName = "${group}.${rootProject.name}Kt"
+
+sourceCompatibility = 9
+targetCompatibility = 9
 
 sourceSets {
     test {
@@ -66,13 +69,13 @@ sourceSets {
 
 dependencies {
     // Kotlin
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
 
     // JDA
     compile "net.dv8tion:JDA:$jda_version"
-    compile "com.github.JDA-Applications:JDA-Utilities:$jda_utilities_version"
+    compile "com.jagrosh:jda-utilities:$jda_utilities_version"
     compile "com.sedmelluq:lavaplayer:$lavaplayer_version"
 
     // Config
@@ -90,31 +93,39 @@ dependencies {
 
     // JagTag
     compile 'com.jagrosh:JagTag:0.5'
+
+    compile project(":commons")
+    compile project(":database")
 }
 
 jar {
     manifest {
-        attributes 'Implementation-Version': version.toString(), 'Main-Class': mainClassName
+        attributes 'Implementation-Version': "$version",
+                   'Main-Class': mainClassName
     }
 }
 
 shadowJar {
-    baseName = 'NightFury'
-    version = ''
-    classifier = ''
+    baseName 'NightFury'
+    version ''
+    classifier ''
 
     exclude('com/jagrosh/jdautilities/commandclient/**')
     exclude('android/**')
     exclude('README.md')
 
     manifest {
-        attributes 'Manifest-Version': "${versionObj.major}.${versionObj.minor}"
+        attributes 'Manifest-Version': "${ver.major}.${ver.minor}"
     }
 }
 
 allprojects {
-    group = 'xyz.nightfury'
-    version = versionObj.toString()
+    project.ext {
+        versionObj = ver
+    }
+
+    group 'xyz.nightfury'
+    version "$ext.versionObj"
 
     apply plugin: 'java'
     apply plugin: 'kotlin'

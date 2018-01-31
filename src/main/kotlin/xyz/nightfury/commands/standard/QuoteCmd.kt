@@ -81,13 +81,13 @@ class QuoteCmd : Command() {
         event.reply(embed {
             author {
                 value = message.author.formattedName(false)
-                url   = message.author.effectiveAvatarUrl
-                icon  = message.author.effectiveAvatarUrl
+                url = message.author.effectiveAvatarUrl
+                icon = message.author.effectiveAvatarUrl
             }
 
-            description {  message.contentRaw  }
-            time        { message.creationTime }
-            color       { message.member?.color }
+            description { message.contentRaw }
+            time { message.creationTime }
+            color { message.member?.color }
         })
 
         event.invokeCooldown()

@@ -20,9 +20,9 @@ import xyz.nightfury.CommandEvent
 import xyz.nightfury.entities.embed
 import xyz.nightfury.extensions.readableFormat
 import xyz.nightfury.resources.Arguments
-import xyz.nightfury.resources.Emojis
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.annotations.HasDocumentation
+import xyz.nightfury.resources.Emojis
 
 /**
  * @author Kaidan Gustave
@@ -30,7 +30,7 @@ import xyz.nightfury.annotations.HasDocumentation
 @HasDocumentation
 class EmoteCmd : Command() {
     companion object {
-        private val bullet = "\uD83D\uDD39"
+        private const val bullet = "\uD83D\uDD39"
     }
 
     init {
@@ -49,7 +49,7 @@ class EmoteCmd : Command() {
                 return event.replyError("The specified emote was fake, or could not be retrieved!")
             val emote = emotes[0]
             event.reply(embed {
-                title { "Info on ${if(event.jda.getEmoteById(emote.idLong)==null) ":${emote.name}:" else emote.asMention}" }
+                title { "Info on ${if(event.jda.getEmoteById(emote.idLong) == null) ":${emote.name}:" else emote.asMention}" }
                 color { event.member?.color }
 
                 append("$bullet **Name:** ${emote.name}\n")
@@ -59,9 +59,9 @@ class EmoteCmd : Command() {
                 append("$bullet **Creation Date:** ${emote.creationTime.readableFormat}\n")
                 append("$bullet **ID:** ${emote.id}\n")
                 append("$bullet **Managed:** ${if(emote.isManaged) Emojis.GREEN_TICK else Emojis.RED_TICK}")
-                image  { emote.imageUrl }
+                image { emote.imageUrl }
                 footer { value = "Created at" }
-                time   { emote.creationTime }
+                time { emote.creationTime }
             })
         } else {
             val unicode = args.replace(" ", "")
@@ -75,17 +75,17 @@ class EmoteCmd : Command() {
                         val chars = Character.toChars(it)
                         var hex = Integer.toHexString(it).toUpperCase()
 
-                        while(hex.length<4) hex = "0"+hex
+                        while(hex.length < 4) hex = "0" + hex
 
                         append("\n`\\u")
                         append(hex)
                         append("`   ")
 
-                        if(chars.size>1) {
+                        if(chars.size > 1) {
                             var hex0 = Integer.toHexString(chars[0].toInt()).toUpperCase()
                             var hex1 = Integer.toHexString(chars[1].toInt()).toUpperCase()
-                            while(hex0.length<4) hex0 = "0"+hex0
-                            while(hex1.length<4) hex1 = "0"+hex1
+                            while(hex0.length < 4) hex0 = "0" + hex0
+                            while(hex1.length < 4) hex1 = "0" + hex1
                             append("[`\\u")
                             append(hex0)
                             append("\\u")

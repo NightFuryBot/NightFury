@@ -67,7 +67,7 @@ class ImageCmd(private val api: GoogleImageAPI) : Command() {
         }
     }
 
-    fun selectResultURL(query: String, results: List<String>): String {
+    private fun selectResultURL(query: String, results: List<String>): String {
         // Start with last index of the results
         var index = results.size - 1
 

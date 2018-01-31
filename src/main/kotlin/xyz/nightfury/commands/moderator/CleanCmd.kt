@@ -22,7 +22,7 @@ import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Message
 import xyz.nightfury.*
 import xyz.nightfury.annotations.HasDocumentation
-import xyz.nightfury.entities.ModLogger
+import xyz.nightfury.db.entities.ModLogger
 import xyz.nightfury.entities.await
 import xyz.nightfury.extensions.getPast
 import java.util.*
@@ -52,10 +52,10 @@ class CleanCmd : Command() {
         this.botPermissions = arrayOf(Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE)
     }
 
-    val Message.hasImage : Boolean
+    private val Message.hasImage: Boolean
         get() = when {
             attachments.stream().anyMatch { it.isImage } -> true
-            embeds.stream().anyMatch { it.image != null || it.videoInfo != null }  -> true
+            embeds.stream().anyMatch { it.image != null || it.videoInfo != null } -> true
             else -> false
         }
 
@@ -64,19 +64,19 @@ class CleanCmd : Command() {
 
         // Reason
         val reasonMatcher = Arguments.reasonPattern.matchEntire(args)
-        val reason : String? = if(reasonMatcher!=null) {
+        val reason: String? = if(reasonMatcher != null) {
             val groups = reasonMatcher.groupValues
             args = groups[1]
             groups[2]
         } else null
 
-        val quotes : MutableSet<String> = HashSet()
+        val quotes = HashSet<String>()
 
         // Specific text
         quotePattern.findAll(args).forEach { quotes.add(it.groupValues[1].trim().toLowerCase()) }
         args = quotePattern.replace(args, "").trim()
 
-        val ids : MutableSet<Long> = HashSet()
+        val ids = HashSet<Long>()
 
         // Mentions
         event.message.mentionedUsers.forEach { ids.add(it.idLong) }
@@ -136,7 +136,7 @@ class CleanCmd : Command() {
 
         launch {
             val messages = event.textChannel.history.getPast(num, breakIf = {
-                it[it.size-1].creationTime.isBefore(twoWeeksPrior)
+                it[it.size - 1].creationTime.isBefore(twoWeeksPrior)
             })
 
             messages.remove(event.message) // Remove call message
@@ -178,15 +178,16 @@ class CleanCmd : Command() {
             try {
                 var i = 0
                 while(i < numDeleted) { // Delet this
-                    if(i+100>numDeleted) {
-                        if(i+1==numDeleted)
-                            toDelete[numDeleted-1].delete().await()
+                    if(i + 100 > numDeleted) {
+                        if(i + 1==numDeleted)
+                            toDelete[numDeleted - 1].delete().await()
                         else
                             event.textChannel.deleteMessages(toDelete.subList(i, numDeleted)).await()
                     } else {
-                        event.textChannel.deleteMessages(toDelete.subList(i, i+100)).await()
+                        event.textChannel.deleteMessages(toDelete.subList(i, i + 100)).await()
                     }
-                    i+=100
+
+                    i += 100
                 }
 
                 if(reason != null)
@@ -194,8 +195,10 @@ class CleanCmd : Command() {
                 else
                     ModLogger.newClean(event.member, event.textChannel, numDeleted)
 
-                event.replySuccess("Successfully cleaned $numDeleted messages!")
-            } catch (e : Exception) {
+                event.replySuccess("Successfully cleaned $numDeleted messages!") {
+                    event.invokeCooldown()
+                }
+            } catch (e: Exception) {
                 NightFury.LOG.error("An error occurred", e)
                 // If something happens, we want to make sure that we inform them because
                 // messages may have already been deleted.

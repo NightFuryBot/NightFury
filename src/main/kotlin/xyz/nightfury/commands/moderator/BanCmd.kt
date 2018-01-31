@@ -20,20 +20,18 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.promise
-import xyz.nightfury.entities.then
 import xyz.nightfury.extensions.banFrom
 import xyz.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.annotations.HasDocumentation
-import xyz.nightfury.entities.ModLogger
+import xyz.nightfury.db.entities.ModLogger
 
 /**
  * @author Kaidan Gustave
  */
 @HasDocumentation
 @MustHaveArguments("Mention a user or provide a user ID to ban.")
-class BanCmd : Command()
-{
+class BanCmd : Command() {
     init {
         this.name = "Ban"
         this.arguments = "[@User or ID] <Reason>"
@@ -43,52 +41,48 @@ class BanCmd : Command()
         this.guildOnly = true
     }
 
-    override fun execute(event: CommandEvent)
-    {
-        val parsed = event.modSearch()?:return
+    override fun execute(event: CommandEvent) {
+        val parsed = event.modSearch() ?: return
 
         val id = parsed.first
         val reason = parsed.second
 
-        event.jda.retrieveUserById(id) then {
+        event.jda.retrieveUserById(id).promise() then { user ->
             // If no user is found we just respond and end.
-            if(this == null) return@then event.replyError("Could not find a user matching \"${event.args}\"!")
+            if(user == null)
+                return@then event.replyError("Could not find a user matching \"${event.args}\"!")
 
             // Error Responses
-            val error = when
-            {
-                event.selfUser == this
+            val error = when {
+                event.selfUser == user
                         -> "I cannot ban myself from the server!"
 
-                event.author == this
+                event.author == user
                         -> "You cannot ban yourself from the server!"
 
-                event.guild.owner.user == this
-                        -> "You cannot ban ${this.formattedName(true)} because they are the owner of the server!"
+                event.guild.owner.user == user
+                        -> "You cannot ban ${user.formattedName(true)} because they are the owner of the server!"
 
-                event.guild.isMember(this) && !event.selfMember.canInteract(event.guild.getMember(this))
-                        -> "I cannot ban ${this.formattedName(true)}!"
+                event.guild.isMember(user) && !event.selfMember.canInteract(event.guild.getMember(user))
+                        -> "I cannot ban ${user.formattedName(true)}!"
 
-                event.guild.isMember(this) && !event.member.canInteract(event.guild.getMember(this))
-                        -> "You cannot ban ${this.formattedName(true)}!"
+                event.guild.isMember(user) && !event.member.canInteract(event.guild.getMember(user))
+                        -> "You cannot ban ${user.formattedName(true)}!"
 
                 else    -> null
             }
-            if(error!=null) return@then event.replyError(error)
 
-            if(reason != null) {
-                this.banFrom(event.guild, 1, reason)
-            } else {
-                this.banFrom(event.guild, 1)
-            }.promise() then {
-                if(reason != null)
-                    ModLogger.newBan(event.member, this, reason)
-                else
-                    ModLogger.newBan(event.member, this)
-                event.replySuccess("${this.formattedName(true)} was banned from the server.")
+            if(error != null)
+                return@then event.replyError(error)
+
+            user.banFrom(event.guild, 1, reason).promise() then {
+                ModLogger.newBan(event.member, user, reason)
+                event.replySuccess("${user.formattedName(true)} was banned from the server.")
             } catch {
-                event.replyError("Banning ${this.formattedName(true)} failed for an unexpected reason!")
+                event.replyError("Banning ${user.formattedName(true)} failed for an unexpected reason!")
             }
-        } catch { event.replyError("An unexpected error occurred when finding a user with ID: $id!") }
+        } catch {
+            event.replyError("An unexpected error occurred when finding a user with ID: $id!")
+        }
     }
 }

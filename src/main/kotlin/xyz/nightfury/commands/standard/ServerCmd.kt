@@ -94,15 +94,15 @@ class ServerCmd(waiter: EventWaiter, invisTracker: InvisibleTracker) : Command()
 @AutoInvokeCooldown
 private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Command() {
     companion object {
-        private val BULLET : String = "\uD83D\uDD39 "
-        private val STREAMING_EMOTE_ID = 313956277132853248L
-        private val ASTERISK_ESC = "\u002A"
-        private val UNDERSCORE_ESC = "\u005F"
-        private val TILDE_ESC = "\u007E"
-        private val L_PARENTHESIS_ESC = "\u0028"
-        private val R_PARENTHESIS_ESC = "\u0029"
-        private val L_BRACKET_ESC = "\u005B"
-        private val R_BRACKET_ESC = "\u005D"
+        private const val BULLET : String = "\uD83D\uDD39 "
+        private const val STREAMING_EMOTE_ID = 313956277132853248L
+        private const val ASTERISK_ESC = "\u002A"
+        private const val UNDERSCORE_ESC = "\u005F"
+        private const val TILDE_ESC = "\u007E"
+        private const val L_PARENTHESIS_ESC = "\u0028"
+        private const val R_PARENTHESIS_ESC = "\u0029"
+        private const val L_BRACKET_ESC = "\u005B"
+        private const val R_BRACKET_ESC = "\u005D"
         private fun cleanEscapes(string: String) : String = string
                 .replace("*", ASTERISK_ESC)
                 .replace("_", UNDERSCORE_ESC)
@@ -126,8 +126,7 @@ private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Comma
         val user : User = member.user
 
         event.reply(embed {
-            title = "${if(user.isBot) event.jda.getEmoteById(230105988211015680L)!!.asMention else "\u2139"} " +
-                    "__Information on ${user.formattedName(false)}:__"
+            title = "${if(user.isBot) event.jda.getEmoteById(230105988211015680L)!!.asMention else "\u2139"} " + "__Information on ${user.formattedName(false)}:__"
             thumbnail = if(user.avatarUrl == null) user.defaultAvatarUrl else user.avatarUrl
             append(BULLET).append("**ID:** ${user.id}")
             appendln()
@@ -138,10 +137,9 @@ private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Comma
             }
             val roles = member.roles
             if(roles.isNotEmpty()) {
-                append(BULLET).append("**Role${if (roles.size > 1) "s" else ""}:** ")
+                append(BULLET).append("**Role${if(roles.size > 1) "s" else ""}:** ")
                 append("`${roles[0].name}`")
-                for(i in 1 until roles.size)
-                    append(", `${roles[i].name}`")
+                for(i in 1 until roles.size) append(", `${roles[i].name}`")
                 appendln()
             }
             append(BULLET).append("**Status:** ")
@@ -174,24 +172,19 @@ private class ServerOwnerCmd(private val invisTracker: InvisibleTracker) : Comma
             val joins = ArrayList(event.guild.members)
             joins.sortWith(Comparator.comparing(Member::getJoinDate))
             var index = joins.indexOf(member)
-            append(" `[#").append(index+1).append("]`")
+            append(" `[#").append(index + 1).append("]`")
             appendln()
             append(BULLET).append("**Join Order:** ")
             appendln()
             index -= 3
-            if(index < 0)
-                index = 0
-            if(joins[index] == member)
-                append("**[${user.name}]()**")
-            else
-                append(joins[index].user.name)
+            if(index < 0) index = 0
+            if(joins[index] == member) append("**[${user.name}]()**")
+            else append(joins[index].user.name)
             for(i in index + 1 until index + 7) {
-                if(i>=joins.size)
-                    break
+                if(i >= joins.size) break
                 val m = joins[i]
-                var name : String = m.user.name
-                if(member == m)
-                    name = "**[$name]()**"
+                var name: String = m.user.name
+                if(member == m) name = "**[$name]()**"
                 append(" > $name")
             }
         })
@@ -309,8 +302,7 @@ private class ServerStatsCmd : Command() {
             field {
                 name = "Members"
                 appendln("Total: ${event.guild.members.size}")
-                if(SQLModeratorRole.hasRole(event.guild))
-                {
+                if(SQLModeratorRole.hasRole(event.guild)) {
                     val modRole = SQLModeratorRole.getRole(event.guild)
                     appendln("Moderators: ${event.guild.members.filter { it.roles.contains(modRole) }.size}")
                 }

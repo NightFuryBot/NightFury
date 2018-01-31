@@ -57,16 +57,17 @@ private class WelcomeSetCmd : Command()
         this.category = Category.ADMIN
     }
 
-    override fun execute(event: CommandEvent)
-    {
-        val args = event.args.split(Regex("\\s+"),2)
-        if(args.size<2)
+    override fun execute(event: CommandEvent) {
+        val args = event.args.split(Regex("\\s+"), 2)
+        if(args.size < 2)
             return event.replyError(TOO_FEW_ARGS_ERROR.format("Please specify a channel and a welcome message!"))
-        if(args[1].length>1900)
-            return event.replyError("**Welcome message content cannot exceed 1900 characters in length!**\n" +
-                    SEE_HELP.format(event.client.prefix, fullname))
-        val channel = with(event.guild findTextChannels args[0])
-        {
+        if(args[1].length > 1900) {
+            return event.replyError(
+                "**Welcome message content cannot exceed 1900 characters in length!**\n" +
+                SEE_HELP.format(event.client.prefix, fullname)
+            )
+        }
+        val channel = with(event.guild.findTextChannels(args[0])) {
             if(isEmpty())
                 return event.replyError(noMatch("text channels", args[0]))
             if(size > 1)
@@ -75,7 +76,8 @@ private class WelcomeSetCmd : Command()
         }
 
         if(!channel.canTalk()) {
-            return event.replyError("I cannot set the welcome channel to ${channel.asMention} because I do not have the permission to send messages there!")
+            return event.replyError("I cannot set the welcome channel to ${channel.asMention} " +
+                                    "because I do not have the permission to send messages there!")
         }
 
         SQLWelcomes.setWelcome(channel, args[1])

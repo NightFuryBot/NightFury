@@ -57,18 +57,17 @@ private class PrefixAddCmd : Command() {
         this.category = Category.ADMIN
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val args = event.args
         when {
             args.equals(event.client.prefix, true) -> // Default Prefix
                 event.replyError("`$args` cannot be added as a prefix because it is the default prefix!")
 
+            args.length > 50 -> // Longer than allowed
+                event.replyError("`$args` cannot be added as a prefix because it's longer than 50 characters!")
+
             SQLPrefixes.isPrefix(event.guild, args) -> // Already a prefix
                 event.replyError("`$args` cannot be added as a prefix because it is already a prefix!")
-
-            args.length>50 -> // Longer than allowed
-                event.replyError("`$args` cannot be added as a prefix because it's longer than 50 characters!")
 
             else -> {
                 SQLPrefixes.addPrefix(event.guild, args)
@@ -91,11 +90,9 @@ private class PrefixRemoveCmd : Command() {
         this.category = Category.ADMIN
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val args = event.args
-        when
-        {
+        when {
             args.equals(event.client.prefix, true) -> // Default prefix
                 event.replyError("`$args` cannot be removed as a prefix because it is the default prefix!")
 
@@ -123,16 +120,15 @@ private class PrefixListCmd : Command() {
         this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
-    override fun execute(event: CommandEvent)
-    {
+    override fun execute(event: CommandEvent) {
         val prefixes = SQLPrefixes.getPrefixes(event.guild)
         if(prefixes.isEmpty())
             event.replyError("There are no custom prefixes available for this server!")
         else event.reply(embed {
             title = "Custom prefixes for **${event.guild.name}**"
             prefixes.forEach { prefix -> append("`$prefix`\n") }
-            color  { event.selfMember.color }
-            footer { value = "Total ${prefixes.size}"}
+            color { event.selfMember.color }
+            footer { value = "Total ${prefixes.size}" }
         })
     }
 }

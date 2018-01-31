@@ -16,7 +16,7 @@
 package xyz.nightfury.api
 
 import org.jsoup.Jsoup
-import org.slf4j.LoggerFactory
+import xyz.nightfury.extensions.createLogger
 import java.io.IOException
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -29,26 +29,25 @@ class GoogleAPI : AbstractAPICache<List<String>>()
 {
     private companion object
     {
-        private val URL_FORMAT : String = "https://www.google.com/search?q=%s&num=10"
-        private val LOG = LoggerFactory.getLogger("Google")
-        private val ENCODING = "UTF-8"
-        private val USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+        private const val URL_FORMAT : String = "https://www.google.com/search?q=%s&num=10"
+        private const val ENCODING = "UTF-8"
+        private const val USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+        private val LOG = createLogger(GoogleAPI::class)
     }
 
     override val hoursToDecay: Long = 5
 
-    fun search(query: String) : List<String>?
-    {
+    fun search(query: String): List<String>? {
         val cached = getFromCache(query)
-        if(cached!=null)
+        if(cached != null)
             return cached
-        val request: String = try {
+        val request = try {
             URL_FORMAT.format(URLEncoder.encode(query, ENCODING))
         } catch (e: UnsupportedOperationException) {
             LOG.error("Error processing request: $e")
             return@search null
         }
-        val result : List<String> = try {
+        val result: List<String> = try {
             Jsoup.connect(request).userAgent(USER_AGENT).timeout(7500).get()
                     .select("a[href]").stream()
                     .map { it.attr("href") }
@@ -60,7 +59,7 @@ class GoogleAPI : AbstractAPICache<List<String>>()
                     }
                     .filter { it.isNotEmpty() && it != "/settings/ads/preferences?hl=en" }
                     .toList()
-        } catch (e: IOException) {
+        } catch(e: IOException) {
             LOG.error("Encountered an IOException: $e")
             return@search null
         }

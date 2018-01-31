@@ -23,8 +23,7 @@ import xyz.nightfury.music.MusicManager
  * @author Kaidan Gustave
  */
 @MustHaveArguments("Try specifying the name of a song, or providing a YouTube link.")
-class PlayCmd(musicManager: MusicManager) : MusicCmd(musicManager)
-{
+class PlayCmd(musicManager: MusicManager): MusicCmd(musicManager) {
     init {
         this.name = "Play"
         this.help = "Plays a song based on user query."

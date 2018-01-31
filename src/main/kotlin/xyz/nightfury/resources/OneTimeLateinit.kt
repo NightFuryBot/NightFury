@@ -21,9 +21,9 @@ import kotlin.reflect.KProperty
 /**
  * @author Kaidan Gustave
  */
-class OneTimeInit<in I: Any, T: Any>(val default: T?) {
+class OneTimeInit<in I: Any, T: Any>(private val default: T?) {
 
-    lateinit var variable: T
+    private lateinit var variable: T
 
     operator fun getValue(instance: I, property: KProperty<*>): T {
         if(!::variable.isInitialized) {

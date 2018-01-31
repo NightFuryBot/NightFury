@@ -36,7 +36,7 @@ import net.dv8tion.jda.core.entities.VoiceChannel
 /**
  * @author Kaidan Gustave
  */
-abstract class MusicCmd(protected val musicManager: MusicManager) : Command() {
+abstract class MusicCmd(protected val musicManager: MusicManager): Command() {
     init {
         this.guildOnly = true
         this.botPermissions = arrayOf(Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)
@@ -44,13 +44,13 @@ abstract class MusicCmd(protected val musicManager: MusicManager) : Command() {
     }
 
     // Extensions for commands
-    protected val Guild.isPlaying : Boolean
+    protected val Guild.isPlaying: Boolean
         get() = musicManager.isPlaying(this)
 
-    protected val Member.voiceChannel : VoiceChannel?
+    protected val Member.voiceChannel: VoiceChannel?
         get() = voiceState.channel
 
-    protected val Member.isInProperVoice : Boolean
+    protected val Member.isInProperVoice: Boolean
         get() = musicManager.getQueue(guild)?.run {
             !isDead || this@isInProperVoice.voiceState.channel?.equals(this.voiceChannel) ?: true
         } ?: true

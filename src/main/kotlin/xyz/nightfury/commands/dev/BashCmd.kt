@@ -20,6 +20,7 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.annotations.MustHaveArguments
 import org.slf4j.LoggerFactory
+import xyz.nightfury.extensions.createLogger
 import java.io.IOException
 import java.io.InputStreamReader
 import java.io.BufferedReader
@@ -29,6 +30,9 @@ import java.io.BufferedReader
  */
 @MustHaveArguments("Cannot execute a empty command!")
 class BashCmd : Command() {
+    companion object {
+        private val LOG = createLogger("Bash")
+    }
 
     init {
         this.name = "Bash"
@@ -61,7 +65,7 @@ class BashCmd : Command() {
         } catch (e: IOException) {
             return event.reply("I wasn't able to find the command `${event.args}`!")
         } catch (e: Exception) {
-            LoggerFactory.getLogger("Bash").apply {
+            LOG.apply {
                 warn("An unknown error occurred!",e)
             }
             return event.replyError("An unknown error occurred!")
@@ -70,7 +74,7 @@ class BashCmd : Command() {
         try {
             return event.reply("Input: ```\n${event.args}``` Output: \n```\n$finalOutput```")
         } catch (e: IllegalArgumentException) {
-            LoggerFactory.getLogger("Bash").info("Input: ${event.args}\nOutput: $finalOutput")
+            LOG.info("Input: ${event.args}\nOutput: $finalOutput")
             event.reply("Command output too long! Output sent in console.")
         }
 

@@ -31,9 +31,9 @@ import javax.script.ScriptException
  * @author Kaidan Gustave
  */
 @MustHaveArguments("Specify script to evaluate.")
-class EvalCmd(val musicManager: MusicManager) : Command()
+class EvalCmd(private val musicManager: MusicManager) : Command()
 {
-    internal var engine : ScriptEngine = ScriptEngineManager().getEngineByName("nashorn")
+    private val engine: ScriptEngine = ScriptEngineManager().getEngineByName("nashorn")
 
     init {
         this.name = "Eval"
@@ -51,9 +51,13 @@ class EvalCmd(val musicManager: MusicManager) : Command()
         } else event.args
 
         when {
-            args matches Regex("9\\s*\\+\\s*10") -> event.reply("```java\n$args```Evaluated:\n```\n21```")
+            args matches Regex("9\\s*\\+\\s*10") -> {
+                event.reply("```java\n$args```Evaluated:\n```\n21```")
+            }
 
-            args matches Regex("requires\\(\"discord\\.js\"\\);?") -> event.reply("```js\n$args```Evaluated:\n```\nNo```")
+            args matches Regex("requires\\(\"discord\\.js\"\\);?") -> {
+                event.reply("```js\n$args```Evaluated:\n```\nNo```")
+            }
 
             args matches Regex("System\\.exit\\(\\d+\\);?") -> {
                 event.replyWarning("Shutting down...")
@@ -73,9 +77,9 @@ class EvalCmd(val musicManager: MusicManager) : Command()
         }
     }
 
-    private infix inline fun <reified T : ScriptEngine> T.eval(script: String) = eval(script)
+    private inline infix fun <reified T : ScriptEngine> T.eval(script: String) = eval(script)
 
-    private infix inline fun <reified T : ScriptEngine> T.load(event: CommandEvent) : T {
+    private inline infix fun <reified T : ScriptEngine> T.load(event: CommandEvent) : T {
         // STANDARD
         put("event", event)
         put("jda", event.jda)

@@ -24,7 +24,7 @@ import xyz.nightfury.extensions.kick
 import xyz.nightfury.extensions.formattedName
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.annotations.HasDocumentation
-import xyz.nightfury.entities.ModLogger
+import xyz.nightfury.db.entities.ModLogger
 
 /**
  * @author Kaidan Gustave
@@ -52,8 +52,7 @@ class KickCmd : Command() {
         val target = event.guild.getMemberById(id)?:return event.replyError("Could not find a member matching \"${event.args}\"!")
 
         // Error Responses
-        val error = when
-        {
+        val error = when {
             event.selfMember == target
                     -> "I cannot kick myself from the server!"
 
@@ -72,12 +71,10 @@ class KickCmd : Command() {
             else    -> null
         }
 
-        if(error!=null) return event.replyError(error)
-        if(reason != null) {
-            target kick reason
-        } else {
-            target.kick()
-        } then {
+        if(error != null)
+            return event.replyError(error)
+
+        target.kick(reason) then {
             if(reason != null)
                 ModLogger.newKick(event.member, target.user, reason)
             else

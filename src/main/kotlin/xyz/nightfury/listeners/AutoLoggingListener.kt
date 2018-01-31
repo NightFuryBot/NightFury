@@ -15,7 +15,7 @@
  */
 package xyz.nightfury.listeners
 
-import xyz.nightfury.entities.ModLogger
+import xyz.nightfury.db.entities.ModLogger
 import xyz.nightfury.entities.then
 import xyz.nightfury.extensions.action
 import xyz.nightfury.extensions.isSelf

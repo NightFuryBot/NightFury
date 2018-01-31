@@ -15,3 +15,5 @@
  */
 rootProject.name = 'NightFury'
 
+include 'commons'
+include 'database'

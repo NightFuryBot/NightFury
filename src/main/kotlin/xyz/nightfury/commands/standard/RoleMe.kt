@@ -60,7 +60,7 @@ class RoleMeCmd(waiter: EventWaiter) : Command() {
         if(allRoleMes.isEmpty())
             return event.replyError("**No RoleMe roles on this server!**\n" +
                     SEE_HELP.format(event.client.prefix, name))
-        val roles = event.guild findRoles query
+        val roles = event.guild.findRoles(query)
         if(roles.isEmpty())
             return event.replyError(noMatch("roles", query))
         val roleMes = roles.stream().filter { SQLRoleMe.isRole(it) }.toList()
@@ -78,14 +78,15 @@ class RoleMeCmd(waiter: EventWaiter) : Command() {
                 if(event.roleMeLimit<=event.member.roles.stream().filter { SQLRoleMe.isRole(it) }.count())
                     return event.replyError("More RoleMe roles cannot be added because you are at the limit set by the server!")
             }
-            event.member giveRole requested then {
+
+            event.member.giveRole(requested) then {
                 event.replySuccess("Successfully gave the role **${requested.name}**!")
                 event.invokeCooldown()
             } catch {
                 event.replyError("An error occurred while giving the role **${requested.name}**!")
             }
         } else {
-            event.member removeRole requested then {
+            event.member.removeRole(requested) then {
                 event.replySuccess("Successfully removed the role **${requested.name}**!")
                 event.invokeCooldown()
             } catch {
@@ -119,7 +120,7 @@ private class RoleMeAddCmd : Command() {
 
     override fun execute(event: CommandEvent) {
         val query = event.args
-        val found = event.guild findRoles query
+        val found = event.guild.findRoles(query)
         if(found.isEmpty())
             return event.replyError(noMatch("roles", query))
         if(found.size>1)

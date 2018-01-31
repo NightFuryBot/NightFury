@@ -36,7 +36,7 @@ import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemov
 import net.dv8tion.jda.core.hooks.EventListener
 import xyz.nightfury.entities.await
 import xyz.nightfury.entities.promise
-import xyz.nightfury.entities.starboard.StarboardHandler
+import xyz.nightfury.db.entities.starboard.StarboardHandler
 import xyz.nightfury.entities.starboard.isStarReaction
 
 /**

@@ -42,8 +42,8 @@ import okhttp3.*
 import org.json.JSONObject
 import org.json.JSONTokener
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import xyz.nightfury.db.*
+import xyz.nightfury.extensions.createLogger
 import xyz.nightfury.extensions.formattedName
 import java.io.IOException
 import java.time.OffsetDateTime
@@ -92,7 +92,7 @@ class Client internal constructor(val prefix: String,      val devId: Long,
     private val callCache: FixedSizeCache<Long, MutableSet<Message>> = FixedSizeCache(300)
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger("Client")
+        private val log: Logger = createLogger(Client::class)
     }
 
     //////////////////////

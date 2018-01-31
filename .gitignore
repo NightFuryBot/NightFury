@@ -1,13 +1,13 @@
 # IntelliJ project files
 .idea
-/out/
-/src/test/
-/src/main/java/
+/**/out/
+/**/src/test/
+/**/src/main/java/
 *.iml
 
 # Gradle Files
 /.gradle/
-/build/
+/**/build/
 
 # Configurations
 /src/main/resources/bot.conf

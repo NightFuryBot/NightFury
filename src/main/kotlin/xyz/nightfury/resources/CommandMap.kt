@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("unused")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
 package xyz.nightfury.resources
 
 import xyz.nightfury.Command
@@ -38,16 +38,17 @@ import xyz.nightfury.Command
  *
  * @author Kaidan Gustave
  */
-class CommandMap(private vararg val commands : Command) : Collection<Command> {
+class CommandMap(private vararg val commands: Command): Collection<Command> {
     private val map = HashMap<String, Int>()
 
     /** The size of the initial [Command] [Array]. */
-    override val size: Int = commands.size
+    override val size = commands.size
 
     init {
-        commands.forEachIndexed { index, command ->
-            map.put(command.name.toLowerCase(), index)
-            command.aliases.forEach { map.put(it.toLowerCase(), index) }
+        commands.forEachIndexed { i, c ->
+            map[c.name.toLowerCase()] = i
+
+            c.aliases.forEach { map[it.toLowerCase()] = i }
         }
     }
 
@@ -86,9 +87,12 @@ class CommandMap(private vararg val commands : Command) : Collection<Command> {
      * @return A [Command] with a matching [name], or `null` if
      * no Command matches.
      */
-    fun getCommandByName(name: String): Command? = if(containsName(name)) {
-        commands.getOrNull(map.getOrDefault(name.toLowerCase(), -1))
-    } else null
+    fun getCommandByName(name: String): Command? {
+        if(containsName(name))
+            return commands.getOrNull(map.getOrDefault(name.toLowerCase(), -1))
+
+        return null
+    }
 
     /**
      * Returns `true` if and only if the backing [map] index
@@ -101,7 +105,7 @@ class CommandMap(private vararg val commands : Command) : Collection<Command> {
      * @return `true` if this [CommandMap] contains a
      * [Command] with a matching [name], `false` otherwise.
      */
-    fun containsName(name: String): Boolean = map.contains(name.toLowerCase())
+    fun containsName(name: String): Boolean = name.toLowerCase() in map
 
     /**
      * Returns `true` if and only if the backing [map] index
@@ -117,7 +121,7 @@ class CommandMap(private vararg val commands : Command) : Collection<Command> {
      * otherwise.
      */
     fun containsAllNames(names: Collection<String>): Boolean {
-        names.forEach { if(!map.contains(it)) return false }
+        names.forEach { if(it !in map) return false }
         return true
     }
 
@@ -128,7 +132,7 @@ class CommandMap(private vararg val commands : Command) : Collection<Command> {
     override fun contains(element: Command): Boolean = commands.contains(element)
 
     override fun containsAll(elements: Collection<Command>): Boolean {
-        elements.forEach { if(!commands.contains(it)) return false }
+        elements.forEach { if(it !in commands) return false }
         return true
     }
 
