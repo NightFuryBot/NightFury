@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
+package xyz.nightfury.api.util
 
-include 'commons'
-include 'database'
-include 'api'
+inline val Long.length: Int
+    inline get() = "$this".length

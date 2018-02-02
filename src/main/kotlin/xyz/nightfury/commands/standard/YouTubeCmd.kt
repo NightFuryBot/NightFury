@@ -21,7 +21,7 @@ import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.APICache
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.api.YouTubeAPI
+import xyz.nightfury.requests.YouTubeAPI
 
 /**
  * @author Kaidan Gustave

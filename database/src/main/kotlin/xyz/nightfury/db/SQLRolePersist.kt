@@ -29,10 +29,10 @@ object SQLRolePersist : Table() {
     private const val remove = "DELETE FROM ROLE_PERSIST WHERE GUILD_ID = ? AND USER_ID = ?"
     private const val removeAll = "DELETE FROM ROLE_PERSIST WHERE GUILD_ID = ?"
 
-    fun isRolePersist(guild: Guild): Boolean = SQLEnables.hasStatusFor(guild, SQLEnables.Type.ROLE_PERSIST)
+    fun isRolePersist(guild: Guild): Boolean = SQLEnables.hasStatusFor(guild.idLong, ISQLEnables.Type.ROLE_PERSIST)
 
     fun setIsRolePersist(guild: Guild, status: Boolean) {
-        SQLEnables.setStatusFor(guild, SQLEnables.Type.ROLE_PERSIST, status)
+        SQLEnables.setStatusFor(guild.idLong, ISQLEnables.Type.ROLE_PERSIST, status)
     }
 
     fun getRolePersist(member: Member): Set<Role> {

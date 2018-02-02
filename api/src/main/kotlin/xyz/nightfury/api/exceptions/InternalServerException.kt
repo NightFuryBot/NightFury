@@ -13,8 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
+package xyz.nightfury.api.exceptions
 
-include 'commons'
-include 'database'
-include 'api'
+import xyz.nightfury.api.util.INTERNAL_SERVER_ERROR
+
+/**
+ * @author Kaidan Gustave
+ */
+class InternalServerException
+constructor(message: String? = null, override val cause: Throwable? = null):
+    HttpException(INTERNAL_SERVER_ERROR, "Internal Server Error", true, cause) {
+    override val logMessage: String = cause?.message ?: message ?: super.logMessage
+}

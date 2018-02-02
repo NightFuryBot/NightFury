@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
+package xyz.nightfury.api.exceptions
 
-include 'commons'
-include 'database'
-include 'api'
+import xyz.nightfury.api.util.BAD_REQUEST
+
+/**
+ * @author Kaidan Gustave
+ */
+class BadRequestException(message: String, log: Boolean = false): HttpException(BAD_REQUEST, message, log)

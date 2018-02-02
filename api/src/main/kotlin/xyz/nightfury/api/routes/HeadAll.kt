@@ -13,8 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
+package xyz.nightfury.api.routes
 
-include 'commons'
-include 'database'
-include 'api'
+import spark.kotlin.RouteHandler
+import spark.route.HttpMethod.head
+import xyz.nightfury.api.APINoBodyRoute
+import xyz.nightfury.api.util.NO_CONTENT
+
+/**
+ * @author Kaidan Gustave
+ */
+object HeadAll : APINoBodyRoute.Base(head, "/*") {
+    override fun RouteHandler.handle() {
+        status(NO_CONTENT)
+    }
+}

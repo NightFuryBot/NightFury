@@ -13,8 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
+package xyz.nightfury.api.objects
 
-include 'commons'
-include 'database'
-include 'api'
+import me.kgustave.kson.KSONObject
+
+/**
+ * @author Kaidan Gustave
+ */
+interface KSONAdapter {
+    fun toKSON(): KSONObject
+}

@@ -19,17 +19,14 @@ import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.core.entities.User
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import xyz.nightfury.entities.starboard.IStarboard
+import xyz.nightfury.extensions.createLogger
 import java.time.OffsetDateTime
 
 /**
  * @author Kaidan Gustave
  */
-class Starboard(val guild: Guild,
-                private val map: MutableMap<Long, StarMessage> = HashMap()
-): MutableMap<Long, StarMessage> by map, IStarboard<StarMessage> {
+class Starboard(val guild: Guild): MutableMap<Long, StarMessage> by HashMap(), IStarboard<StarMessage> {
     override var channel: TextChannel?
         get()      = Settings.getChannel(guild)
         set(value) = if(value != null) Settings.setChannel(value) else Settings.deleteSettingsFor(guild)
@@ -49,16 +46,14 @@ class Starboard(val guild: Guild,
         // Message is older than allowed
         if(starred.creationTime.plusHours(maxAge.toLong()).isBefore(OffsetDateTime.now()))
             return
-        synchronized(map) {
-            map[starred.idLong] ?: StarMessage(this, starred).also { map[starred.idLong] = it }
-        }.addStar(user)
+        (this[starred.idLong] ?: StarMessage(this, starred).also { this[starred.idLong] = it }).addStar(user)
     }
 
     override fun deletedMessage(messageId: Long) {
-        map.remove(messageId)?.delete()
+        remove(messageId)?.delete()
     }
 
     companion object {
-        internal val LOG: Logger = LoggerFactory.getLogger(Starboard::class.java)
+        internal val LOG = createLogger(Starboard::class)
     }
 }

@@ -13,32 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+sourceSets {
+    test {
+        kotlin.srcDirs += 'src/test/kotlin'
+
+        compileClasspath = main.compileClasspath
+    }
+}
+
+repositories {
+    jcenter()
+    maven { url "https://dl.bintray.com/kaidangustave/maven" }
+}
+
 dependencies {
-    // JDA
     compileOnly "net.dv8tion:JDA:$jda_version"
-    // h2
+
+
+    compileOnly "com.sparkjava:spark-core:2.7.1"
+    compileOnly "com.sparkjava:spark-kotlin:1.0.0-alpha"
+
+    compileOnly "me.kgustave:KSON-jvm:0.6"
+    compileOnly "org.apache.httpcomponents:httpcore:4.4.4"
+
     compileOnly "com.h2database:h2:$h2_version"
 
-    compileOnly project(':commons')
-}
+    compileOnly project(":commons")
+    compileOnly project(":database")
 
-jar {
-    manifest {
-        attributes 'Implementation-Version': version.toString(),
-                'Main-Class': mainClassName
-    }
-}
-
-shadowJar {
-    baseName 'NightFury'
-    version ''
-    classifier ''
-
-    exclude('com/jagrosh/jdautilities/commandclient/**')
-    exclude('android/**')
-    exclude('README.md')
-
-    manifest {
-        attributes 'Manifest-Version': "${versionObj.major}.${versionObj.minor}"
-    }
+    testCompile "ch.qos.logback:logback-classic:$logback_version"
 }

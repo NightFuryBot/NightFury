@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
+package xyz.nightfury.api.exceptions
 
-include 'commons'
-include 'database'
-include 'api'
+import xyz.nightfury.api.util.NOT_FOUND
+
+/**
+ * @author Kaidan Gustave
+ */
+class NotFoundException(message: String? = null): HttpException(NOT_FOUND, message ?: "Not found", false)

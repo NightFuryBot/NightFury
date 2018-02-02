@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
+package xyz.nightfury.api.util
 
-include 'commons'
-include 'database'
-include 'api'
+import spark.Spark
+import spark.kotlin.RouteHandler
+
+inline fun path(base: String, crossinline block: () -> Unit) = Spark.path(base) { block() }
+
+fun RouteHandler.hasParams(name: String): Boolean = request.params(name) != null

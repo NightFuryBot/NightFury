@@ -21,7 +21,18 @@ import net.dv8tion.jda.core.entities.Guild
 /**
  * @author Kaidan Gustave
  */
-object SQLPrefixes : Table() {
+interface ISQLPrefixes {
+    fun isPrefix(guildId: Long, prefix: String): Boolean
+    fun getPrefixes(guildId: Long): Set<String>
+    fun addPrefix(guildId: Long, prefix: String)
+    fun removePrefix(guildId: Long, prefix: String)
+    fun removeAllPrefixes(guildId: Long)
+}
+
+/**
+ * @author Kaidan Gustave
+ */
+object SQLPrefixes : Table(), ISQLPrefixes {
     private const val isPrefix  = "SELECT PREFIX FROM PREFIXES WHERE GUILD_ID = ? AND LOWER(PREFIX) = LOWER(?)"
     private const val get       = "SELECT PREFIX FROM PREFIXES WHERE GUILD_ID = ?"
     private const val add       = "INSERT INTO PREFIXES (GUILD_ID, PREFIX) VALUES (?, ?)"
@@ -29,7 +40,7 @@ object SQLPrefixes : Table() {
     private const val removeAll = "DELETE FROM PREFIXES WHERE GUILD_ID = ?"
 
     fun isPrefix(guild: Guild, prefix: String) = isPrefix(guild.idLong, prefix)
-    fun isPrefix(guildId: Long, prefix: String): Boolean {
+    override fun isPrefix(guildId: Long, prefix: String): Boolean {
         return using(connection.prepareStatement(isPrefix), default = false) {
             this[1] = guildId
             this[2] = prefix
@@ -38,7 +49,7 @@ object SQLPrefixes : Table() {
     }
 
     fun getPrefixes(guild: Guild): Set<String> = getPrefixes(guild.idLong)
-    fun getPrefixes(guildId: Long): Set<String> {
+    override fun getPrefixes(guildId: Long): Set<String> {
         val prefixes = HashSet<String>()
         using(connection.prepareStatement(get)) {
             this[1] = guildId
@@ -50,7 +61,7 @@ object SQLPrefixes : Table() {
     }
 
     fun addPrefix(guild: Guild, prefix: String) = addPrefix(guild.idLong, prefix)
-    fun addPrefix(guildId: Long, prefix: String) {
+    override fun addPrefix(guildId: Long, prefix: String) {
         using(connection.prepareStatement(add)) {
             this[1] = guildId
             this[2] = prefix.toLowerCase()
@@ -59,7 +70,7 @@ object SQLPrefixes : Table() {
     }
 
     fun removePrefix(guild: Guild, prefix: String) = removePrefix(guild.idLong, prefix)
-    fun removePrefix(guildId: Long, prefix: String) {
+    override fun removePrefix(guildId: Long, prefix: String) {
         using(connection.prepareStatement(remove)) {
             this[1] = guildId
             this[2] = prefix
@@ -68,7 +79,7 @@ object SQLPrefixes : Table() {
     }
 
     fun removeAllPrefixes(guild: Guild) = removeAllPrefixes(guild.idLong)
-    fun removeAllPrefixes(guildId: Long) {
+    override fun removeAllPrefixes(guildId: Long) {
         using(connection.prepareStatement(removeAll)) {
             this[1] = guildId
             execute()

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.api
+package xyz.nightfury.requests
 
 import java.time.OffsetDateTime
 import kotlin.streams.toList

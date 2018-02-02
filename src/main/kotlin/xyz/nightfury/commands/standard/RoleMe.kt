@@ -231,4 +231,5 @@ var CommandEvent.roleMeLimit : Int
     get() = SQLLimits.getLimit(guild, "RoleMe")
 
 val CommandEvent.hasRoleMeLimit : Boolean
-    get() = SQLLimits.hasLimit(guild, "RoleMe")
+    // FIXME Should have Guild parameter option
+    get() = SQLLimits.hasLimit(guild.idLong, "RoleMe")

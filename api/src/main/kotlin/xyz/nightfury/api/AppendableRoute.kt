@@ -13,8 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'NightFury'
+package xyz.nightfury.api
 
-include 'commons'
-include 'database'
-include 'api'
+/**
+ * @author Kaidan Gustave
+ */
+interface AppendableRoute {
+    val path: String
+
+    fun append()
+}

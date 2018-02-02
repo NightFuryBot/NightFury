@@ -27,7 +27,7 @@ interface IStarMessage<M: IStarMessage<M, B>, B: IStarboard<M>> {
     val starred: Message
     val starReactions: MutableList<StarReaction>
 
-    var entryIsCreated: Boolean
+    val entryIsCreated: Boolean
     val entry: Message
 
     val count: Int

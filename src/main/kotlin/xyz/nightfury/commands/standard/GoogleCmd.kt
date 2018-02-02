@@ -21,7 +21,7 @@ import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.APICache
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.api.GoogleAPI
+import xyz.nightfury.requests.GoogleAPI
 
 /**
  * @author Kaidan Gustave

@@ -20,7 +20,7 @@ import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.annotations.APICache
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.api.E621API
+import xyz.nightfury.requests.E621API
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import org.json.JSONArray

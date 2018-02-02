@@ -20,7 +20,7 @@ import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.APICache
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.api.GoogleImageAPI
+import xyz.nightfury.requests.GoogleImageAPI
 import xyz.nightfury.extensions.embed
 import xyz.nightfury.extensions.message
 import net.dv8tion.jda.core.Permission

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 @file:Suppress("LiftReturnOrAssignment")
-package xyz.nightfury.api
+package xyz.nightfury.requests
 
 import okhttp3.OkHttpClient
 import okhttp3.Request

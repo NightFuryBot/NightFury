@@ -29,17 +29,15 @@ import xyz.nightfury.resources.Emojis
 /**
  * @author Kaidan Gustave
  */
-data class StarMessage(
-    override val starboard: Starboard,
-    override val starred: Message
-): IStarMessage<StarMessage, Starboard> {
-    override val starReactions: MutableList<StarReaction>
-        get() = Entries.getStars(this)
-
-    override var entryIsCreated: Boolean = false
+data class StarMessage
+constructor(override val starboard: Starboard, override val starred: Message): IStarMessage<StarMessage, Starboard> {
     override lateinit var entry: Message
         private set
 
+    override val entryIsCreated: Boolean
+        get() = ::entry.isInitialized
+    override val starReactions: MutableList<StarReaction>
+        get() = Entries.getStars(this)
     override val count: Int
         get() = Entries.getStarCount(this)
     override val starType: Emojis.Star
@@ -61,7 +59,6 @@ data class StarMessage(
         if(board.canTalk() && board.guild.selfMember.hasPermission(board, Permission.MESSAGE_EMBED_LINKS)) {
             board.send { generateStarEntry(this@StarMessage) } then {
                 entry = it ?: return@then
-                entryIsCreated = true
                 Entries.setEntry(this)
             }
         }
@@ -81,7 +78,9 @@ data class StarMessage(
         entry.rebuild { generateStarEntry(this@StarMessage) }
     }
 
-    override fun isStarring(user: User): Boolean = Entries.isStarring(starred, user)
+    override fun isStarring(user: User): Boolean {
+        return Entries.isStarring(starred, user)
+    }
 
     override fun removeStar(user: User) {
         Entries.removeEntry(user, this)
@@ -100,5 +99,7 @@ data class StarMessage(
         Entries.removeAllEntries(this)
     }
 
-    override fun toString() = "${starType.emoji} **$count** <#${starred.channel.idLong}> (ID: ${starred.idLong})"
+    override fun toString(): String {
+        return "${starType.emoji} **$count** <#${starred.channel.idLong}> (ID: ${starred.idLong})"
+    }
 }

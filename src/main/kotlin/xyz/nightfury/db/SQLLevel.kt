@@ -27,17 +27,17 @@ object SQLLevel : Table(), ISQLLevel<CommandLevel> {
     private const val set = "INSERT INTO COMMAND_LEVELS(GUILD_ID, COMMAND, LEVEL) VALUES (?,LOWER(?),?)"
     private const val update = "UPDATE COMMAND_LEVELS SET LEVEL = ? WHERE GUILD_ID = ? AND LOWER(COMMAND) = LOWER(?)"
 
-    override fun hasLevel(guild: Guild, commandName: String): Boolean {
+    override fun hasLevel(guildId: Long, commandName: String): Boolean {
         return using(connection.prepareStatement(get), false) {
-            this[1] = guild.idLong
+            this[1] = guildId
             this[2] = commandName
             using(executeQuery()) { next() }
         }
     }
 
-    override fun getLevel(guild: Guild, commandName: String, default: CommandLevel): CommandLevel {
+    override fun getLevel(guildId: Long, commandName: String, default: CommandLevel): CommandLevel {
         return using(connection.prepareStatement(get), default) {
-            this[1] = guild.idLong
+            this[1] = guildId
             this[2] = commandName.toLowerCase()
             using(executeQuery()) {
                 if(next()) {
@@ -55,19 +55,19 @@ object SQLLevel : Table(), ISQLLevel<CommandLevel> {
     }
 
     fun getLevel(guild: Guild, command: Command): CommandLevel {
-        return getLevel(guild, command.fullname, command.defaultLevel)
+        return getLevel(guild.idLong, command.fullname, command.defaultLevel)
     }
 
-    override fun setLevel(guild: Guild, commandName: String, level: CommandLevel) {
-        if(hasLevel(guild, commandName)) {
+    override fun setLevel(guildId: Long, commandName: String, level: CommandLevel) {
+        if(hasLevel(guildId, commandName)) {
             using(connection.prepareStatement(update)) {
                 this[1] = level
-                this[2] = guild.idLong
+                this[2] = guildId
                 this[3] = commandName.toLowerCase()
             }
         } else {
             using(connection.prepareStatement(set)) {
-                this[1] = guild.idLong
+                this[1] = guildId
                 this[2] = commandName.toLowerCase()
                 this[3] = level
                 execute()
@@ -76,6 +76,6 @@ object SQLLevel : Table(), ISQLLevel<CommandLevel> {
     }
 
     fun setLevel(guild: Guild, command: Command, level: CommandLevel) {
-        setLevel(guild, command.fullname, level)
+        setLevel(guild.idLong, command.fullname, level)
     }
 }

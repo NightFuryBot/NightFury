@@ -18,12 +18,10 @@ package xyz.nightfury
 import com.jagrosh.jagtag.JagTag
 import net.dv8tion.jda.core.*
 import net.dv8tion.jda.core.utils.SessionControllerAdapter
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import xyz.nightfury.api.E621API
-import xyz.nightfury.api.GoogleAPI
-import xyz.nightfury.api.GoogleImageAPI
-import xyz.nightfury.api.YouTubeAPI
+import xyz.nightfury.requests.E621API
+import xyz.nightfury.requests.GoogleAPI
+import xyz.nightfury.requests.GoogleImageAPI
+import xyz.nightfury.requests.YouTubeAPI
 import xyz.nightfury.commands.admin.*
 import xyz.nightfury.commands.dev.*
 import xyz.nightfury.commands.moderator.*
