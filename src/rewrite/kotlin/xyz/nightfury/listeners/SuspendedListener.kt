@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.api.exceptions
+package xyz.nightfury.listeners
 
-import xyz.nightfury.api.util.BAD_REQUEST
+import kotlinx.coroutines.experimental.CoroutineScope
+import net.dv8tion.jda.core.events.Event
 
 /**
  * @author Kaidan Gustave
  */
-class BadRequestException(message: String, log: Boolean = false): HttpException(BAD_REQUEST, message, log)
+@FunctionalInterface
+interface SuspendedListener {
+    suspend fun CoroutineScope.onEvent(event: Event)
+}

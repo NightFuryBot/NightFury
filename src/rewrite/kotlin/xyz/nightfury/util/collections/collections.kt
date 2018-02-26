@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.api.exceptions
+package xyz.nightfury.util.collections
 
-import xyz.nightfury.api.util.NOT_FOUND
+import java.util.Collections
 
 /**
  * @author Kaidan Gustave
  */
-class NotFoundException(message: String? = null): HttpException(NOT_FOUND, message ?: "Not found", false)
+fun <T> unmodifiableList(list: List<T>): List<T> = Collections.unmodifiableList(list)
