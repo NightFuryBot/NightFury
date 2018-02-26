@@ -19,7 +19,7 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.NightFury
 import xyz.nightfury.entities.embed
-import xyz.nightfury.extensions.formattedName
+import xyz.nightfury.util.ext.formattedName
 import net.dv8tion.jda.core.JDAInfo
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType

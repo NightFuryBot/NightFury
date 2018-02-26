@@ -19,7 +19,7 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.extensions.niceName
+import xyz.nightfury.util.ext.niceName
 import xyz.nightfury.listeners.CommandListener
 
 /**

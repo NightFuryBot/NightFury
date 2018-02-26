@@ -18,8 +18,8 @@ package xyz.nightfury.commands.music
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLModeratorRole
-import xyz.nightfury.extensions.doesNotMatch
-import xyz.nightfury.extensions.isAdmin
+import xyz.nightfury.util.ext.doesNotMatch
+import xyz.nightfury.util.ext.isAdmin
 import xyz.nightfury.music.MemberTrack
 import xyz.nightfury.music.MusicManager
 

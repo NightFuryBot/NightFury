@@ -19,10 +19,10 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
 import xyz.nightfury.entities.embed
-import xyz.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import xyz.nightfury.annotations.HasDocumentation
+import xyz.nightfury.util.ext.*
 
 /**
  * @author Kaidan Gustave

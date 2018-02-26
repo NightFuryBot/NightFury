@@ -18,7 +18,7 @@ package xyz.nightfury.commands.standard
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.annotations.HasDocumentation
-import xyz.nightfury.extensions.edit
+import xyz.nightfury.util.ext.edit
 import java.time.temporal.ChronoUnit
 
 /**

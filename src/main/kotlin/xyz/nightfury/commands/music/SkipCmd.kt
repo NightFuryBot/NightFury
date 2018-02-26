@@ -17,8 +17,8 @@ package xyz.nightfury.commands.music
 
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
-import xyz.nightfury.extensions.formattedInfo
-import xyz.nightfury.extensions.formattedName
+import xyz.nightfury.util.ext.formattedInfo
+import xyz.nightfury.util.ext.formattedName
 import xyz.nightfury.music.MusicManager
 
 /**

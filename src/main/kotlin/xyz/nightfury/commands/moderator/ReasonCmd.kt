@@ -24,9 +24,9 @@ import xyz.nightfury.db.SQLCases
 import xyz.nightfury.db.SQLModeratorLog
 import xyz.nightfury.db.entities.Case
 import xyz.nightfury.entities.promise
-import xyz.nightfury.extensions.edit
+import xyz.nightfury.util.ext.edit
 import xyz.nightfury.resources.Arguments
-import xyz.nightfury.extensions.isSelf
+import xyz.nightfury.util.ext.isSelf
 
 /**
  * @author Kaidan Gustave

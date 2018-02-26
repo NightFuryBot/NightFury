@@ -16,7 +16,7 @@
 package xyz.nightfury.requests
 
 import org.jsoup.Jsoup
-import xyz.nightfury.extensions.createLogger
+import xyz.nightfury.util.createLogger
 import java.io.IOException
 import java.net.URLDecoder
 import java.net.URLEncoder

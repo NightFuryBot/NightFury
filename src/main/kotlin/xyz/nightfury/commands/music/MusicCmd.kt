@@ -22,9 +22,9 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
-import xyz.nightfury.extensions.edit
-import xyz.nightfury.extensions.formattedInfo
-import xyz.nightfury.extensions.noMatch
+import xyz.nightfury.util.ext.edit
+import xyz.nightfury.util.ext.formattedInfo
+import xyz.nightfury.util.ext.noMatch
 import xyz.nightfury.music.MemberTrack
 import xyz.nightfury.music.MusicManager
 import net.dv8tion.jda.core.Permission

@@ -17,7 +17,7 @@ package xyz.nightfury.entities.starboard
 
 import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.User
-import xyz.nightfury.resources.Emojis
+import xyz.nightfury.util.Emojis
 
 /**
  * @author Kaidan Gustave

@@ -19,9 +19,9 @@ import xyz.nightfury.entities.menus.Paginator
 import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
-import xyz.nightfury.extensions.*
 import xyz.nightfury.music.MusicManager
 import net.dv8tion.jda.core.Permission
+import xyz.nightfury.util.ext.formattedInfo
 
 /**
  * @author Kaidan Gustave

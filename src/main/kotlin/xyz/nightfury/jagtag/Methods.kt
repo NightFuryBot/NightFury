@@ -16,12 +16,12 @@
 package xyz.nightfury.jagtag
 
 import com.jagrosh.jagtag.*
-import xyz.nightfury.extensions.*
 import net.dv8tion.jda.core.EmbedBuilder
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.core.entities.User
+import xyz.nightfury.util.ext.*
 import java.awt.Color
 import java.time.OffsetDateTime
 import java.time.format.DateTimeParseException
@@ -260,7 +260,7 @@ internal fun userSearch(env: Environment, input: Array<out String>): User {
     if(env.contains("guild")) { // is from guild
         with(env.get<Guild>("guild").findMembers(input[0])) {
             if(this.isEmpty())
-                throw TagErrorException(noMatch("members", input[0]))
+                throw TagErrorException(xyz.nightfury.util.ext.noMatch("members", input[0]))
             if(this.size>1)
                 throw TagErrorException(this.multipleMembers(input[0]))
             return this[0].user
@@ -268,7 +268,7 @@ internal fun userSearch(env: Environment, input: Array<out String>): User {
     } else {
         with(env.get<User>("user").jda.findUsers(input[0])) {
             if(this.isEmpty())
-                throw TagErrorException(noMatch("users", input[0]))
+                throw TagErrorException(xyz.nightfury.util.ext.noMatch("users", input[0]))
             if(this.size>1)
                 throw TagErrorException(this.multipleUsers(input[0]))
             return this[0]
@@ -284,7 +284,7 @@ internal fun channelSearch(env: Environment, input: Array<out String>): TextChan
     with(env.get<Guild>("guild").findTextChannels(input[0]))
     {
         if(this.isEmpty())
-            throw TagErrorException(noMatch("channels", input[0]))
+            throw TagErrorException(xyz.nightfury.util.ext.noMatch("channels", input[0]))
         if(this.size>1)
             throw TagErrorException(this.multipleTextChannels(input[0]))
         return this[0]

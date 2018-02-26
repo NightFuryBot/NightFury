@@ -32,8 +32,8 @@ import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMuteEvent
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceSuppressEvent
 import net.dv8tion.jda.core.hooks.EventListener
-import xyz.nightfury.extensions.createLogger
-import xyz.nightfury.extensions.formatTrackTime
+import xyz.nightfury.util.createLogger
+import xyz.nightfury.util.ext.formatTrackTime
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 

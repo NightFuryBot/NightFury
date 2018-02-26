@@ -30,9 +30,9 @@ import xyz.nightfury.db.SQLLocalTags
 import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.entities.menus.Paginator
 import xyz.nightfury.entities.promise
-import xyz.nightfury.extensions.*
 import xyz.nightfury.jagtag.TagErrorException
 import xyz.nightfury.resources.Arguments
+import xyz.nightfury.util.ext.*
 
 /**
  * @author Kaidan Gustave

@@ -16,7 +16,7 @@
 package xyz.nightfury.db
 
 import org.h2.value.Value
-import xyz.nightfury.extensions.createLogger
+import xyz.nightfury.util.createLogger
 import java.sql.*
 
 object SQL {

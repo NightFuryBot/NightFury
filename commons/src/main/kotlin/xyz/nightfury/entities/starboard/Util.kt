@@ -18,8 +18,8 @@ package xyz.nightfury.entities.starboard
 import net.dv8tion.jda.core.MessageBuilder
 import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.MessageReaction
-import xyz.nightfury.extensions.embed
-import xyz.nightfury.extensions.formattedName
+import xyz.nightfury.util.ext.embed
+import xyz.nightfury.util.ext.formattedName
 import java.awt.Color
 
 fun starColor(stars: Int): Color {

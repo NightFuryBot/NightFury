@@ -25,8 +25,8 @@ import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLProfiles
 import xyz.nightfury.db.entities.Profile
-import xyz.nightfury.extensions.*
 import xyz.nightfury.resources.Arguments
+import xyz.nightfury.util.ext.*
 import java.time.*
 
 /**

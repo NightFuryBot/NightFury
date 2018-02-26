@@ -20,7 +20,6 @@ import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.then
-import xyz.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.Category
 import xyz.nightfury.Command
@@ -29,6 +28,7 @@ import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLLimits
 import xyz.nightfury.db.SQLRoleMe
+import xyz.nightfury.util.ext.*
 import kotlin.streams.toList
 
 /**

@@ -25,8 +25,8 @@ import net.dv8tion.jda.core.exceptions.PermissionException
 import net.dv8tion.jda.core.requests.RestAction
 import xyz.nightfury.entities.promise
 import xyz.nightfury.entities.then
-import xyz.nightfury.extensions.embed
-import xyz.nightfury.extensions.message
+import xyz.nightfury.util.ext.embed
+import xyz.nightfury.util.ext.message
 import java.awt.Color
 import kotlin.math.max
 
@@ -244,20 +244,20 @@ class Paginator(builder: Paginator.Builder): Menu(builder) {
             text(pageNum, pages)?.let { this@message.append(it) }
             embed embed@ {
                 if(columns == 1) {
-                    for (i in start until end) {
+                    for(i in start until end) {
                         this@embed.appendln()
-                        this@embed.append(if (numberItems) "`${i + 1}.`" else "")
+                        this@embed.append(if(numberItems) "`${i + 1}.`" else "")
                         this@embed.append(strings[i])
                     }
                 } else {
                     val per = Math.ceil((end - start).toDouble() / columns).toInt()
-                    for (k in 0 until columns) {
+                    for(k in 0 until columns) {
                         this@embed.field field@ {
                             this@field.name = ""
                             var i = start + k * per
-                            while ((i < end) and (i < start + (k + 1) * per)) {
+                            while((i < end) and (i < start + (k + 1) * per)) {
                                 this@field.appendln()
-                                this@field.append(if (numberItems) "${i + 1}. " else "")
+                                this@field.append(if(numberItems) "${i + 1}. " else "")
                                 this@field.append(strings[i])
                                 i++
                             }

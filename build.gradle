@@ -25,11 +25,11 @@ class Version {
 buildscript {
     ext {
         kotlin_version = '1.2.21'
-        kotlinx_version = '0.19.3'
+        kotlinx_version = '0.22.1'
         shadow_version = '2.0.1'
-        jda_version = '3.5.0_327'
-        jda_utilities_version = '2.0'
-        lavaplayer_version = '1.2.45'
+        jda_version = '3.5.0_338'
+        jda_utilities_version = '2.1'
+        lavaplayer_version = '1.2.49'
         h2_version = '1.4.196'
         logback_version = '1.2.3'
     }
@@ -65,6 +65,10 @@ sourceSets {
         compileClasspath = main.output + main.resources
         runtimeClasspath = main.output + main.resources
     }
+
+    rewrite {
+        kotlin.srcDirs += 'src/rewrite/kotlin'
+    }
 }
 
 dependencies {
@@ -98,6 +102,38 @@ dependencies {
     // Subprojects
     compile project(":commons")
     compile project(":database")
+
+
+    // Kotlin
+    rewriteCompile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    rewriteCompile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    rewriteCompile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    rewriteCompile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_version"
+
+    // JDA
+    rewriteCompile "net.dv8tion:JDA:$jda_version"
+    rewriteCompile "com.jagrosh:jda-utilities-commons:$jda_utilities_version"
+    rewriteCompile "com.sedmelluq:lavaplayer:$lavaplayer_version"
+
+    // Config
+    rewriteCompile "ninja.leaping.configurate:configurate-hocon:3.3"
+
+    // API Requests
+    rewriteCompile 'org.jsoup:jsoup:1.10.2'
+    rewriteCompile 'com.google.apis:google-api-services-youtube:v3-rev189-1.23.0'
+
+    // h2
+    rewriteCompile "com.h2database:h2:$h2_version"
+
+    // Logging
+    rewriteCompile "ch.qos.logback:logback-classic:$logback_version"
+
+    // JagTag
+    rewriteCompile 'com.jagrosh:JagTag:0.5'
+
+    // Subprojects
+    rewriteCompile project(":commons")
+    rewriteCompile project(":database")
 }
 
 jar {
@@ -193,6 +229,17 @@ allprojects {
         classes.mustRunAfter clean
         shadowJar.mustRunAfter classes
     }
+}
+
+compileRewriteKotlin {
+    kotlinOptions {
+        apiVersion = "1.2"
+        jvmTarget = "1.8"
+    }
+}
+
+compileRewriteJava {
+    options.encoding = 'UTF-8'
 }
 
 wrapper {

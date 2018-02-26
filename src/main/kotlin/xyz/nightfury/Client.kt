@@ -43,8 +43,9 @@ import org.json.JSONObject
 import org.json.JSONTokener
 import org.slf4j.Logger
 import xyz.nightfury.db.*
-import xyz.nightfury.extensions.createLogger
-import xyz.nightfury.extensions.formattedName
+import xyz.nightfury.util.collections.FixedSizeCache
+import xyz.nightfury.util.createLogger
+import xyz.nightfury.util.ext.formattedName
 import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -149,7 +150,7 @@ class Client internal constructor(val prefix: String,      val devId: Long,
                         "Name: ${guild.name}\n" +
                         "ID: ${guild.idLong}\n" +
                         "Owner: ${guild.owner.user.formattedName(false)} (ID: ${guild.owner.user.idLong})\n" +
-                        "Members: ${guild.memberCache.size()} (Bots: ${guild.memberCache.filter { it.user.isBot }.size})"
+                        "Members: ${guild.memberCache.size()} (Bots: ${guild.memberCache.count { it.user.isBot }})"
                     if(guild.isGood || SQLJoinWhitelist.isGuild(guild)) {
                         log.info("New Guild!\n$guildDesc")
                         updateStats(event.jda)

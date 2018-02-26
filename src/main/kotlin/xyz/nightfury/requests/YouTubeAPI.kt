@@ -19,7 +19,7 @@ import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.youtube.YouTube
-import xyz.nightfury.extensions.createLogger
+import xyz.nightfury.util.createLogger
 import java.io.IOException
 import java.net.InetAddress
 
@@ -43,7 +43,7 @@ class YouTubeAPI(private val apiKey: String?): AbstractAPICache<List<String>>() 
 
     private val search: YouTube.Search.List? = if(apiKey == null) null else try {
         youtube.search().list("id,snippet")
-    } catch (e : IOException) {
+    } catch (e: IOException) {
         ytLog.error("Failed to initialize search: $e")
         null
     }

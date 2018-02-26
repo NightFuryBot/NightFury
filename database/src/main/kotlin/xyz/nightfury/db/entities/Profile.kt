@@ -21,9 +21,8 @@ import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.User
 import xyz.nightfury.db.SQLProfiles
 import xyz.nightfury.db.get
-import xyz.nightfury.extensions.*
-import xyz.nightfury.extensions.timeZone
-import xyz.nightfury.resources.Emojis
+import xyz.nightfury.util.Emojis
+import xyz.nightfury.util.ext.*
 import java.awt.Color
 import java.sql.ResultSet
 import java.sql.Date

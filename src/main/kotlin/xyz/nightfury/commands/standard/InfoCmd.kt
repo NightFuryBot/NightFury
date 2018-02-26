@@ -20,7 +20,6 @@ import xyz.nightfury.CommandEvent
 import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.AutoInvokeCooldown
 import xyz.nightfury.entities.embed
-import xyz.nightfury.extensions.*
 import xyz.nightfury.listeners.InvisibleTracker
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
@@ -28,6 +27,7 @@ import net.dv8tion.jda.core.entities.ChannelType
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.User
 import xyz.nightfury.annotations.HasDocumentation
+import xyz.nightfury.util.ext.*
 import java.time.format.DateTimeFormatter
 import java.util.Comparator
 

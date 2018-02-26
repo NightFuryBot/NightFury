@@ -17,7 +17,7 @@ package xyz.nightfury.commands.standard
 
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
-import xyz.nightfury.extensions.formattedName
+import xyz.nightfury.util.ext.formattedName
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.annotations.HasDocumentation
 

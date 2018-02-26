@@ -19,8 +19,7 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.annotations.MustHaveArguments
-import org.slf4j.LoggerFactory
-import xyz.nightfury.extensions.createLogger
+import xyz.nightfury.util.createLogger
 import java.io.IOException
 import java.io.InputStreamReader
 import java.io.BufferedReader

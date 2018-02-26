@@ -33,7 +33,7 @@ import net.dv8tion.jda.core.entities.User
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.*
 import xyz.nightfury.entities.promise
-import xyz.nightfury.extensions.*
+import xyz.nightfury.util.ext.*
 import java.time.format.DateTimeFormatter
 import java.util.Comparator
 

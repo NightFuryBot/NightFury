@@ -19,7 +19,7 @@ package xyz.nightfury
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
-import xyz.nightfury.extensions.filterMassMention
+import xyz.nightfury.util.ext.filterMassMention
 import xyz.nightfury.resources.Arguments
 
 /**

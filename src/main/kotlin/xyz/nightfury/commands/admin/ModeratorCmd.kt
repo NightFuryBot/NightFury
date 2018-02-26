@@ -15,11 +15,9 @@
  */
 package xyz.nightfury.commands.admin
 
-import xyz.nightfury.extensions.findRoles
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.embed
 import xyz.nightfury.entities.then
-import xyz.nightfury.extensions.*
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Member
@@ -29,6 +27,7 @@ import xyz.nightfury.CommandEvent
 import xyz.nightfury.NoBaseExecutionCommand
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLModeratorRole
+import xyz.nightfury.util.ext.*
 import java.util.Comparator
 import kotlin.streams.toList
 

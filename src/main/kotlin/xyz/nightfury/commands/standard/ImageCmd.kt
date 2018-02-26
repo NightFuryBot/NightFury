@@ -21,8 +21,8 @@ import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.APICache
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.requests.GoogleImageAPI
-import xyz.nightfury.extensions.embed
-import xyz.nightfury.extensions.message
+import xyz.nightfury.util.ext.embed
+import xyz.nightfury.util.ext.message
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
 import xyz.nightfury.annotations.HasDocumentation
@@ -55,9 +55,8 @@ class ImageCmd(private val api: GoogleImageAPI) : Command() {
                 else -> {
                     event.reply(message {
                         append { "${event.client.success} ${event.author.asMention}" }
-                        embed  {
-                            if(event.isFromType(ChannelType.TEXT))
-                                color { event.member.color }
+                        embed {
+                            if(event.isFromType(ChannelType.TEXT)) color { event.member.color }
                             image { selectResultURL(query, results) }
                         }
                     })

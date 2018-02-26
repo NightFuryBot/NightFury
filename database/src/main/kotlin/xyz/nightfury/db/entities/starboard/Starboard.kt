@@ -20,7 +20,7 @@ import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.core.entities.User
 import xyz.nightfury.entities.starboard.IStarboard
-import xyz.nightfury.extensions.createLogger
+import xyz.nightfury.util.createLogger
 import java.time.OffsetDateTime
 
 /**

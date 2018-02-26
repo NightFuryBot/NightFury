@@ -19,9 +19,9 @@ import xyz.nightfury.*
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLWelcomes
-import xyz.nightfury.extensions.findTextChannels
-import xyz.nightfury.extensions.multipleTextChannels
-import xyz.nightfury.extensions.noMatch
+import xyz.nightfury.util.ext.findTextChannels
+import xyz.nightfury.util.ext.multipleTextChannels
+import xyz.nightfury.util.ext.noMatch
 
 /**
  * @author Kaidan Gustave

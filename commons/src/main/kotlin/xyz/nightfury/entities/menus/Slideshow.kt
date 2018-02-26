@@ -25,8 +25,8 @@ import net.dv8tion.jda.core.exceptions.PermissionException
 import net.dv8tion.jda.core.requests.RestAction
 import xyz.nightfury.entities.promise
 import xyz.nightfury.entities.then
-import xyz.nightfury.extensions.embed
-import xyz.nightfury.extensions.message
+import xyz.nightfury.util.ext.embed
+import xyz.nightfury.util.ext.message
 import java.awt.Color
 import kotlin.math.max
 

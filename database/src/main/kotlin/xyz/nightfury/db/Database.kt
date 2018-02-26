@@ -45,7 +45,7 @@ object Database : Closeable {
                 continue
             try {
                 // Automatically builds a statement out of parameter data
-                val statement = "CREATE ${data.name} ${data.parameters.joinToString(",", "(", ")")}"
+                val statement = "CREATE TABLE ${data.name} ${data.parameters.joinToString(",", "(", ")")}"
                 using(connection.prepareStatement(statement)) { execute() }
                 SQL.LOG.info("Created ${data.name} Table!")
             } catch(e: SQLException) {

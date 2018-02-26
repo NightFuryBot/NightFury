@@ -17,7 +17,7 @@
 package xyz.nightfury.db.entities
 
 import net.dv8tion.jda.core.Permission
-import xyz.nightfury.extensions.formattedName
+import xyz.nightfury.util.ext.formattedName
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.TextChannel

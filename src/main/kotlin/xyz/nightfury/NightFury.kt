@@ -31,13 +31,14 @@ import xyz.nightfury.commands.standard.*
 import xyz.nightfury.db.Database
 import xyz.nightfury.entities.logging.WebhookAppender
 import xyz.nightfury.entities.menus.EventWaiter
-import xyz.nightfury.extensions.*
 import xyz.nightfury.jagtag.tagMethods
 import xyz.nightfury.listeners.AutoLoggingListener
 import xyz.nightfury.listeners.DatabaseListener
 import xyz.nightfury.listeners.InvisibleTracker
 import xyz.nightfury.listeners.StarboardListener
 import xyz.nightfury.music.MusicManager
+import xyz.nightfury.util.createLogger
+import xyz.nightfury.util.ext.*
 import java.io.IOException
 
 fun main(args: Array<String>?) {

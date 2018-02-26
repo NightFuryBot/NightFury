@@ -20,7 +20,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONTokener
-import xyz.nightfury.extensions.createLogger
+import xyz.nightfury.util.createLogger
 
 /**
  * @author Kaidan Gustave

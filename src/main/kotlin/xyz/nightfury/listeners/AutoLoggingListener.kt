@@ -17,9 +17,9 @@ package xyz.nightfury.listeners
 
 import xyz.nightfury.db.entities.ModLogger
 import xyz.nightfury.entities.then
-import xyz.nightfury.extensions.action
-import xyz.nightfury.extensions.isSelf
-import xyz.nightfury.extensions.limit
+import xyz.nightfury.util.ext.action
+import xyz.nightfury.util.ext.isSelf
+import xyz.nightfury.util.ext.limit
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.audit.ActionType
 import net.dv8tion.jda.core.audit.AuditLogEntry

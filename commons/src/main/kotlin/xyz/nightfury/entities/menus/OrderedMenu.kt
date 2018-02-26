@@ -18,7 +18,7 @@ package xyz.nightfury.entities.menus
 
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.ChannelType
-import xyz.nightfury.extensions.message
+import xyz.nightfury.util.ext.message
 import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.MessageChannel
 import net.dv8tion.jda.core.entities.TextChannel
@@ -28,7 +28,7 @@ import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.core.exceptions.PermissionException
 import net.dv8tion.jda.core.requests.RestAction
 import xyz.nightfury.entities.promise
-import xyz.nightfury.extensions.embed
+import xyz.nightfury.util.ext.embed
 import java.awt.Color
 import java.util.*
 
@@ -189,8 +189,7 @@ class OrderedMenu(builder: OrderedMenu.Builder): Menu(builder) {
 
     private val message: Message
         get() = message {
-            if(text != null)
-                append { text }
+            if(text != null) append { text }
 
             embed {
                 this@OrderedMenu.description?.let { append(it) }

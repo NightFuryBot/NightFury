@@ -17,8 +17,8 @@ package xyz.nightfury.db
 
 import net.dv8tion.jda.core.entities.User
 import xyz.nightfury.db.entities.Profile
-import xyz.nightfury.extensions.toDate
-import xyz.nightfury.resources.FixedSizeCache
+import xyz.nightfury.util.ext.toDate
+import xyz.nightfury.util.collections.FixedSizeCache
 
 /**
  * @author Kaidan Gustave

@@ -27,7 +27,7 @@ import java.time.temporal.TemporalAccessor
 /**
  * @author Kaidan Gustave
  */
-class KEmbedBuilder internal constructor() : Appendable {
+class KEmbedBuilder: Appendable {
     val fields: MutableList<MessageEmbed.Field> = mutableListOf()
 
     var description = StringBuilder()
@@ -41,7 +41,7 @@ class KEmbedBuilder internal constructor() : Appendable {
     var time: TemporalAccessor? = null
     var color: Color? = null
 
-    internal fun build(): MessageEmbed = EmbedBuilder().apply {
+    fun build(): MessageEmbed = EmbedBuilder().apply {
         val(description, fields, title, url, time, color, author, thumbnail, footer, image) = this@KEmbedBuilder
 
         fields.forEach { addField(it) }
@@ -192,7 +192,7 @@ class FieldBuilder : Appendable {
 
 internal fun Any?.normalize() = ((this as? IMentionable)?.asMention) ?: this.toString()
 
-fun embed(init: KEmbedBuilder.() -> Unit): MessageEmbed = with (KEmbedBuilder()) {
+inline fun embed(init: KEmbedBuilder.() -> Unit): MessageEmbed = with (KEmbedBuilder()) {
     init()
     build()
 }

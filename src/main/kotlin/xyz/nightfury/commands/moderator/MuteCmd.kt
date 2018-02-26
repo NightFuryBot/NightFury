@@ -20,11 +20,11 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.then
-import xyz.nightfury.extensions.*
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.SQLMutedRole
 import xyz.nightfury.db.entities.ModLogger
+import xyz.nightfury.util.ext.*
 import java.awt.Color
 
 /**

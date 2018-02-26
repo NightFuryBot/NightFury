@@ -16,9 +16,9 @@
 package xyz.nightfury.commands.admin
 
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.extensions.findTextChannels
-import xyz.nightfury.extensions.multipleTextChannels
-import xyz.nightfury.extensions.noMatch
+import xyz.nightfury.util.ext.findTextChannels
+import xyz.nightfury.util.ext.multipleTextChannels
+import xyz.nightfury.util.ext.noMatch
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.*
 import xyz.nightfury.annotations.HasDocumentation

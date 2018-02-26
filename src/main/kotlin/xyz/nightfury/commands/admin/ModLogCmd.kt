@@ -16,9 +16,9 @@
 package xyz.nightfury.commands.admin
 
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.extensions.findTextChannels
-import xyz.nightfury.extensions.multipleTextChannels
-import xyz.nightfury.extensions.noMatch
+import xyz.nightfury.util.ext.findTextChannels
+import xyz.nightfury.util.ext.multipleTextChannels
+import xyz.nightfury.util.ext.noMatch
 import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent

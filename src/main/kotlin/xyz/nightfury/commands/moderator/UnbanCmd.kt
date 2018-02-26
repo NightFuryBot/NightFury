@@ -19,10 +19,10 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.extensions.findBannedUsers
-import xyz.nightfury.extensions.formattedName
-import xyz.nightfury.extensions.multipleUsers
-import xyz.nightfury.extensions.noMatch
+import xyz.nightfury.util.ext.findBannedUsers
+import xyz.nightfury.util.ext.formattedName
+import xyz.nightfury.util.ext.multipleUsers
+import xyz.nightfury.util.ext.noMatch
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.annotations.HasDocumentation
 

@@ -20,8 +20,8 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.then
-import xyz.nightfury.extensions.kick
-import xyz.nightfury.extensions.formattedName
+import xyz.nightfury.util.ext.kick
+import xyz.nightfury.util.ext.formattedName
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.entities.ModLogger

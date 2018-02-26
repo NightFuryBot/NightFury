@@ -25,8 +25,8 @@ import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.db.SQLAnnouncementChannel
 import xyz.nightfury.db.SQLAnnouncementRoles
-import xyz.nightfury.extensions.*
 import xyz.nightfury.resources.Arguments
+import xyz.nightfury.util.ext.*
 
 /**
  * @author Kaidan Gustave

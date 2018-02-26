@@ -15,8 +15,8 @@
  */
 package xyz.nightfury.listeners
 
-import xyz.nightfury.extensions.muteRole
-import xyz.nightfury.extensions.refreshMutedRole
+import xyz.nightfury.util.ext.muteRole
+import xyz.nightfury.util.ext.refreshMutedRole
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.ReadyEvent
 import net.dv8tion.jda.core.events.channel.category.CategoryCreateEvent

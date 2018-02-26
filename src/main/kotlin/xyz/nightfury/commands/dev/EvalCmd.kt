@@ -19,7 +19,7 @@ import xyz.nightfury.Category
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.annotations.MustHaveArguments
-import xyz.nightfury.extensions.connectedChannel
+import xyz.nightfury.util.ext.connectedChannel
 import xyz.nightfury.music.MusicManager
 import net.dv8tion.jda.core.entities.ChannelType
 import xyz.nightfury.db.Database

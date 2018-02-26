@@ -24,7 +24,7 @@ import xyz.nightfury.*
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.entities.ModLogger
 import xyz.nightfury.entities.await
-import xyz.nightfury.extensions.getPast
+import xyz.nightfury.util.ext.getPast
 import java.util.*
 import kotlin.collections.HashSet
 

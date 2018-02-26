@@ -20,8 +20,8 @@ import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.promise
-import xyz.nightfury.extensions.banFrom
-import xyz.nightfury.extensions.formattedName
+import xyz.nightfury.util.ext.banFrom
+import xyz.nightfury.util.ext.formattedName
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.annotations.HasDocumentation
 import xyz.nightfury.db.entities.ModLogger

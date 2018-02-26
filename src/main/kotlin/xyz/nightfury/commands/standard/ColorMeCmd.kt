@@ -17,9 +17,9 @@ package xyz.nightfury.commands.standard
 
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.promise
-import xyz.nightfury.extensions.findRoles
-import xyz.nightfury.extensions.multipleRoles
-import xyz.nightfury.extensions.noMatch
+import xyz.nightfury.util.ext.findRoles
+import xyz.nightfury.util.ext.multipleRoles
+import xyz.nightfury.util.ext.noMatch
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.Category
 import xyz.nightfury.Command

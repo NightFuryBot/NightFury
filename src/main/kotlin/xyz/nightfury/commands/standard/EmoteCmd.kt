@@ -18,11 +18,11 @@ package xyz.nightfury.commands.standard
 import xyz.nightfury.Command
 import xyz.nightfury.CommandEvent
 import xyz.nightfury.entities.embed
-import xyz.nightfury.extensions.readableFormat
+import xyz.nightfury.util.ext.readableFormat
 import xyz.nightfury.resources.Arguments
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.annotations.HasDocumentation
-import xyz.nightfury.resources.Emojis
+import xyz.nightfury.util.Emojis
 
 /**
  * @author Kaidan Gustave
@@ -45,8 +45,9 @@ class EmoteCmd : Command() {
         val args = event.args
         if(args matches Arguments.emoteRegex) {
             val emotes = event.message.emotes
-            if(emotes.size < 1)
+            if(emotes.size < 1) {
                 return event.replyError("The specified emote was fake, or could not be retrieved!")
+            }
             val emote = emotes[0]
             event.reply(embed {
                 title { "Info on ${if(event.jda.getEmoteById(emote.idLong) == null) ":${emote.name}:" else emote.asMention}" }
@@ -65,8 +66,10 @@ class EmoteCmd : Command() {
             })
         } else {
             val unicode = args.replace(" ", "")
-            if(unicode.length > 10)
+            if(unicode.length > 10) {
                 return event.replyError("Cannot process more than 10 characters!")
+            }
+
             event.reply(embed {
                 color { event.selfMember.color }
                 title { "Unicode Information:" }

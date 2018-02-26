@@ -21,7 +21,7 @@ import xyz.nightfury.CooldownScope
 import xyz.nightfury.annotations.MustHaveArguments
 import xyz.nightfury.entities.embed
 import xyz.nightfury.resources.Arguments
-import xyz.nightfury.extensions.formattedName
+import xyz.nightfury.util.ext.formattedName
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.TextChannel
@@ -54,7 +54,7 @@ class QuoteCmd : Command() {
                     return event.replyError(INVALID_ARGS_ERROR.format("\"${split[0]}\" is not a valid message ID"))
                 } catch (e : Exception) {
                     null
-                } ?:return event.replyError("Could not find a message with ID: ${split[0]}!")
+                } ?: return event.replyError("Could not find a message with ID: ${split[0]}!")
             }
 
             2 -> {

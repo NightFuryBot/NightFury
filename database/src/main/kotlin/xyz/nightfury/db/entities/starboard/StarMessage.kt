@@ -22,9 +22,9 @@ import net.dv8tion.jda.core.entities.User
 import xyz.nightfury.entities.starboard.IStarMessage
 import xyz.nightfury.entities.starboard.StarReaction
 import xyz.nightfury.entities.starboard.generateStarEntry
-import xyz.nightfury.extensions.rebuild
-import xyz.nightfury.extensions.send
-import xyz.nightfury.resources.Emojis
+import xyz.nightfury.util.ext.rebuild
+import xyz.nightfury.util.ext.send
+import xyz.nightfury.util.Emojis
 
 /**
  * @author Kaidan Gustave
