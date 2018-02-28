@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.util.collections
+@file:Suppress("unused")
+package xyz.nightfury.util
 
-import java.util.Collections
-
-/**
- * @author Kaidan Gustave
- */
-fun <T> unmodifiableList(list: List<T>): List<T> = Collections.unmodifiableList(list)
+// Because the traditional-anglo-fags demanded it
+typealias Colour = java.awt.Color
+typealias SystemColour = java.awt.SystemColor

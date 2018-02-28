@@ -17,7 +17,6 @@
 package xyz.nightfury.ndb
 
 import xyz.nightfury.util.createLogger
-import xyz.nightfury.util.requireState
 import java.sql.*
 
 /**
@@ -26,7 +25,7 @@ import java.sql.*
 object Database : AutoCloseable {
     private lateinit var _connection: Connection
     private val connection: Connection get() {
-        requireState(::_connection.isInitialized) { "Connection has not been opened yet!" }
+        check(::_connection.isInitialized) { "Connection has not been opened yet!" }
         return _connection
     }
 

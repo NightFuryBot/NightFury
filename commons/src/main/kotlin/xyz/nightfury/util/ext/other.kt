@@ -41,12 +41,6 @@ infix fun Int.randomNextInt(int: Int): Int {
     return this + (Math.random() * (int - this + 1)).toInt()
 }
 
-// Good for checking if lateinit vars are initialized
-// And who said that checking if a non-null is null was useless?
-@Suppress("SENSELESS_COMPARISON", "UNUSED")
-inline fun <reified T: Any> checkInitialized(any: T)
-    = try { any != null } catch (e: UninitializedPropertyAccessException) { false }
-
 fun OffsetDateTime.toTimestamp(): Timestamp = Timestamp.from(toInstant())
 fun OffsetDateTime.toDate(): Date = Date.valueOf(toLocalDate())
 fun Timestamp.toOffsetDateTime(offset: ZoneOffset = ZoneOffset.UTC): OffsetDateTime = toLocalDateTime().atOffset(offset)
@@ -56,29 +50,4 @@ fun Date.toOffsetDateTime(): OffsetDateTime = toLocalDate().atTime(OffsetTime.MI
 // for native nullability issues.
 fun timeZone(identifier: String?): TimeZone? = TimeZone.getTimeZone(identifier)
 
-fun thread(start: Boolean = true,
-           isDaemon: Boolean = false,
-           contextClassLoader: ClassLoader? = null,
-           name: String? = null,
-           priority: Int = -1,
-           runnable: Runnable): Thread {
-
-    val thread = Thread(runnable)
-
-    if(isDaemon)
-        thread.isDaemon = true
-    if(priority > 0)
-        thread.priority = priority
-    if(name != null)
-        thread.name = name
-    if(contextClassLoader != null)
-        thread.contextClassLoader = contextClassLoader
-    if(start)
-        thread.start()
-    return thread
-}
-
-@Suppress("NOTHING_TO_INLINE")
-inline infix fun String.doesNotMatch(regex: Regex): Boolean = !(this matches regex)
-
-inline fun <reified T> Boolean.then(value: T, otherwise: T): T = if(this) value else otherwise
+infix fun String.doesNotMatch(regex: Regex): Boolean = !(this matches regex)

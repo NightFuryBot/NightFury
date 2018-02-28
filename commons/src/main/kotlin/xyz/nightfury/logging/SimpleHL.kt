@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.entities.logging
+package xyz.nightfury.logging
 
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.pattern.color.ForegroundCompositeConverterBase

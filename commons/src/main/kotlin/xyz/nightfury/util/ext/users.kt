@@ -37,6 +37,10 @@ inline fun <reified U: User> U.banFrom(guild: Guild, delDays: Int, reason: Strin
     return guild.controller.ban(this, delDays, reason)
 }
 
+inline fun <reified U: User> U.unbanFrom(guild: Guild): AuditableRestAction<Void> {
+    return guild.controller.unban(this)
+}
+
 // Copied from club.minnced.kjda.entities.KJDAUser
 
 inline val <reified U: User> U.game: Game?

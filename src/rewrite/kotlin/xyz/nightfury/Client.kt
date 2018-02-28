@@ -40,8 +40,10 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import org.json.JSONObject
 import org.json.JSONTokener
+import org.slf4j.Logger
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
+import xyz.nightfury.command.moderator.ModeratorGroup
 import xyz.nightfury.command.owner.OwnerGroup
 import xyz.nightfury.command.standard.StandardGroup
 import xyz.nightfury.ndb.Database
@@ -55,6 +57,7 @@ import xyz.nightfury.util.ext.await
 import xyz.nightfury.util.ext.newRequest
 import java.io.IOException
 import java.time.OffsetDateTime
+import java.time.OffsetDateTime.*
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -69,9 +72,7 @@ class Client(
     private val dBorgKey: String?,
     val parser: Parser
 ): SuspendedListener, EventListener {
-    companion object {
-        val LOG = createLogger(Client::class)
-    }
+    companion object LOG: Logger by createLogger(Client::class)
 
     private val cooldowns = HashMap<String, OffsetDateTime>()
     private val uses = CaseInsensitiveHashMap<Int>()
@@ -79,9 +80,10 @@ class Client(
     private val callCache = FixedSizeCache<Long, HashSet<Message>>(300)
 
     val httpClient: OkHttpClient = NightFury.HTTP_CLIENT_BUILDER.build()
-    val groups = arrayOf(StandardGroup, OwnerGroup)
+    val startTime: OffsetDateTime = now()
+
+    val groups = arrayOf(StandardGroup, ModeratorGroup, OwnerGroup)
     val commands: Map<String, Command> = CommandMap(*groups)
-    val startTime: OffsetDateTime = OffsetDateTime.now()
 
     val messageCacheSize: Int get() = callCache.size
 
@@ -91,7 +93,7 @@ class Client(
 
     fun getRemainingCooldown(name: String): Int {
         return if(name in cooldowns) {
-            val time = OffsetDateTime.now().until(cooldowns[name]!!, ChronoUnit.SECONDS).toInt()
+            val time = now().until(cooldowns[name]!!, ChronoUnit.SECONDS).toInt()
             if(time <= 0) {
                 cooldowns.remove(name)
                 return 0 // Return zero because the cooldown is expired
@@ -100,11 +102,11 @@ class Client(
     }
 
     fun applyCooldown(name: String, seconds: Int) {
-        cooldowns[name] = OffsetDateTime.now().plusSeconds(seconds.toLong())
+        cooldowns[name] = now().plusSeconds(seconds.toLong())
     }
 
     fun cleanCooldowns() {
-        val now = OffsetDateTime.now()
+        val now = now()
         cooldowns.entries.filter { it.value.isBefore(now) }.forEach { cooldowns -= it.key }
     }
 

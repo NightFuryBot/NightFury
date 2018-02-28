@@ -19,7 +19,10 @@ package xyz.nightfury.listeners
 import kotlinx.coroutines.experimental.*
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.hooks.EventListener
+import org.slf4j.Logger
+import xyz.nightfury.util.collections.concurrentSet
 import xyz.nightfury.util.createLogger
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors.newCachedThreadPool
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
@@ -31,13 +34,10 @@ import kotlin.reflect.full.superclasses
 /**
  * @author Kaidan Gustave
  */
-class EventWaiter
-private constructor(private val dispatcher: CoroutineDispatcher): EventListener, CoroutineContext by dispatcher {
-    companion object {
-        private val LOG = createLogger(EventWaiter::class)
-    }
+class EventWaiter private constructor(dispatcher: CoroutineDispatcher): EventListener, CoroutineContext by dispatcher {
+    private companion object LOG : Logger by createLogger(EventWaiter::class)
 
-    private val tasks = HashMap<KClass<*>, MutableList<ITask<*>>>()
+    private val tasks = ConcurrentHashMap<KClass<*>, MutableSet<ITask<*>>>()
 
     constructor(): this(newCachedThreadPool(Factory()).asCoroutineDispatcher())
 
@@ -109,26 +109,26 @@ private constructor(private val dispatcher: CoroutineDispatcher): EventListener,
         return deferred
     }
 
-    private fun <E: Event> getTaskListType(klazz: KClass<E>): MutableList<ITask<E>> {
+    private fun <E: Event> getTaskListType(klazz: KClass<E>): MutableSet<ITask<E>> {
         @Suppress("UNCHECKED_CAST")
         return tasks[klazz].let {
-            it as? MutableList<ITask<E>> ?: ArrayList<ITask<E>>().apply {
-                tasks[klazz] = this as MutableList<ITask<*>>
+            it as? MutableSet<ITask<E>> ?: concurrentSet<ITask<E>>().also {
+                tasks[klazz] = it as MutableSet<ITask<*>>
             }
         }
     }
 
     private suspend fun <T: Event> dispatchEventType(event: T, klazz: KClass<*>) {
-        val list = tasks[klazz] ?: return
-        list -= list.toMutableList().filter {
-            @Suppress("UNCHECKED_CAST")
+        val set = tasks[klazz] ?: return
+        @Suppress("RemoveExplicitTypeArguments", "UNCHECKED_CAST")
+        set -= set.filterTo(hashSetOf<ITask<*>>()) {
             val waiting = (it as ITask<T>)
             waiting(event)
         }
     }
 
     override fun onEvent(event: Event) {
-        launch(dispatcher) {
+        launch(this) {
             val klazz = event::class
             dispatchEventType(event, klazz)
             klazz.superclasses.forEach { dispatchEventType(event, it) }
@@ -176,7 +176,7 @@ private constructor(private val dispatcher: CoroutineDispatcher): EventListener,
 
     private class Factory: ThreadFactory {
         private val number = AtomicInteger(0)
-        private val name: String get() = "EventWaiter Thread - ${number.getAndIncrement()}"
+        private val name get() = "EventWaiter Thread - ${number.getAndIncrement()}"
         override fun newThread(r: Runnable): Thread = Thread(r, name).also { it.isDaemon = true }
     }
 }

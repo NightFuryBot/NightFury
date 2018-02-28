@@ -38,15 +38,14 @@ class GuildListCommand(waiter: EventWaiter): Command(OwnerGroup) {
     }
 
     override suspend fun execute(ctx: CommandContext) {
+        builder.clearItems()
         val paginator = Paginator(builder) {
-            clearItems()
             ctx.jda.guilds.forEach { + "**${it.name}** (ID: ${it.id})" }
             if(ctx.isGuild) {
                 color { _, _ -> ctx.member.color }
             }
             user { ctx.author }
         }
-
         paginator.displayIn(ctx.channel)
     }
 }

@@ -15,8 +15,7 @@
  */
 package xyz.nightfury.ndb.channels
 
-import xyz.nightfury.ndb.Database
-import xyz.nightfury.ndb.internal.*
+import xyz.nightfury.ndb.*
 
 /**
  * @author Kaidan Gustave

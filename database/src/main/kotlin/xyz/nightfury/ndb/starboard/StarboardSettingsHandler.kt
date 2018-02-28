@@ -15,10 +15,10 @@
  */
 package xyz.nightfury.ndb.starboard
 
+import xyz.nightfury.ndb.*
 import xyz.nightfury.ndb.channels.DBChannelType
 import xyz.nightfury.ndb.channels.SingleChannelHandler
 import xyz.nightfury.ndb.entities.StarboardSettings
-import xyz.nightfury.ndb.internal.*
 
 /**
  * @author Kaidan Gustave

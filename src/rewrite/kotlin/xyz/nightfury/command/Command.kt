@@ -154,6 +154,13 @@ abstract class Command(val group: Command.Group, val parent: Command?): Comparab
         } else defaultLevel
     }
 
+    protected fun CommandContext.invalidArgs() {
+        replyError {
+            "**Invalid Arguments!**\n" +
+            "See `${client.prefix}$fullname help` for more information on this command!"
+        }
+    }
+
     override fun compareTo(other: Command): Int {
         return group.compareTo(other.group).takeIf { it != 0 } ?: fullname.compareTo(other.fullname, true)
     }
@@ -231,9 +238,9 @@ abstract class Command(val group: Command.Group, val parent: Command?): Comparab
 
     enum class Level(val guildOnly: Boolean = false, val test: suspend (CommandContext) -> Boolean = { true }) {
         STANDARD(),
-        MODERATOR(guildOnly = true, test = { ctx -> ctx.member.isAdmin || ctx.member.isMod }),
-        ADMINISTRATOR(guildOnly = true, test = { ctx -> ctx.member.isAdmin }),
-        SERVER_OWNER(guildOnly = true, test = { ctx -> ctx.member.isOwner }),
+        MODERATOR(guildOnly = true, test = { ctx -> ctx.isDev || ctx.member.isAdmin || ctx.member.isMod }),
+        ADMINISTRATOR(guildOnly = true, test = { ctx -> ctx.isDev || ctx.member.isAdmin }),
+        SERVER_OWNER(guildOnly = true, test = { ctx -> ctx.isDev || ctx.member.isOwner }),
         SHENGAERO(test = { ctx -> ctx.isDev });
     }
 

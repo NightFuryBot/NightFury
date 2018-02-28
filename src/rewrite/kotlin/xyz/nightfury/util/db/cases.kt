@@ -21,12 +21,20 @@ import net.dv8tion.jda.core.entities.Member
 import xyz.nightfury.ndb.CasesHandler
 import xyz.nightfury.ndb.entities.Case
 
+inline val <reified G: Guild> G.lastCaseNumber: Int inline get() {
+    return CasesHandler.getLastCaseNumber(idLong)
+}
+
 inline val <reified G: Guild> G.cases: List<Case> inline get() {
     return CasesHandler.getCases(idLong)
 }
 
 inline val <reified M: Member> M.cases: List<Case> inline get() {
     return CasesHandler.getCasesByModId(guild.idLong, user.idLong)
+}
+
+inline val <reified M: Member> M.casesWithoutReason: List<Case> inline get() {
+    return CasesHandler.getCasesWithoutReasonByModId(guild.idLong, user.idLong)
 }
 
 inline fun <reified G: Guild> G.addCase(case: Case) {

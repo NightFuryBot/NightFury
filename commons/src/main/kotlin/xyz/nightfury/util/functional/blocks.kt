@@ -13,11 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.util
+package xyz.nightfury.util.functional
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import kotlin.reflect.KClass
+/**
+ * @author Kaidan Gustave
+ */
+interface AdditionBlock<in T> {
+    fun add(element: T)
 
-fun createLogger(name: String): Logger = LoggerFactory.getLogger(name)
-fun <T: Any> createLogger(klazz: KClass<T>): Logger = LoggerFactory.getLogger(klazz.java)
+    operator fun T.unaryPlus() {
+        add(this)
+    }
+}
+
+/**
+ * @author Kaidan Gustave
+ */
+interface RemovalBlock<in T> {
+    fun remove(element: T)
+
+    operator fun T.unaryMinus() {
+        remove(this)
+    }
+}
+
+/**
+ * @author Kaidan Gustave
+ */
+interface AddRemoveBlock<in T> : AdditionBlock<T>, RemovalBlock<T>

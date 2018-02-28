@@ -31,10 +31,10 @@ inline fun message(builder: MessageBuilder = MessageBuilder(), init: MessageBuil
 inline fun <reified C: MessageChannel> C.send(init: MessageBuilder.() -> Unit): RestPromise<Message>
     = sendMessage(message { init() }).promise()
 
-inline fun MessageBuilder.embed(crossinline init: KEmbedBuilder.() -> Unit): MessageBuilder
-    = setEmbed(xyz.nightfury.entities.embed { init() })
+inline fun MessageBuilder.embed(init: KEmbedBuilder.() -> Unit): MessageBuilder
+    = setEmbed(xyz.nightfury.entities.embed(init))
 
-inline fun MessageBuilder.mention(lazy: () -> IMentionable): MessageBuilder = mention(lazy())
+inline infix fun MessageBuilder.mention(lazy: () -> IMentionable): MessageBuilder = mention(lazy())
 
 infix fun MessageBuilder.mention(lazy: IMentionable): MessageBuilder {
     append(lazy)

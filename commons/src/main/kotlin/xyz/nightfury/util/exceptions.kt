@@ -16,10 +16,7 @@
 @file:Suppress("Unused")
 package xyz.nightfury.util
 
-inline fun requireState(state: Boolean, msg: () -> String = { "" }) {
-    if(!state)
-        throw IllegalStateException(msg())
-}
+inline fun unsupported(msg: () -> String): Nothing = throw UnsupportedOperationException(msg())
 
 inline fun ignored(block: () -> Unit) {
     try { block() } catch(t: Throwable) {}

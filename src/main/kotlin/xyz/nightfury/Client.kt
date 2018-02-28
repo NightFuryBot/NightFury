@@ -18,8 +18,8 @@ package xyz.nightfury
 import com.jagrosh.jagtag.Parser
 import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.annotations.APICache
-import xyz.nightfury.entities.logging.NormalFilter
-import xyz.nightfury.entities.logging.logLevel
+import xyz.nightfury.logging.NormalFilter
+import xyz.nightfury.logging.logLevel
 import xyz.nightfury.resources.Arguments
 import xyz.nightfury.listeners.CommandListener
 import xyz.nightfury.resources.*

@@ -24,7 +24,7 @@
     ~ DEBUG -> YELLOW
     -->
   <conversionRule conversionWord="simpleHL"
-                  converterClass="xyz.nightfury.entities.logging.SimpleHL"/>
+                  converterClass="xyz.nightfury.logging.SimpleHL"/>
 
   <!--
     ~ Console appender.
@@ -32,7 +32,7 @@
     ~ Filters out DEBUG
     -->
   <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
-    <!--<filter class="xyz.nightfury.entities.logging.NormalFilter"/>-->
+    <!--<filter class="xyz.nightfury.logging.NormalFilter"/>-->
 
     <encoder>
       <pattern>
@@ -45,8 +45,8 @@
     ~ Webhook Appender.
     ~ Sends an embed message to #nightfury-log on the support server.
     -->
-  <!--<appender name="Webhook" class="xyz.nightfury.entities.logging.WebhookAppender">
-    <filter class="xyz.nightfury.entities.logging.NormalFilter"/>
+  <!--<appender name="Webhook" class="xyz.nightfury.logging.WebhookAppender">
+    <filter class="xyz.nightfury.logging.NormalFilter"/>
   </appender>-->
 
   <!--

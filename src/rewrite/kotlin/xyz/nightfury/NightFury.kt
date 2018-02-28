@@ -23,6 +23,7 @@ import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission.*
 import net.dv8tion.jda.core.utils.SessionControllerAdapter
 import okhttp3.OkHttpClient
+import xyz.nightfury.command.moderator.*
 import xyz.nightfury.command.owner.EvalCommand
 import xyz.nightfury.command.owner.GuildListCommand
 import xyz.nightfury.command.owner.MemoryCommand
@@ -30,12 +31,9 @@ import xyz.nightfury.command.owner.ShutdownCommand
 import xyz.nightfury.command.standard.*
 import xyz.nightfury.ndb.Database
 import xyz.nightfury.entities.tagMethods
+import xyz.nightfury.listeners.*
 import xyz.nightfury.util.ext.sessionController
 // TODO import xyz.nightfury.listeners.AutoLoggingListener
-import xyz.nightfury.listeners.DatabaseListener
-import xyz.nightfury.listeners.EventWaiter
-import xyz.nightfury.listeners.InvisibleTracker
-import xyz.nightfury.listeners.StarboardListener
 import xyz.nightfury.music.MusicManager
 import xyz.nightfury.requests.GoogleAPI
 import xyz.nightfury.requests.GoogleImageAPI
@@ -96,6 +94,7 @@ object NightFury {
 
         // Standard Commands
         AboutCommand()
+        AvatarCommand()
         ColorMeCommand(waiter)
         EmoteCommand()
         GoogleCommand(google)
@@ -108,6 +107,14 @@ object NightFury {
         ServerCommand(waiter)
         TagCommand(waiter)
         YouTubeCommand(yt)
+
+        // Moderator Commands
+        BanCommand()
+        KickCommand()
+        MuteCommand(waiter)
+        ReasonCommand()
+        UnbanCommand()
+        UnmuteCommand()
 
         // Owner Commands
         EvalCommand()
@@ -127,6 +134,7 @@ object NightFury {
             listener   { musicManager }
             listener   { waiter }
             listener   { StarboardListener() }
+            listener   { ModLog }
             //listener   { AutoLoggingListener() }
             listener   { DatabaseListener() }
 

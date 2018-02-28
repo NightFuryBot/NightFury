@@ -15,8 +15,6 @@
  */
 package xyz.nightfury.ndb
 
-import xyz.nightfury.ndb.internal.*
-
 /**
  * @author Kaidan Gustave
  */

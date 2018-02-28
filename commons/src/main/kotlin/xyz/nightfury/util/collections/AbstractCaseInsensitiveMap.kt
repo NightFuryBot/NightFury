@@ -18,18 +18,17 @@ package xyz.nightfury.util.collections
 /**
  * @author Kaidan Gustave
  */
-class CaseInsensitiveHashMap<V>: MutableMap<String, V> {
-    private val map = HashMap<String, V>()
-    private val savedEntries = HashSet<MutableMap.MutableEntry<String, V>>()
-
+abstract class AbstractCaseInsensitiveMap<V> protected constructor(
+    private val map: MutableMap<String, V>,
+    private val savedEntries: MutableSet<MutableMap.MutableEntry<String, V>>
+): MutableMap<String, V> {
+    override val size: Int get() = map.size
     override val entries: MutableSet<MutableMap.MutableEntry<String, V>>
         get() = savedEntries
-    override val size: Int
-        get() = map.size
     override val keys: MutableSet<String>
-        get() = savedEntries.mapTo(HashSet()) { it.key }
+        get() = savedEntries.mapTo(hashSetOf()) { it.key }
     override val values: MutableCollection<V>
-        get() = savedEntries.mapTo(HashSet()) { it.value }
+        get() = savedEntries.mapTo(hashSetOf()) { it.value }
 
     override fun containsKey(key: String): Boolean = map.containsKey(key.toLowerCase())
     override fun containsValue(value: V): Boolean = map.containsValue(value)

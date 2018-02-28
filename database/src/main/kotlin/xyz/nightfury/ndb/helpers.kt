@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 @file:JvmName("DatabaseHelpers")
-package xyz.nightfury.ndb.internal
+package xyz.nightfury.ndb
 
 import org.h2.value.Value
 import org.intellij.lang.annotations.Language
-import xyz.nightfury.ndb.Database
 import java.sql.*
 
 internal inline val LOG get() = Database.LOG

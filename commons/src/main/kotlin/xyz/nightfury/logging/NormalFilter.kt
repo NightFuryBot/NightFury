@@ -13,5 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.util.ext
+package xyz.nightfury.logging
 
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.filter.Filter
+import ch.qos.logback.core.spi.FilterReply
+
+class NormalFilter: Filter<ILoggingEvent>() {
+    companion object {
+        var level = LogLevel.INFO
+    }
+
+    override fun decide(event: ILoggingEvent): FilterReply {
+        return if(level.covers(LogLevel.byLevel(event.level))) FilterReply.ACCEPT else FilterReply.DENY
+    }
+}

@@ -13,11 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.util
+package xyz.nightfury.logging
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import kotlin.reflect.KClass
+import ch.qos.logback.classic.Level
 
-fun createLogger(name: String): Logger = LoggerFactory.getLogger(name)
-fun <T: Any> createLogger(klazz: KClass<T>): Logger = LoggerFactory.getLogger(klazz.java)
+val Level.logLevel: LogLevel get() = LogLevel.byLevel(this)
+
+enum class LogLevel(val int: Int, val logbackLevel: Level) {
+    ALL(0, Level.ALL),
+    TRACE(1, Level.TRACE),
+    DEBUG(2, Level.DEBUG),
+    INFO(3, Level.INFO),
+    WARN(4, Level.WARN),
+    ERROR(5, Level.ERROR),
+    OFF(6, Level.OFF);
+
+    companion object {
+        fun byLevel(level: Level): LogLevel = values().first { it.logbackLevel.levelInt == level.levelInt }
+    }
+
+    fun covers(other: LogLevel) = int <= other.int
+}

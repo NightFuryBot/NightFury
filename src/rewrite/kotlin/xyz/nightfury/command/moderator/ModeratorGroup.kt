@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.util
+package xyz.nightfury.command.moderator
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import kotlin.reflect.KClass
+import xyz.nightfury.command.Command
 
-fun createLogger(name: String): Logger = LoggerFactory.getLogger(name)
-fun <T: Any> createLogger(klazz: KClass<T>): Logger = LoggerFactory.getLogger(klazz.java)
+/**
+ * @author Kaidan Gustave
+ */
+object ModeratorGroup : Command.Group("Moderator") {
+    override val defaultLevel = Command.Level.MODERATOR
+    override val devOnly = false
+    override val guildOnly = true
+}

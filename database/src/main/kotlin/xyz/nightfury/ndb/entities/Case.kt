@@ -16,7 +16,7 @@
 package xyz.nightfury.ndb.entities
 
 import xyz.nightfury.ndb.CasesHandler
-import xyz.nightfury.ndb.internal.get
+import xyz.nightfury.ndb.get
 import java.sql.ResultSet
 
 /**
@@ -47,7 +47,7 @@ data class Case(
             modId = result["MOD_ID"]!!,
             targetId = result["TARGET_ID"]!!,
             isOnUser = result["IS_ON_USER"]!!,
-            action = Action.valueOf(result["ACTION"]!!),
+            action = Action.valueOf(result.getString("ACTION").toUpperCase()),
             _reason = result["REASON"]
         )
     }

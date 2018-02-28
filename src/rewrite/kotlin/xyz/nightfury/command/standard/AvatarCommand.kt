@@ -15,7 +15,51 @@
  */
 package xyz.nightfury.command.standard
 
+import xyz.nightfury.command.Command
+import xyz.nightfury.command.CommandContext
+import xyz.nightfury.entities.embed
+import xyz.nightfury.util.ext.*
+
 /**
  * @author Kaidan Gustave
  */
-class AvatarCommand {}
+class AvatarCommand : Command(StandardGroup) {
+    override val name = "Avatar"
+    override val aliases = arrayOf("Avy", "Pfp")
+    override val arguments = "<User>"
+    override val help = "Gets a user's avatar."
+    override val guildOnly = false
+
+    override suspend fun execute(ctx: CommandContext) {
+        val query = ctx.args
+        val temp = ctx.takeIf { ctx.isGuild }?.let {
+            if(query.isEmpty())
+                return@let ctx.member
+            val members = ctx.guild.findMembers(query)
+            return@let when {
+                members.isEmpty() -> null
+                members.size > 1 -> return ctx.replyError(members.multipleMembers(query))
+                else -> members[0]
+            }
+        }
+
+        val user = temp?.user ?: ctx.author.takeIf { query.isEmpty() } ?: ctx.jda.findUsers(query).let { users ->
+            return@let when {
+                users.isEmpty() -> return ctx.replyError(noMatch("users", query))
+                users.size > 1 -> return ctx.replyError(users.multipleUsers(query))
+                else -> users[0]
+            }
+        }
+
+        ctx.reply(embed {
+            title { "Avatar For ${user.formattedName(true)}" }
+            val imageUrl = "${user.effectiveAvatarUrl}?size=1024"
+            url   { imageUrl }
+            image { imageUrl }
+            if(ctx.isGuild) {
+                val member = ctx.guild.getMember(user)
+                color { member?.color ?: ctx.selfMember.color }
+            }
+        })
+    }
+}

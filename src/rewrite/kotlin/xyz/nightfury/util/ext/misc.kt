@@ -77,6 +77,31 @@ inline fun <reified T> Array<T>.sumByLong(transform: (T) -> Long): Long = map(tr
 
 inline fun <reified T> Iterable<T>.sumByLong(transform: (T) -> Long): Long = map(transform).sum()
 
+inline fun <reified T> Array<T>.forAllButLast(function: (T) -> Unit): T {
+    require(isNotEmpty()) { "Cannot run on an empty array!" }
+    val lastIndex = lastIndex
+    for((i, e) in this.withIndex()) {
+        if(i < lastIndex)
+            function(e)
+        else
+            return e
+    }
+    throw IllegalStateException("Failed to return element at last index of array!")
+}
+
+inline fun <reified T> Collection<T>.forAllButLast(function: (T) -> Unit): T {
+    require(isNotEmpty()) { "Cannot run on an empty array!" }
+    val lastIndex = size - 1
+    for((i, e) in this.withIndex()) {
+        if(i < lastIndex)
+            function(e)
+        else
+            return e
+    }
+    throw IllegalStateException("Failed to return element at last index of collection!")
+}
+
+// General Extensions
 inline val <reified E: Enum<E>> E.niceName: String inline get() {
     return name.replace('_', ' ').run {
         if(length < 2) this.toUpperCase()
@@ -84,6 +109,5 @@ inline val <reified E: Enum<E>> E.niceName: String inline get() {
     }
 }
 
-// General Extensions
 inline fun <reified T> T.modifyIf(condition: Boolean, block: (T) -> T): T = if(condition) block(this) else this
 inline fun <reified T> T.modifyUnless(condition: Boolean, block: (T) -> T): T = modifyIf(!condition, block)

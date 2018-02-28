@@ -29,6 +29,7 @@ package xyz.nightfury.entities.starboard
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.TextChannel
 import xyz.nightfury.ndb.entities.StarboardSettings
+import xyz.nightfury.util.collections.concurrentHashMap
 import xyz.nightfury.util.db.hasStarboard
 import xyz.nightfury.util.db.starboardSettings
 
@@ -36,7 +37,7 @@ import xyz.nightfury.util.db.starboardSettings
  * @author Kaidan Gustave
  */
 object StarboardManager {
-    val starboards: MutableMap<Long, Starboard> = HashMap()
+    private val starboards = concurrentHashMap<Long, Starboard>()
 
     fun createStarboard(starboard: TextChannel): Starboard {
         val guild = starboard.guild

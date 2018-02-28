@@ -11,6 +11,7 @@
 
 # Configurations
 /src/rewrite/resources/bot.conf
+/src/rewrite/resources/webhook.conf
 /src/main/resources/bot.conf
 
 # Data Files

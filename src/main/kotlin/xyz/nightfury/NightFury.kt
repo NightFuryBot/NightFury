@@ -29,7 +29,7 @@ import xyz.nightfury.commands.music.*
 import xyz.nightfury.commands.other.E621Cmd
 import xyz.nightfury.commands.standard.*
 import xyz.nightfury.db.Database
-import xyz.nightfury.entities.logging.WebhookAppender
+import xyz.nightfury.logging.WebhookAppender
 import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.jagtag.tagMethods
 import xyz.nightfury.listeners.AutoLoggingListener
@@ -72,7 +72,7 @@ class NightFury {
     }
 
     init {
-        if(!WebhookAppender.isInitialized) {
+        if(!WebhookAppender.IS_INITIALIZED) {
             LOG.info("Webhook Appender was not initialized!")
         }
 

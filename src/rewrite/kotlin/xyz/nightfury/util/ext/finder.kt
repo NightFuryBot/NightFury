@@ -18,16 +18,29 @@ package xyz.nightfury.util.ext
 import com.jagrosh.jdautilities.commons.utils.FinderUtil
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.entities.*
+import kotlin.coroutines.experimental.suspendCoroutine
 
 inline fun <reified J: JDA> J.findUsers(query: String): List<User> = FinderUtil.findUsers(query, this)
 inline fun <reified J: JDA> J.findTextChannels(query: String): List<TextChannel> = FinderUtil.findTextChannels(query, this)
 inline fun <reified J: JDA> J.findVoiceChannels(query: String): List<VoiceChannel> = FinderUtil.findVoiceChannels(query, this)
 inline fun <reified J: JDA> J.findCategories(query: String): List<Category> = FinderUtil.findCategories(query, this)
 inline fun <reified J: JDA> J.findEmotes(query: String): List<Emote> = FinderUtil.findEmotes(query, this)
-inline fun <reified G: Guild> G.findBannedUsers(query: String): List<User>? = FinderUtil.findBannedUsers(query, this)
 inline fun <reified G: Guild> G.findMembers(query: String): List<Member> = FinderUtil.findMembers(query, this)
 inline fun <reified G: Guild> G.findTextChannels(query: String): List<TextChannel> = FinderUtil.findTextChannels(query, this)
 inline fun <reified G: Guild> G.findVoiceChannels(query: String): List<VoiceChannel> = FinderUtil.findVoiceChannels(query, this)
 inline fun <reified G: Guild> G.findCategories(query: String): List<Category> = FinderUtil.findCategories(query, this)
 inline fun <reified G: Guild> G.findEmotes(query: String): List<Emote> = FinderUtil.findEmotes(query, this)
 inline fun <reified G: Guild> G.findRoles(query: String): List<Role> = FinderUtil.findRoles(query, this)
+
+// Because findBannedUsers blocks, I run this
+// in a suspension. Technically this doesn't
+// get rid of the existing thread blocking
+// overhead, but it does prevent the coroutine
+// from being stopped improperly.
+suspend fun Guild.findBannedUsers(query: String): List<User>? = suspendCoroutine { cont ->
+    try {
+        cont.resume(FinderUtil.findBannedUsers(query, this))
+    } catch(t: Throwable) {
+        cont.resumeWithException(t)
+    }
+}

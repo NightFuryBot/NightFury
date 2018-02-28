@@ -101,6 +101,8 @@ class ServerCommand(waiter: EventWaiter): Command(StandardGroup) {
             joins.sortedWith(Comparator.comparing(Member::getJoinDate))
             val names = joins.map { it.user.formattedName(true) }
 
+            builder.clearItems()
+
             val paginator = Paginator(builder) {
                 text        { _,_ -> "Joins for ${ctx.guild.name}" }
                 items       { addAll(names) }

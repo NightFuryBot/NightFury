@@ -16,17 +16,25 @@
 package xyz.nightfury.ndb
 
 import xyz.nightfury.ndb.entities.Case
-import xyz.nightfury.ndb.internal.*
 
 /**
  * @author Kaidan Gustave
  */
 object CasesHandler: Database.Table() {
-    private const val GET_CASES =        "SELECT * FROM CASES WHERE GUILD_ID = ? ORDER BY NUMBER"
+    private const val GET_CASES =        "SELECT * FROM CASES WHERE GUILD_ID = ? ORDER BY NUMBER DESC"
     private const val GET_CASE_BY_NUM =  "SELECT * FROM CASES WHERE GUILD_ID = ? AND NUMBER = ?"
-    private const val GET_CASES_MOD_ID = "SELECT * FROM CASES WHERE GUILD_ID = ? AND NUMBER = ? ORDER BY NUMBER"
+    private const val GET_CASES_MOD_ID = "SELECT * FROM CASES WHERE GUILD_ID = ? AND MOD_ID = ? ORDER BY NUMBER DESC"
     private const val ADD_CASE =         "INSERT INTO CASES (NUMBER, GUILD_ID, MESSAGE_ID, MOD_ID, TARGET_ID, IS_ON_USER, ACTION, REASON) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     private const val UPDATE_REASON =    "UPDATE CASES SET REASON = ? WHERE GUILD_ID = ? AND NUMBER = ?"
+
+    fun getLastCaseNumber(guildId: Long): Int = sql(0) {
+        var i = 0
+        statement(GET_CASES) {
+            this[1] = guildId
+            queryAll { i++ }
+        }
+        return@sql i
+    }
 
     fun getCases(guildId: Long): List<Case> = sql({ emptyList() }) {
         val cases = ArrayList<Case>()
@@ -48,6 +56,16 @@ object CasesHandler: Database.Table() {
     fun getCasesByModId(guildId: Long, userId: Long): List<Case> = sql({ emptyList() }) {
         val cases = ArrayList<Case>()
         statement(GET_CASES_MOD_ID) {
+            this[1] = guildId
+            this[2] = userId
+            queryAll { cases += Case.from(it) }
+        }
+        return cases
+    }
+
+    fun getCasesWithoutReasonByModId(guildId: Long, userId: Long): List<Case> = sql({ emptyList() }) {
+        val cases = ArrayList<Case>()
+        statement("SELECT * FROM CASES WHERE GUILD_ID = ? AND MOD_ID = ? AND REASON IS NULL ORDER BY NUMBER DESC") {
             this[1] = guildId
             this[2] = userId
             queryAll { cases += Case.from(it) }

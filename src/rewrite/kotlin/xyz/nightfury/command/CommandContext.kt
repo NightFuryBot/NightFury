@@ -24,9 +24,7 @@ import xyz.nightfury.Client
 import xyz.nightfury.NightFury
 import xyz.nightfury.entities.RestDeferred
 import xyz.nightfury.util.emoteRegex
-import xyz.nightfury.util.ext.modifyIf
 import xyz.nightfury.util.filterMassMentions
-import xyz.nightfury.util.requireState
 import kotlin.coroutines.experimental.CoroutineContext
 
 /**
@@ -211,7 +209,7 @@ class CommandContext(
 
     companion object {
         private fun checkForTalking(channel: MessageChannel) {
-            requireState(channel !is TextChannel || channel.canTalk()) {
+            check(channel !is TextChannel || channel.canTalk()) {
                 "Cannot send a message to a TextChannel without being able to talk in it!"
             }
         }

@@ -16,8 +16,30 @@
 package xyz.nightfury.util.collections
 
 import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
 
-/**
- * @author Kaidan Gustave
- */
-fun <T> unmodifiableList(list: List<T>): List<T> = Collections.unmodifiableList(list)
+// Shortcuts
+
+fun <T> unmodifiableList(list: List<T>): List<T> {
+    return Collections.unmodifiableList(list)
+}
+
+fun <T> unmodifiableList(vararg elements: T): List<T> {
+    return FixedSizeArrayList(*elements)
+}
+
+fun <T: Any> concurrentSet(): MutableSet<T> {
+    return ConcurrentHashMap.newKeySet()
+}
+
+fun <T: Any> concurrentSet(vararg elements: T): MutableSet<T> {
+    return concurrentSet<T>().also { it += elements }
+}
+
+fun <K: Any, V: Any> concurrentHashMap(): ConcurrentHashMap<K, V> {
+    return ConcurrentHashMap()
+}
+
+fun <K: Any, V: Any> concurrentHashMap(vararg pairs: Pair<K, V>): ConcurrentHashMap<K, V> {
+    return concurrentHashMap<K, V>().also { it += pairs }
+}

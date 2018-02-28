@@ -15,10 +15,9 @@
  */
 package xyz.nightfury.ndb.tags
 
-import xyz.nightfury.ndb.Database
+import xyz.nightfury.ndb.*
 import xyz.nightfury.ndb.entities.DBTag
 import xyz.nightfury.ndb.entities.Tag
-import xyz.nightfury.ndb.internal.*
 import java.sql.ResultSet
 
 /**

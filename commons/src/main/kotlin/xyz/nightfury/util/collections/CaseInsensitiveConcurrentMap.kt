@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.util
+package xyz.nightfury.util.collections
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import kotlin.reflect.KClass
-
-fun createLogger(name: String): Logger = LoggerFactory.getLogger(name)
-fun <T: Any> createLogger(klazz: KClass<T>): Logger = LoggerFactory.getLogger(klazz.java)
+/**
+ * @author Kaidan Gustave
+ */
+class CaseInsensitiveConcurrentMap<V: Any> : MutableMap<String, V>,
+    AbstractCaseInsensitiveMap<V>(concurrentHashMap<String, V>(), concurrentSet())
