@@ -18,35 +18,23 @@ package xyz.nightfury.util.db
 import net.dv8tion.jda.core.entities.Guild
 import xyz.nightfury.command.Command
 import xyz.nightfury.ndb.CommandSettingsManager
-import xyz.nightfury.ndb.entities.CommandSettings
 
+inline fun <reified G: Guild> G.getCommandLevel(command: Command): Command.Level? {
+    return CommandSettingsManager.getLevel(idLong, command.fullname)?.let { Command.Level.valueOf(it) }
+}
 
-inline fun <reified G: Guild> G.getSettings(command: Command): CommandSettings? {
-    return CommandSettingsManager.getSettings(idLong, command.fullname)
+inline fun <reified G: Guild> G.getCommandLimit(command: Command): Int? {
+    return CommandSettingsManager.getLimit(idLong, command.fullname)
 }
 
 inline fun <reified G: Guild> G.setCommandLevel(command: Command, level: Command.Level?) {
-    getSettings(command)?.let { it.level = level?.name }
-    ?: CommandSettings(idLong, command.fullname, level?.name, null).let {
-        CommandSettingsManager.setSettings(it)
-    }
+    CommandSettingsManager.setLevel(idLong, command.fullname, level?.name)
 }
 
 inline fun <reified G: Guild> G.setCommandLimit(command: Command, limit: Int?) {
-    getSettings(command)?.let { it.limitNumber = limit?.takeIf { it > 0 } }
-    ?: CommandSettings(idLong, command.fullname, null, limit?.takeIf { it > 0 }).let {
-        CommandSettingsManager.setSettings(it)
-    }
+    CommandSettingsManager.setLimit(idLong, command.fullname, limit)
 }
 
-inline fun <reified G: Guild> G.removeSettings(command: Command) {
-    CommandSettingsManager.removeSettings(idLong, command.fullname)
-}
-
-inline fun <reified G: Guild> G.removeAllSettings() {
+inline fun <reified G: Guild> G.removeAllCommandSettings() {
     CommandSettingsManager.removeAllSettings(idLong)
 }
-
-inline var CommandSettings.commandLevel: Command.Level?
-    inline get() = this.level?.let { Command.Level.valueOf(it) }
-    inline set(value) { this.level = value?.name }

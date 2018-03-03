@@ -108,7 +108,7 @@ class InfoCommand: Command(StandardGroup) {
     override val name = "Info"
     override val aliases = arrayOf("I", "UserInfo")
     override val arguments = "<User>"
-    override val help = "Gets info on a user"
+    override val help = "Gets info on a user."
     override val botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
 
     override suspend fun execute(ctx: CommandContext) {

@@ -23,7 +23,12 @@ import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission.*
 import net.dv8tion.jda.core.utils.SessionControllerAdapter
 import okhttp3.OkHttpClient
+import xyz.nightfury.command.administrator.CustomCmdCommand
+import xyz.nightfury.command.administrator.LevelCommand
+import xyz.nightfury.command.administrator.LogCommand
+import xyz.nightfury.command.administrator.PrefixCommand
 import xyz.nightfury.command.moderator.*
+import xyz.nightfury.command.music.*
 import xyz.nightfury.command.owner.EvalCommand
 import xyz.nightfury.command.owner.GuildListCommand
 import xyz.nightfury.command.owner.MemoryCommand
@@ -108,13 +113,27 @@ object NightFury {
         TagCommand(waiter)
         YouTubeCommand(yt)
 
+        // Music Commands
+        PlayCommand(musicManager)
+        RemoveCommand(musicManager)
+        SkipCommand(musicManager)
+        StopCommand(musicManager)
+        VolumeCommand(musicManager)
+
         // Moderator Commands
         BanCommand()
+        CleanCommand()
         KickCommand()
         MuteCommand(waiter)
         ReasonCommand()
         UnbanCommand()
         UnmuteCommand()
+
+        // Administrator Commands
+        CustomCmdCommand(waiter)
+        PrefixCommand(waiter)
+        LogCommand(waiter)
+        LevelCommand()
 
         // Owner Commands
         EvalCommand()

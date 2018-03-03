@@ -21,10 +21,7 @@ import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.listeners.EventWaiter
-import xyz.nightfury.util.db.getSettings
-import xyz.nightfury.util.db.isRoleMe
-import xyz.nightfury.util.db.roleMeRoles
-import xyz.nightfury.util.db.setCommandLimit
+import xyz.nightfury.util.db.*
 import xyz.nightfury.util.ext.*
 import xyz.nightfury.util.menus.Paginator
 
@@ -73,7 +70,7 @@ class RoleMeCommand(waiter: EventWaiter): Command(StandardGroup) {
         if(roleMeRole !in member.roles) {
 
             // Check for a limit
-            val roleMeLimit = ctx.guild.getSettings(this)?.limitNumber ?: 0
+            val roleMeLimit = ctx.guild.getCommandLimit(this) ?: 0
 
             if(roleMeLimit > 0) {
                 // The user is at the RoleMe limit
@@ -161,13 +158,13 @@ class RoleMeCommand(waiter: EventWaiter): Command(StandardGroup) {
 
         override suspend fun execute(ctx: CommandContext) {
             val args = ctx.args
-            val settings = ctx.guild.getSettings(this)
+            val currentLimit = ctx.guild.getCommandLimit(this)
 
             if(args.isEmpty()) {
-                return if(settings === null) {
+                return if(currentLimit === null) {
                     ctx.replySuccess("This server does not have a RoleMe limit.")
                 } else {
-                    ctx.replySuccess("The RoleMe limit for this server is ${settings.limitNumber} RoleMe roles.")
+                    ctx.replySuccess("The RoleMe limit for this server is $currentLimit RoleMe roles.")
                 }
             }
 

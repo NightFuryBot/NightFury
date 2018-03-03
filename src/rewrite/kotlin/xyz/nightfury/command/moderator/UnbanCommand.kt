@@ -19,12 +19,14 @@ import kotlinx.coroutines.experimental.launch
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
+import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.listeners.ModLog
 import xyz.nightfury.util.ext.*
 
 /**
  * @author Kaidan Gustave
  */
+@MustHaveArguments
 class UnbanCommand : Command(ModeratorGroup) {
     override val name = "Unban"
     override val arguments = "[User]"

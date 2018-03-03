@@ -106,8 +106,9 @@ inline infix fun AuditLogPaginationAction.action(lazy: () -> ActionType) : Audit
 suspend fun MessageHistory.getPast(number: Int, breakIf: suspend (List<Message>) -> Boolean = { false }): MutableList<Message> {
     require(number > 0) { "Minimum of one message must be retrieved" }
 
-    if(number <= 100)
+    if(number <= 100) {
         return retrievePast(number).await() ?: mutableListOf()
+    }
 
     val list = LinkedList<Message>()
     var left = number
@@ -121,8 +122,9 @@ suspend fun MessageHistory.getPast(number: Int, breakIf: suspend (List<Message>)
         }
     }
 
-    if(left in 1..100)
+    if(left in 1..100) {
         retrievePast(left).await()?.let { list += it }
+    }
 
     return list
 }

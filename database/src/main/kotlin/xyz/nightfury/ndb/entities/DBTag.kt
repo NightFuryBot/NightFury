@@ -28,29 +28,20 @@ class DBTag(
     override val guildId: Long?
 ): Tag {
     override var ownerId: Long? = ownerId
-        private set(value) {
-            field = value
-            if(value === null) {
-                if(isGlobal) {
-                    GlobalTagsHandler.editTag(this)
-                } else {
-                    LocalTagsHandler.editTag(this)
-                }
-            }
-        }
+        private set
 
     override var content: String = content
         set(value) {
             field = value
-            if(isGlobal) {
-                GlobalTagsHandler.editTag(this)
-            } else {
-                LocalTagsHandler.editTag(this)
-            }
+            update()
         }
 
     override fun override() {
         ownerId = null
+        update()
+    }
+
+    private fun update() {
         if(isGlobal) {
             GlobalTagsHandler.editTag(this)
         } else {

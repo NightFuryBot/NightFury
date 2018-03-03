@@ -60,33 +60,28 @@ class BanCommand : Command(ModeratorGroup) {
         val guild = ctx.guild
 
         // Error Responses
-        val error = when {
-            ctx.selfUser == target -> {
+        when {
+            ctx.selfUser == target -> return ctx.replyError {
                 "I cannot ban myself from the server!"
             }
-            ctx.author == target -> {
+            ctx.author == target -> return ctx.replyError {
                 "You cannot ban yourself from the server!"
             }
-            guild.owner.user == target -> {
+            guild.owner.user == target -> return ctx.replyError {
                 "You cannot ban ${target.formattedName(true)} because they are the owner of the server!"
             }
             guild.isMember(target) -> {
                 val member = guild.getMember(target)!! // Should not be null
                 when {
-                    !ctx.selfMember.canInteract(member) -> {
+                    !ctx.selfMember.canInteract(member) -> return ctx.replyError {
                         "I cannot ban ${target.formattedName(true)}!"
                     }
-                    !ctx.member.canInteract(member) -> {
+                    !ctx.member.canInteract(member) -> return ctx.replyError {
                         "You cannot ban ${target.formattedName(true)}!"
                     }
                     else -> null
                 }
             }
-            else -> null
-        }
-
-        if(error !== null) {
-            return ctx.replyError(error)
         }
 
         try {

@@ -28,10 +28,11 @@ class PingCommand: Command(StandardGroup) {
     override val aliases = arrayOf("Pong", "Pang", "Pung", "Peng", "Pyng", "Png")
     override val help = "Gets the bot's REST latency."
     override val guildOnly = false
+    override val hasAdjustableLevel = false
     override val children = arrayOf<Command>(WebSocketPingCommand())
 
     override suspend fun execute(ctx: CommandContext) {
-        val message = ctx.send("Ping...").await()
+        val message = ctx.send("Ping...")
         val ping = ctx.message.creationTime.until(message.creationTime, ChronoUnit.MILLIS)
         message.edit("Ping: ${ping}ms").queue()
     }

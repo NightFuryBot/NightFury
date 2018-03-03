@@ -25,6 +25,7 @@
 .DS_STORE
 
 # Misc Files
+/rewrite_scripts/
 /wiki/
 /bash/
 /backup/

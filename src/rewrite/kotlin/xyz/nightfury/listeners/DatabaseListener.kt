@@ -23,6 +23,7 @@ import net.dv8tion.jda.core.events.channel.category.CategoryCreateEvent
 import net.dv8tion.jda.core.events.channel.text.TextChannelCreateEvent
 import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent
 import net.dv8tion.jda.core.events.channel.voice.VoiceChannelCreateEvent
+import net.dv8tion.jda.core.events.guild.GuildLeaveEvent
 import net.dv8tion.jda.core.events.role.RoleDeleteEvent
 import net.dv8tion.jda.core.hooks.EventListener
 import xyz.nightfury.util.db.*
@@ -39,6 +40,7 @@ class DatabaseListener : EventListener {
             is TextChannelDeleteEvent  -> onTextChannelDelete(event)
             is VoiceChannelCreateEvent -> onVoiceChannelCreate(event)
             is CategoryCreateEvent     -> onCategoryCreate(event)
+            is GuildLeaveEvent         -> onGuildLeave(event)
         }
     }
 
@@ -162,5 +164,9 @@ class DatabaseListener : EventListener {
                 guild.removeStarboard()
             }
         }
+    }
+
+    private fun onGuildLeave(event: GuildLeaveEvent) {
+        event.guild.removeAllCommandSettings()
     }
 }

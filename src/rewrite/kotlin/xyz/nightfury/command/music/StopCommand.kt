@@ -13,27 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.ndb.entities
+package xyz.nightfury.command.music
 
-import xyz.nightfury.ndb.CommandSettingsManager
+import xyz.nightfury.command.CommandContext
+import xyz.nightfury.music.MusicManager
 
 /**
  * @author Kaidan Gustave
  */
-class CommandSettings(
-    val guildId: Long,
-    val command: String,
-    level: String? = null,
-    limitNumber: Int? = null
-) {
-    var level: String? = level?.toUpperCase()
-        set(value) {
-            field = value?.toUpperCase()
-            CommandSettingsManager.setSettings(this)
-        }
-    var limitNumber: Int? = limitNumber
-        set(value) {
-            field = value
-            CommandSettingsManager.setSettings(this)
-        }
+class StopCommand(manager: MusicManager): MusicCommand(manager) {
+    override val name = "Stop"
+    override val help = "Stops playing music."
+    override val defaultLevel = Level.MODERATOR
+
+    override suspend fun execute(ctx: CommandContext) {
+        if(!ctx.isPlaying) return ctx.notPlaying()
+        if(!ctx.member.isInPlayingChannel) return ctx.notInPlayingChannel()
+
+        manager.stop(ctx.guild)
+        ctx.replySuccess("Stopped playing music!")
+    }
 }

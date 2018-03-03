@@ -34,7 +34,7 @@ enum class ClientMode(val level: Level): ClientListener {
         }
 
         override fun onCommandTerminated(ctx: CommandContext, command: Command, msg: String) {
-            ctx.reply(msg)
+            super.onCommandTerminated(ctx, command, msg)
             log.debug("Terminated Command \"${command.name}\" with message: \"$msg\"")
         }
 

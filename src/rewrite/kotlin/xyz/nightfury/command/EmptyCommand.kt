@@ -13,29 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.command.owner
-
-import net.dv8tion.jda.core.OnlineStatus.DO_NOT_DISTURB
-import xyz.nightfury.NightFury
-import xyz.nightfury.command.Command
-import xyz.nightfury.command.CommandContext
-import xyz.nightfury.util.watching
+package xyz.nightfury.command
 
 /**
  * @author Kaidan Gustave
  */
-class ShutdownCommand : Command(OwnerGroup) {
-    override val name = "Shutdown"
-    override val help = "Shuts down NightFury."
-    override val hasAdjustableLevel = false
+abstract class EmptyCommand(group: Command.Group) : Command(group) {
+    override val arguments by lazy { children.joinToString("|", "[", "]", 4, "...") { it.name } }
 
     override suspend fun execute(ctx: CommandContext) {
-        NightFury.LOG.info("Shutting down...")
-        ctx.jda.presence.setPresence(DO_NOT_DISTURB, watching("Everything shut down..."))
-
-        // Await to prevent shutting down while replying
-        ctx.sendWarning("Shutting down...")
-        ctx.jda.shutdown()
+        if(ctx.args.isEmpty()) {
+            ctx.replyError {
+                "**Too Few Arguments!**\n" +
+                "Use `${ctx.client.prefix}$fullname help` for more information about this command!"
+            }
+        } else ctx.invalidArgs()
     }
-
 }

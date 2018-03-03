@@ -106,18 +106,15 @@ class TagCommand(waiter: EventWaiter): Command(StandardGroup) {
         override suspend fun execute(ctx: CommandContext) {
             val parts = ctx.args.split(commandArgs, 2)
             val name = parts[0]
-            val content = if(parts.size > 1) parts[1] else return ctx.replyError {
-                "$MISSING_ARGUMENTS\n" +
+            val content = if(parts.size > 1) parts[1] else return ctx.missingArgs {
                 "You must specify a new tag name and it's content in the format `$arguments`."
             }
 
             if(name.length > NAME_MAX_LENGTH) return ctx.replyError {
-                "**Tag name is too long.**\n" +
                 "Tag names must be no greater than $NAME_MAX_LENGTH characters long."
             }
 
             if(content.length > CONTENT_MAX_LENGTH) return ctx.replyError {
-                "**Tag content is too long.**\n" +
                 "Tag content must be no greater than $CONTENT_MAX_LENGTH characters long."
             }
 
@@ -150,19 +147,16 @@ class TagCommand(waiter: EventWaiter): Command(StandardGroup) {
         override suspend fun execute(ctx: CommandContext) {
             val parts = ctx.args.split(commandArgs, 2)
             val name = parts[0]
-            val content = if(parts.size > 1) parts[1] else return ctx.replyError {
-                "$MISSING_ARGUMENTS\n" +
+            val content = if(parts.size > 1) parts[1] else return ctx.missingArgs {
                 "You must specify a new tag name and it's content in the format `$arguments`."
             }
 
 
             if(name.length > NAME_MAX_LENGTH) return ctx.replyError {
-                "**Tag name is too long.**\n" +
                 "Tag names must be no greater than $NAME_MAX_LENGTH characters long."
             }
 
             if(content.length > CONTENT_MAX_LENGTH) return ctx.replyError {
-                "**Tag content is too long.**\n" +
                 "Tag content must be no greater than $CONTENT_MAX_LENGTH characters long."
             }
 
@@ -223,8 +217,7 @@ class TagCommand(waiter: EventWaiter): Command(StandardGroup) {
         override suspend fun execute(ctx: CommandContext) {
             val parts = ctx.args.split(commandArgs, 2)
             val name = parts[0]
-            val content = if(parts.size > 1) parts[1] else return ctx.replyError {
-                "$MISSING_ARGUMENTS\n" +
+            val content = if(parts.size > 1) parts[1] else return ctx.missingArgs {
                 "You must specify an existing tag name and it's new content in the format `$arguments`."
             }
 
@@ -235,7 +228,6 @@ class TagCommand(waiter: EventWaiter): Command(StandardGroup) {
             }
 
             if(content.length > CONTENT_MAX_LENGTH) return ctx.replyError {
-                "**Tag content is too long.**\n" +
                 "Tag content must be no greater than $CONTENT_MAX_LENGTH characters long."
             }
 

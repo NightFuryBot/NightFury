@@ -18,7 +18,7 @@ package xyz.nightfury.command.owner
 import kotlinx.coroutines.experimental.delay
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
-import xyz.nightfury.db.Database
+import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.util.ext.connectedChannel
 import xyz.nightfury.util.ext.edit
 import xyz.nightfury.util.ext.modifyIf
@@ -30,6 +30,7 @@ import javax.script.ScriptException
 /**
  * @author Kaidan Gustave
  */
+@MustHaveArguments
 class EvalCommand: Command(OwnerGroup) {
     private companion object {
         private const val SCRIPT_ENGINE_NAME = "nashorn"
@@ -40,6 +41,7 @@ class EvalCommand: Command(OwnerGroup) {
     override val name = "Eval"
     override val help = "Evaluates using a ScriptEngine."
     override val arguments = "[Script]"
+    override val hasAdjustableLevel = false
 
     private val engine: ScriptEngine = ENGINE_MANAGER.getEngineByName(SCRIPT_ENGINE_NAME)
 
@@ -53,7 +55,7 @@ class EvalCommand: Command(OwnerGroup) {
 
         when {
             args matches SYS_EXIT_REGEX -> {
-                val message = ctx.sendWarning("Shutting Down...").await()
+                val message = ctx.sendWarning("Shutting Down...")
                 delay(4, TimeUnit.SECONDS)
                 message.edit("Naaaah, just kidding!").queue()
             }
@@ -78,7 +80,6 @@ class EvalCommand: Command(OwnerGroup) {
         put("author", ctx.author)
         put("channel", ctx.channel)
         put("client", ctx.client)
-        put("manager", Database)
 
         // GUILD
         if(ctx.isGuild) {

@@ -32,6 +32,7 @@ class AboutCommand : Command(StandardGroup) {
     override val name = "About"
     override val help = "Gets info about the bot."
     override val guildOnly = false
+    override val hasAdjustableLevel = false
     override val botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
 
     private lateinit var oAuth2Link: String
@@ -100,6 +101,6 @@ class AboutCommand : Command(StandardGroup) {
             time { ctx.client.startTime }
         }
 
-        ctx.send(embed)
+        ctx.reply(embed)
     }
 }

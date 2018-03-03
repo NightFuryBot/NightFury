@@ -18,30 +18,43 @@ package xyz.nightfury.command.standard
 import xyz.nightfury.NightFury
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
+import xyz.nightfury.util.db.getCommandLevel
 import xyz.nightfury.util.ext.await
 import xyz.nightfury.util.ext.formattedName
 
 /**
  * @author Kaidan Gustave
  */
-class HelpCommand: Command(StandardGroup) {
+class HelpCommand : Command(StandardGroup) {
     override val name = "Help"
     override val help = "Gets a list of all commands."
     override val guildOnly = false
+    override val hasAdjustableLevel = false
 
     override suspend fun execute(ctx: CommandContext) {
         val prefix = ctx.client.prefix
         val message = buildString {
             appendln("**Available Commands in ${if(ctx.isGuild) ctx.textChannel.asMention else "Direct Messages"}**")
-            ctx.client.groups.forEach { g ->
+            ctx.client.groups.forEach g@ { g ->
                 // They can't use the command group so we don't display it here
                 if(!g.check(ctx))
-                    return@forEach
+                    return@g
+
+                val available = g.commands.filter { c ->
+                    val level = if(ctx.isGuild) ctx.guild.getCommandLevel(c) ?: c.defaultLevel else c.defaultLevel
+                    level.test(ctx)
+                }
+
+                if(available.isEmpty())
+                    return@g
+
                 appendln()
                 appendln("__${g.name} Commands__")
                 appendln()
-                g.commands.forEach { c ->
+
+                available.forEach c@ { c ->
                     append("`").append(prefix).append(c.name)
+
                     val arguments = c.arguments
                     if(arguments.isNotBlank()) {
                         append(" $arguments")

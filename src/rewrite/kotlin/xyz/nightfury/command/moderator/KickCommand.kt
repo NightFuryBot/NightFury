@@ -56,27 +56,22 @@ class KickCommand : Command(ModeratorGroup) {
         val guild = ctx.guild
 
         // Error Responses
-        val error = when {
-            ctx.selfUser == target -> {
+        when {
+            ctx.selfUser == target -> return ctx.replyError {
                 "I cannot kick myself from the server!"
             }
-            ctx.author == target -> {
+            ctx.author == target -> return ctx.replyError {
                 "You cannot kick yourself from the server!"
             }
-            guild.owner.user == target -> {
+            guild.owner.user == target -> return ctx.replyError {
                 "You cannot kick ${target.formattedName(true)} because they are the owner of the server!"
             }
-            !ctx.selfMember.canInteract(member) -> {
+            !ctx.selfMember.canInteract(member) -> return ctx.replyError {
                 "I cannot kick ${target.formattedName(true)}!"
             }
-            !ctx.member.canInteract(member) -> {
+            !ctx.member.canInteract(member) -> return ctx.replyError {
                 "You cannot kick ${target.formattedName(true)}!"
             }
-            else -> null
-        }
-
-        if(error !== null) {
-            return ctx.replyError(error)
         }
 
         try {

@@ -86,7 +86,7 @@ class EmoteCommand : Command(StandardGroup) {
                         var hex = it.toHexString().toUpperCase()
 
                         while(hex.length < 4) {
-                            hex = "0" + hex
+                            hex = "0$hex"
                         }
 
                         append("\n`\\u")
@@ -97,10 +97,10 @@ class EmoteCommand : Command(StandardGroup) {
                             var hex0 = chars[0].toInt().toHexString().toUpperCase()
                             var hex1 = chars[1].toInt().toHexString().toUpperCase()
                             while(hex0.length < 4) {
-                                hex0 = "0" + hex0
+                                hex0 = "0$hex0"
                             }
                             while(hex1.length < 4) {
-                                hex1 = "0" + hex1
+                                hex1 = "0$hex1"
                             }
                             append("[`\\u")
                             append(hex0)

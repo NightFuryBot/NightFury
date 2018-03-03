@@ -64,7 +64,7 @@ class ReasonCommand : Command(ModeratorGroup) {
             val cases = moderator.casesWithoutReason
 
             if(cases.isEmpty()) {
-                return ctx.replyError("You have no outstanding cases.")
+                return ctx.replySuccess("You have no outstanding cases.")
             }
 
             case = cases[0]
@@ -74,7 +74,6 @@ class ReasonCommand : Command(ModeratorGroup) {
             // A case number was specified
             number = parts[0].toInt()
             case = ctx.guild.getCase(number) ?: return ctx.replyError {
-                "**Invalid case number!**\n" +
                 "Specify a case number lower than the latest case number!"
             }
             reason = parts[1]
@@ -82,11 +81,10 @@ class ReasonCommand : Command(ModeratorGroup) {
 
         when {
             case.modId != moderator.user.idLong -> return ctx.replyError {
-                "**You are not responsible for case number `$number`!**\n" +
-                "Only the moderator who performed a case may update it's reason."
+                "Only the moderator who performed case number `$number` may update it's reason."
             }
 
-            reason.length > 200 -> return ctx.replyError {
+            reason.length > 200 -> return ctx.invalidArgs {
                 "Reasons must not be longer than 200 characters!"
             }
         }
@@ -95,8 +93,7 @@ class ReasonCommand : Command(ModeratorGroup) {
             modLog.getMessageById(case.messageId).await()
         } catch(e: ErrorResponseException) {
             if(e.errorResponse == ErrorResponse.UNKNOWN_MESSAGE) return ctx.replyError {
-                "**The message for this case could not be found!**\n" +
-                "This may be because the original case log message was deleted, or never sent at all!"
+                "No case message was found for case number `$number`!"
             }
             return ctx.replyError {
                 "An unexpected error occurred while getting the logged message for case number `$number`!"
@@ -115,7 +112,7 @@ class ReasonCommand : Command(ModeratorGroup) {
             }
         }
 
-        ctx.sendSuccess("Updated reason for case number `$number`!").await()
+        ctx.sendSuccess("Updated reason for case number `$number`!")
 
         // We do this last because this writes to the DB.
         case.reason = reason

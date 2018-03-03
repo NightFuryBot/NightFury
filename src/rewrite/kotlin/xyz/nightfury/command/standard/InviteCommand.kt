@@ -30,6 +30,7 @@ class InviteCommand : Command(StandardGroup) {
     override val name = "Invite"
     override val help = "Gets an invite link for NightFury."
     override val guildOnly = false
+    override val hasAdjustableLevel = false
 
     private lateinit var oAuth2Link: String
 
@@ -40,7 +41,7 @@ class InviteCommand : Command(StandardGroup) {
                 oAuth2Link = info.getInviteUrl(*NightFury.PERMISSIONS)
             } catch(t: Throwable) {
                 NightFury.LOG.warn("Failed to generate OAuth2 URL!")
-                oAuth2Link = ""
+                return ctx.replyError("An unexpected error occurred!")
             }
         }
 

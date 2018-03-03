@@ -38,7 +38,7 @@ inline var <reified G: Guild> G.starboardSettings: StarboardSettings?
         if(value !== null) {
             if(Settings.hasSettings(idLong))
                 value.update()
-            else Settings.createSettings(value.guildId, value.channelId)
+            else Settings.createSettings(value)
         } else Settings.removeSettings(idLong)
     }
 inline var <reified G: Guild> G.starboardChannel: TextChannel?

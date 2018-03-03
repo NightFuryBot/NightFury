@@ -37,4 +37,8 @@ inline fun <reified M: Message> M.edit(text: String): MessageAction = editMessag
 inline fun <reified M: Message> M.edit(embed: MessageEmbed): MessageAction = editMessage(embed)
 inline fun <reified M: Message> M.edit(message: Message): MessageAction = editMessage(message)
 
+// TODO Change this when rewrite replacements are done
+inline fun <reified M: Message> M.editMessage(block: MessageBuilder.() -> Unit): MessageAction {
+    return edit(MessageBuilder().apply(block).build())
+}
 

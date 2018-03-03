@@ -23,13 +23,14 @@ import xyz.nightfury.entities.embed
 /**
  * @author Kaidan Gustave
  */
-class MemoryCommand: Command(OwnerGroup) {
+class MemoryCommand : Command(OwnerGroup) {
     companion object {
         private const val mb = 1024 * 1024
     }
 
     override val name = "Memory"
     override val help = "Gets NightFury's runtime memory statistics."
+    override val hasAdjustableLevel = false
     override val botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
 
     override suspend fun execute(ctx: CommandContext) {

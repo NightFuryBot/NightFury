@@ -73,6 +73,9 @@ class MusicQueue(
         return skipping.size
     }
 
+    var volume: Int get() = player.volume
+        set(value) { player.volume = value }
+
     fun queue(track: MemberTrack): Int {
         add(track)
         return indexOf(track) + 1

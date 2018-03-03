@@ -13,25 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.ndb.entities
-
-import xyz.nightfury.ndb.starboard.StarboardSettingsHandler
+package xyz.nightfury.util
 
 /**
- * @author Kaidan Gustave
+ * Returns `null` typed as [T?][T].
+ *
+ * This is effective when working with certain operator
+ * functions that use type arguments and do not have
+ * explicit type specification abilities.
+ *
+ * @return `null` typed as [T?][T].
  */
-data class StarboardSettings(
-    val guildId: Long,
-    var channelId: Long,
-    var threshold: Int = DEFAULT_THRESHOLD,
-    var maxAge: Int = DEFAULT_MAX_AGE
-) {
-    companion object {
-        const val DEFAULT_THRESHOLD = 5
-        const val DEFAULT_MAX_AGE = 72 // hours
-    }
-
-    fun update() {
-        StarboardSettingsHandler.updateSettings(this)
-    }
-}
+fun <T> nullOf(): T? = null

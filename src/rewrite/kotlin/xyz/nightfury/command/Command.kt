@@ -21,7 +21,7 @@ import xyz.nightfury.NightFury
 import xyz.nightfury.command.Command.CooldownScope.*
 import xyz.nightfury.command.standard.StandardGroup
 import xyz.nightfury.util.commandArgs
-import xyz.nightfury.util.db.getSettings
+import xyz.nightfury.util.db.getCommandLevel
 import xyz.nightfury.util.db.isMod
 import xyz.nightfury.util.ext.isAdmin
 import java.util.LinkedList
@@ -33,7 +33,7 @@ import kotlin.reflect.full.findAnnotation
 abstract class Command(val group: Command.Group, val parent: Command?): Comparable<Command> {
     companion object {
         const val BOT_PERM = "${NightFury.ERROR} I need the %s permission in this %s!"
-        const val MISSING_ARGUMENTS = "**Missing Arguments**"
+        const val MISSING_ARGUMENTS = "Missing Arguments"
         const val UNEXPECTED_ERROR = "An unexpected error occurred, please try again later!"
     }
 
@@ -48,6 +48,7 @@ abstract class Command(val group: Command.Group, val parent: Command?): Comparab
     open val cooldown = 0
     open val cooldownScope = USER
     open val children = emptyArray<Command>()
+    open val hasAdjustableLevel = true
 
     open val fullname: String get() = "${parent?.let { "${it.fullname} " } ?: ""}$name"
     open val defaultLevel: Command.Level get() = parent?.defaultLevel ?: group.defaultLevel
@@ -121,12 +122,16 @@ abstract class Command(val group: Command.Group, val parent: Command?): Comparab
         noArgumentError?.let { noArgumentError ->
             if(ctx.args.isEmpty()) {
                 noArgumentError.takeIf { it.isNotEmpty() }?.let {
-                    return ctx.terminate("${NightFury.ERROR} $MISSING_ARGUMENTS\n" +
-                                         it.replace("%prefix", ctx.client.prefix))
+                    return ctx.terminate(
+                        "${NightFury.ERROR} **$MISSING_ARGUMENTS!**\n" +
+                        it.replace("%prefix", ctx.client.prefix)
+                    )
                 }
 
-                return ctx.terminate("${NightFury.ERROR} $MISSING_ARGUMENTS\n" +
-                                     "Use `${ctx.client.prefix}$fullname help` for more info on this command!")
+                return ctx.terminate(
+                    "${NightFury.ERROR} **$MISSING_ARGUMENTS!**\n" +
+                    "Use `${ctx.client.prefix}$fullname help` for more info on this command!"
+                )
             }
         }
 
@@ -145,25 +150,6 @@ abstract class Command(val group: Command.Group, val parent: Command?): Comparab
     }
 
     protected abstract suspend fun execute(ctx: CommandContext)
-
-    protected fun CommandContext.invokeCooldown() = client.applyCooldown(cooldownKey, cooldown)
-
-    protected inline val CommandContext.level: Level inline get() {
-        return if(isGuild) {
-            guild.getSettings(this@Command)?.level?.let { Level.valueOf(it) } ?: defaultLevel
-        } else defaultLevel
-    }
-
-    protected fun CommandContext.invalidArgs() {
-        replyError {
-            "**Invalid Arguments!**\n" +
-            "See `${client.prefix}$fullname help` for more information on this command!"
-        }
-    }
-
-    override fun compareTo(other: Command): Int {
-        return group.compareTo(other.group).takeIf { it != 0 } ?: fullname.compareTo(other.fullname, true)
-    }
 
     fun isForCommand(string: String): Boolean {
         if(string.equals(name, true))
@@ -186,6 +172,26 @@ abstract class Command(val group: Command.Group, val parent: Command?): Comparab
         }
 
         return null
+    }
+
+    protected inline val CommandContext.level: Level inline get() {
+        return if(isGuild && hasAdjustableLevel) {
+            guild.getCommandLevel(this@Command) ?: defaultLevel
+        } else defaultLevel
+    }
+
+    protected fun CommandContext.invokeCooldown() = client.applyCooldown(cooldownKey, cooldown)
+
+    protected fun CommandContext.missingArgs(block: (() -> String)? = null) {
+        error(MISSING_ARGUMENTS) {
+            block?.invoke() ?: "See `${client.prefix}$fullname help` for more information on this command!"
+        }
+    }
+
+    protected fun CommandContext.invalidArgs(block: (() -> String)? = null) {
+        error("Invalid Arguments") {
+            block?.invoke() ?: "See `${client.prefix}$fullname help` for more information on this command!"
+        }
     }
 
     private fun CommandContext.terminate(text: String) {
@@ -219,6 +225,12 @@ abstract class Command(val group: Command.Group, val parent: Command?): Comparab
         }
         return cooldownScope
     }
+
+    override fun compareTo(other: Command): Int {
+        return group.compareTo(other.group).takeIf { it != 0 } ?: fullname.compareTo(other.fullname, true)
+    }
+
+    // Inner Classes
 
     abstract class Group(val name: String): Comparable<Group> {
         abstract val defaultLevel: Level

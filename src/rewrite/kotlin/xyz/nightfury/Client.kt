@@ -43,7 +43,9 @@ import org.json.JSONTokener
 import org.slf4j.Logger
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
+import xyz.nightfury.command.administrator.AdministratorGroup
 import xyz.nightfury.command.moderator.ModeratorGroup
+import xyz.nightfury.command.music.MusicGroup
 import xyz.nightfury.command.owner.OwnerGroup
 import xyz.nightfury.command.standard.StandardGroup
 import xyz.nightfury.ndb.Database
@@ -59,7 +61,7 @@ import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.OffsetDateTime.*
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import kotlin.collections.HashSet
 
@@ -74,7 +76,7 @@ class Client(
 ): SuspendedListener, EventListener {
     companion object LOG: Logger by createLogger(Client::class)
 
-    private val cooldowns = HashMap<String, OffsetDateTime>()
+    private val cooldowns = ConcurrentHashMap<String, OffsetDateTime>()
     private val uses = CaseInsensitiveHashMap<Int>()
     private val cycleContext = newSingleThreadContext("CycleContext")
     private val callCache = FixedSizeCache<Long, HashSet<Message>>(300)
@@ -82,7 +84,7 @@ class Client(
     val httpClient: OkHttpClient = NightFury.HTTP_CLIENT_BUILDER.build()
     val startTime: OffsetDateTime = now()
 
-    val groups = arrayOf(StandardGroup, ModeratorGroup, OwnerGroup)
+    val groups = arrayOf(StandardGroup, MusicGroup, ModeratorGroup, AdministratorGroup, OwnerGroup)
     val commands: Map<String, Command> = CommandMap(*groups)
 
     val messageCacheSize: Int get() = callCache.size
@@ -198,6 +200,20 @@ class Client(
             commands[name]?.let { command ->
                 mode.onCommandCall(ctx, command)
                 return command.run(ctx)
+            }
+
+            if(ctx.isGuild) {
+                ctx.guild.getCustomCommand(name)?.let { customCommand ->
+                    with(parser) {
+                        clear()
+                        put("user", event.author)
+                        put("guild", event.guild)
+                        put("channel", event.textChannel)
+                        put("args", args)
+                    }
+
+                    ctx.reply(parser.parse(customCommand))
+                }
             }
         }
     }

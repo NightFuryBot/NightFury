@@ -16,8 +16,10 @@
 package xyz.nightfury.command.moderator
 
 import kotlinx.coroutines.experimental.launch
+import net.dv8tion.jda.core.Permission
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
+import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.listeners.ModLog
 import xyz.nightfury.util.db.mutedRole
 import xyz.nightfury.util.ext.await
@@ -28,8 +30,15 @@ import xyz.nightfury.util.parseModeratorArgument
 /**
  * @author Kaidan Gustave
  */
+@MustHaveArguments
 class UnmuteCommand : Command(ModeratorGroup) {
     override val name = "Unmute"
+    override val arguments = "[@User] <Reason>"
+    override val help = "Unmutes a user on this server."
+    override val botPermissions = arrayOf(
+        Permission.MANAGE_ROLES,
+        Permission.MANAGE_PERMISSIONS
+    )
 
     override suspend fun execute(ctx: CommandContext) {
         val mutedRole = ctx.guild.mutedRole ?: return ctx.replyError {

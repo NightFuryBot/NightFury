@@ -102,7 +102,6 @@ class ServerCommand(waiter: EventWaiter): Command(StandardGroup) {
             val names = joins.map { it.user.formattedName(true) }
 
             builder.clearItems()
-
             val paginator = Paginator(builder) {
                 text        { _,_ -> "Joins for ${ctx.guild.name}" }
                 items       { addAll(names) }
@@ -186,40 +185,45 @@ class ServerCommand(waiter: EventWaiter): Command(StandardGroup) {
         override val botPermissions = arrayOf(MESSAGE_EMBED_LINKS)
 
         override suspend fun execute(ctx: CommandContext) {
-
+            val guild = ctx.guild
             ctx.reply(embed {
-                title { "Stats for ${ctx.guild.name}" }
-                ctx.guild.iconUrl?.let {
+                title { "Stats for ${guild.name}" }
+                guild.iconUrl?.let {
                     url { it }
                     thumbnail { it }
                 }
                 color { ctx.member.color }
 
                 field {
+                    val members = guild.members
                     name = "Members"
-                    appendln("Total: ${ctx.guild.members.size}")
-                    if(ctx.isGuild && ctx.guild.hasModRole) {
-                        val modRole = ctx.guild.modRole
-                        appendln("Moderators: ${ctx.guild.members.filter { it.roles.contains(modRole) }.size}")
+                    appendln("Total: ${members.size}")
+                    if(guild.hasModRole) {
+                        val modRole = guild.modRole
+                        appendln("Moderators: ${members.filter { modRole in it.roles }.size}")
                     }
-                    appendln("Administrators: ${ctx.guild.members.filter { it.isAdmin }.size}")
-                    appendln("Bots: ${ctx.guild.members.filter { it.user.isBot }.size}")
+                    appendln("Administrators: ${members.filter { it.isAdmin }.size}")
+                    appendln("Bots: ${members.filter { it.user.isBot }.size}")
                     this.inline = true
                 }
 
                 field {
+                    val textChannels = guild.textChannels
+                    val visible = textChannels.filter { ctx.member canView it }
                     name = "Text Channels"
-                    appendln("Total: ${ctx.guild.textChannels.size}")
-                    appendln("Visible: ${ctx.guild.textChannels.filter { ctx.member canView it }.size}")
-                    appendln("Hidden: ${ctx.guild.textChannels.size - ctx.guild.textChannels.filter { ctx.member canView it }.size}")
+                    appendln("Total: ${textChannels.size}")
+                    appendln("Visible: ${visible.size}")
+                    appendln("Hidden: ${textChannels.size - visible.size}")
                     this.inline = true
                 }
 
                 field {
+                    val voiceChannels = ctx.guild.voiceChannels
+                    val unlocked = voiceChannels.filter { ctx.member canJoin it }
                     name = "Voice Channels"
-                    appendln("Total: ${ctx.guild.voiceChannels.size}")
-                    appendln("Unlocked: ${ctx.guild.voiceChannels.filter { ctx.member canJoin it }.size}")
-                    appendln("Locked: ${ctx.guild.voiceChannels.size - ctx.guild.voiceChannels.filter { ctx.member canJoin it }.size}")
+                    appendln("Total: ${voiceChannels.size}")
+                    appendln("Unlocked: ${unlocked.size}")
+                    appendln("Locked: ${voiceChannels.size - unlocked.size}")
                     this.inline = true
                 }
 

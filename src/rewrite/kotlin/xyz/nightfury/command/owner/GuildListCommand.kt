@@ -27,6 +27,7 @@ class GuildListCommand(waiter: EventWaiter): Command(OwnerGroup) {
     override val name = "GuildList"
     override val help = "Gets a list of all guilds the bot is in."
     override val guildOnly = false
+    override val hasAdjustableLevel = false
 
     private val builder = Paginator.Builder {
         waiter           { waiter }

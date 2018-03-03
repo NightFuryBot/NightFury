@@ -13,25 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.ndb.entities
+package xyz.nightfury.command.administrator
 
-import xyz.nightfury.ndb.starboard.StarboardSettingsHandler
+import xyz.nightfury.command.Command
 
 /**
  * @author Kaidan Gustave
  */
-data class StarboardSettings(
-    val guildId: Long,
-    var channelId: Long,
-    var threshold: Int = DEFAULT_THRESHOLD,
-    var maxAge: Int = DEFAULT_MAX_AGE
-) {
-    companion object {
-        const val DEFAULT_THRESHOLD = 5
-        const val DEFAULT_MAX_AGE = 72 // hours
-    }
-
-    fun update() {
-        StarboardSettingsHandler.updateSettings(this)
-    }
+object AdministratorGroup : Command.Group("Administrator") {
+    override val defaultLevel = Command.Level.ADMINISTRATOR
+    override val devOnly = false
+    override val guildOnly = true
 }

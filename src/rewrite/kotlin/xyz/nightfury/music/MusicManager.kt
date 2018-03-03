@@ -31,11 +31,10 @@ import net.dv8tion.jda.core.events.ShutdownEvent
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent
 import net.dv8tion.jda.core.events.guild.voice.GenericGuildVoiceEvent
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent
-import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMuteEvent
-import net.dv8tion.jda.core.events.guild.voice.GuildVoiceSuppressEvent
 import net.dv8tion.jda.core.hooks.EventListener
 import xyz.nightfury.util.createLogger
 import xyz.nightfury.util.ext.formatTrackTime
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author Kaidan Gustave
@@ -43,66 +42,53 @@ import xyz.nightfury.util.ext.formatTrackTime
 class MusicManager: AudioEventListener, EventListener, AudioPlayerManager by DefaultAudioPlayerManager() {
     companion object {
         internal val LOG = createLogger(MusicManager::class)
-        internal val context by lazy {
-            newSingleThreadContext("AudioCloseContext")
-        }
+        internal val context by lazy { newSingleThreadContext("AudioCloseContext") }
 
         private fun logTrackInfo(track: AudioTrack) =
-                "Title: ${track.info.title} | Length: ${formatTrackTime(track.duration)} | State: ${track.state}"
+            "Title: ${track.info.title} | Length: ${formatTrackTime(track.duration)} | State: ${track.state}"
     }
 
-    private val queueMap = HashMap<Long, MusicQueue>()
+    private val queueMap = ConcurrentHashMap<Long, MusicQueue>()
 
     init {
         registerSourceManager(YoutubeAudioSourceManager())
-        context // Call Context here to initialize it lazily
     }
 
-    operator fun get(guild: Guild): MusicQueue? {
-        return synchronized(queueMap) {
-            queueMap[guild.idLong]
-        }
-    }
-
-    fun isPlaying(guild: Guild): Boolean {
-        return synchronized(queueMap) {
-            queueMap.containsKey(guild.idLong)
-        }
-    }
+    operator fun get(guild: Guild): MusicQueue? = queueMap[guild.idLong]
+    operator fun contains(guild: Guild): Boolean = guild.idLong in queueMap
 
     fun stop(guild: Guild) {
-        synchronized(queueMap) {
-            val musicQueue = queueMap[guild.idLong] ?: return
-            musicQueue.close()
-            queueMap.remove(musicQueue.channel.guild.idLong)
-        }
+        val musicQueue = queueMap[guild.idLong] ?: return
+        musicQueue.close()
+        queueMap.remove(musicQueue.channel.guild.idLong)
     }
 
     fun addTrack(voiceChannel: VoiceChannel, track: MemberTrack): Int {
-        if(!isPlaying(voiceChannel.guild)) {
+        if(voiceChannel.guild !in this) {
             setupPlayer(voiceChannel, track)
             return 0
         } else {
-            return synchronized(queueMap) {
-                val queue = queueMap[voiceChannel.guild.idLong] ?: return -1
-                queue.queue(track)
-            }
+            val queue = queueMap[voiceChannel.guild.idLong] ?: return -1
+            return queue.queue(track)
         }
     }
 
     fun addTracks(voiceChannel: VoiceChannel, tracks: List<MemberTrack>) {
-        if(!isPlaying(voiceChannel.guild))
+        if(voiceChannel.guild !in this) {
             setupPlayer(voiceChannel, tracks[0])
+        }
+
         val queue = this[voiceChannel.guild] ?: return
-        for(i in 1 until tracks.size)
+        for(i in 1 until tracks.size) {
             queue.queue(tracks[i])
+        }
     }
 
-    override fun onEvent(event: Event?) {
+    override fun onEvent(event: Event) {
         when(event) {
             // Dispose on shutdown
             is ShutdownEvent -> {
-                synchronized(queueMap) { queueMap.forEach { _, u -> u.close() } }
+                queueMap.forEach { _, u -> u.close() }
                 context.close()
                 shutdown()
             }
@@ -112,8 +98,6 @@ class MusicManager: AudioEventListener, EventListener, AudioPlayerManager by Def
 
             // Dispose if certain events are fired
             is GuildVoiceLeaveEvent -> if(event.isSelf) removeGuild(event.guild.idLong)
-            is GuildVoiceMuteEvent -> if(event.isSelf && event.isMuted) removeGuild(event.guild.idLong)
-            is GuildVoiceSuppressEvent -> if(event.isSelf && event.isSuppressed) removeGuild(event.guild.idLong)
         }
     }
 
@@ -136,34 +120,29 @@ class MusicManager: AudioEventListener, EventListener, AudioPlayerManager by Def
     }
 
     private fun setupPlayer(voiceChannel: VoiceChannel, firstTrack: MemberTrack) {
-        synchronized(queueMap) {
-            if(voiceChannel.guild.idLong in queueMap)
-                throw IllegalArgumentException("Attempted to join a VoiceChannel on a Guild already being handled!")
-            val player = createPlayer()
-            player.addListener(this)
-            queueMap[voiceChannel.guild.idLong] = MusicQueue(voiceChannel, player, firstTrack)
+        require(voiceChannel.guild !in this) {
+            "Attempted to join a VoiceChannel on a Guild already being handled!"
         }
+        val player = createPlayer()
+        player.addListener(this)
+        queueMap[voiceChannel.guild.idLong] = MusicQueue(voiceChannel, player, firstTrack)
     }
 
-    private fun removeGuild(guildId: Long) = synchronized(queueMap) {
-        if(guildId in queueMap)
+    private fun removeGuild(guildId: Long) {
+        if(guildId in queueMap) {
             queueMap.remove(guildId)?.close()
+        }
     }
 
     private fun onTrackFinished(event: TrackEndEvent) {
         LOG.debug("Track Finished | ${logTrackInfo(event.track)}")
 
-        val guildQueue = synchronized(queueMap) {
-            queueMap[((event.track ?: return).userData as Member).guild.idLong] ?: return
-        }
-
+        val guildQueue = queueMap[((event.track ?: return).userData as Member).guild.idLong] ?: return
         guildQueue.poll()
         if(guildQueue.isDead) {
-            synchronized(queueMap) {
-                queueMap.remove(guildQueue.channel.guild.idLong)
-            }
+            queueMap.remove(guildQueue.channel.guild.idLong)
         }
     }
 
-    private inline val <reified E: GenericGuildVoiceEvent> E.isSelf: Boolean get() = member == guild.selfMember
+    private inline val <reified E: GenericGuildVoiceEvent> E.isSelf: Boolean inline get() = member == guild.selfMember
 }
