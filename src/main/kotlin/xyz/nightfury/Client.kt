@@ -18,8 +18,6 @@ package xyz.nightfury
 import com.jagrosh.jagtag.Parser
 import xyz.nightfury.entities.menus.EventWaiter
 import xyz.nightfury.annotations.APICache
-import xyz.nightfury.logging.NormalFilter
-import xyz.nightfury.logging.logLevel
 import xyz.nightfury.resources.Arguments
 import xyz.nightfury.listeners.CommandListener
 import xyz.nightfury.resources.*
@@ -75,7 +73,6 @@ class Client internal constructor(val prefix: String,      val devId: Long,
 
     var mode: CommandListener.Mode = CommandListener.Mode.STANDARD
         set(value) {
-            NormalFilter.level = value.level.logLevel
             listener = value.listener
             field = value
         }

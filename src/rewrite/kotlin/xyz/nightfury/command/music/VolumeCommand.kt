@@ -18,7 +18,7 @@ package xyz.nightfury.command.music
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.music.MusicManager
-import xyz.nightfury.util.ext.niceName
+import xyz.nightfury.util.niceName
 import xyz.nightfury.util.ignored
 
 /**

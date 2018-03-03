@@ -22,9 +22,9 @@ import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.listeners.ModLog
 import xyz.nightfury.util.db.mutedRole
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.ext.formattedName
-import xyz.nightfury.util.ext.removeRole
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.formattedName
+import xyz.nightfury.util.jda.removeRole
 import xyz.nightfury.util.parseModeratorArgument
 
 /**

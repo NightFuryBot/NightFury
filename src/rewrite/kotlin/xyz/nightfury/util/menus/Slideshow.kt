@@ -22,9 +22,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.core.requests.RestAction
 import xyz.nightfury.entities.RestDeferred
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.ext.embed
-import xyz.nightfury.util.ext.message
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.jda.embed
+import xyz.nightfury.util.jda.message
 import xyz.nightfury.util.ignored
 import java.awt.Color
 import kotlin.math.max
@@ -230,7 +230,7 @@ class Slideshow(builder: Slideshow.Builder): Menu(builder) {
 
     private fun renderPage(pageNum: Int): Message = message {
         text(pageNum, pages)?.let { this@message.append(it) }
-        embed embed@ {
+        embed embed@{
             image { urls[pageNum - 1] }
             this@embed.color { this@Slideshow.color(pageNum, pages) }
             this@Slideshow.description(pageNum, urls.size)?.let { description { it } }

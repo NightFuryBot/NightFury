@@ -21,7 +21,10 @@ import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.listeners.ModLog
-import xyz.nightfury.util.ext.*
+import xyz.nightfury.util.*
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.jda.findBannedUsers
+import xyz.nightfury.util.jda.unbanFrom
 
 /**
  * @author Kaidan Gustave
@@ -39,7 +42,7 @@ class UnbanCommand : Command(ModeratorGroup) {
             "An unexpected error occurred while searching for banned users!"
         }
         val target = when {
-            bannedUsers.isEmpty() -> return ctx.replyError(noMatch("banned users", query))
+            bannedUsers.isEmpty() -> return ctx.replyError(xyz.nightfury.util.noMatch("banned users", query))
             bannedUsers.size > 1 -> return ctx.replyError(bannedUsers.multipleUsers(query))
             else -> bannedUsers[0]
         }

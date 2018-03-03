@@ -31,8 +31,7 @@ import net.dv8tion.jda.core.events.message.guild.react.GenericGuildMessageReacti
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveAllEvent
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveEvent
-import xyz.nightfury.entities.await
-import xyz.nightfury.entities.starboard.isStarReaction
+import xyz.nightfury.util.jda.await
 import xyz.nightfury.util.db.starboard
 import xyz.nightfury.util.ignored
 
@@ -53,7 +52,13 @@ class StarboardListener : SuspendedListener {
         if(event is GuildMessageDeleteEvent) {
             starboard[event.messageIdLong]?.delete()
         } else if(event is GenericGuildMessageReactionEvent) {
-            event.reaction.takeIf { it.isStarReaction } ?: return
+            event.reaction.takeIf {
+                val name = it.reactionEmote.name
+                when(name) {
+                    "\u2B50", "\uD83C\uDF1F", "\uD83D\uDCAB" -> true
+                    else -> name.contains("star", ignoreCase = true)
+                }
+            } ?: return
             when(event) {
                 is GuildMessageReactionAddEvent -> {
                     val starMessage = starboard[event.messageIdLong]

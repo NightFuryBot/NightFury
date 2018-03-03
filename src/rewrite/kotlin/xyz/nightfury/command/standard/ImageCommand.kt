@@ -23,9 +23,9 @@ import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.requests.GoogleImageAPI
 import xyz.nightfury.util.Cleanable
 import xyz.nightfury.util.commandArgs
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.ext.embed
-import xyz.nightfury.util.ext.message
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.jda.embed
+import xyz.nightfury.util.jda.message
 
 /**
  * @author Kaidan Gustave

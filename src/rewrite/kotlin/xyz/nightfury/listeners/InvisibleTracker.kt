@@ -30,7 +30,7 @@ import java.time.temporal.ChronoUnit
  * @author Kaidan Gustave
  */
 class InvisibleTracker : EventListener {
-    private val map: HashMap<Long, OffsetDateTime> = HashMap()
+    private val map = HashMap<Long, OffsetDateTime>()
 
     override fun onEvent(event: Event?) {
         if(event is UserOnlineStatusUpdateEvent) {

@@ -22,11 +22,11 @@ import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.listeners.EventWaiter
 import xyz.nightfury.listeners.ModLog
+import xyz.nightfury.util.*
 import xyz.nightfury.util.db.hasMutedRole
 import xyz.nightfury.util.db.mutedRole
-import xyz.nightfury.util.ext.*
+import xyz.nightfury.util.jda.*
 import xyz.nightfury.util.menus.Paginator
-import xyz.nightfury.util.parseModeratorArgument
 import java.awt.Color
 
 /**

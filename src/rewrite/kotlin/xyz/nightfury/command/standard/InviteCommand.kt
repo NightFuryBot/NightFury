@@ -20,8 +20,8 @@ package xyz.nightfury.command.standard
 import xyz.nightfury.NightFury
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.ext.formattedName
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.formattedName
 
 /**
  * @author Kaidan Gustave
@@ -38,7 +38,7 @@ class InviteCommand : Command(StandardGroup) {
         if(!::oAuth2Link.isInitialized || oAuth2Link.isEmpty()) {
             try {
                 val info = ctx.jda.asBot().applicationInfo.await()
-                oAuth2Link = info.getInviteUrl(*NightFury.PERMISSIONS)
+                oAuth2Link = info.getInviteUrl(*NightFury.permissions)
             } catch(t: Throwable) {
                 NightFury.LOG.warn("Failed to generate OAuth2 URL!")
                 return ctx.replyError("An unexpected error occurred!")

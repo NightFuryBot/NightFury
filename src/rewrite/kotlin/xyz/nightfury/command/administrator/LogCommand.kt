@@ -23,10 +23,10 @@ import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.listeners.EventWaiter
 import xyz.nightfury.ndb.entities.StarboardSettings
 import xyz.nightfury.util.db.*
-import xyz.nightfury.util.ext.findTextChannels
-import xyz.nightfury.util.ext.multipleTextChannels
-import xyz.nightfury.util.ext.niceName
-import xyz.nightfury.util.ext.noMatch
+import xyz.nightfury.util.jda.findTextChannels
+import xyz.nightfury.util.multipleTextChannels
+import xyz.nightfury.util.niceName
+import xyz.nightfury.util.noMatch
 
 /**
  * @author Kaidan Gustave

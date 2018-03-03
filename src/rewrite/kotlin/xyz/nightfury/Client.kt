@@ -50,13 +50,14 @@ import xyz.nightfury.command.owner.OwnerGroup
 import xyz.nightfury.command.standard.StandardGroup
 import xyz.nightfury.ndb.Database
 import xyz.nightfury.listeners.SuspendedListener
+import xyz.nightfury.logging.LogLevel
+import xyz.nightfury.logging.NormalFilter
 import xyz.nightfury.util.collections.FixedSizeCache
 import xyz.nightfury.util.*
 import xyz.nightfury.util.collections.CaseInsensitiveHashMap
 import xyz.nightfury.util.collections.CommandMap
 import xyz.nightfury.util.db.*
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.ext.newRequest
+import xyz.nightfury.util.newRequest
 import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.OffsetDateTime.*
@@ -81,7 +82,7 @@ class Client(
     private val cycleContext = newSingleThreadContext("CycleContext")
     private val callCache = FixedSizeCache<Long, HashSet<Message>>(300)
 
-    val httpClient: OkHttpClient = NightFury.HTTP_CLIENT_BUILDER.build()
+    val httpClient: OkHttpClient = NightFury.httpClientBuilder.build()
     val startTime: OffsetDateTime = now()
 
     val groups = arrayOf(StandardGroup, MusicGroup, ModeratorGroup, AdministratorGroup, OwnerGroup)
@@ -90,6 +91,10 @@ class Client(
     val messageCacheSize: Int get() = callCache.size
 
     var mode = ClientMode.SERVICE
+        set(value) {
+            field = value
+            NormalFilter.level = LogLevel.byLevel(field.level)
+        }
     var totalGuilds: Int = 0
         private set
 

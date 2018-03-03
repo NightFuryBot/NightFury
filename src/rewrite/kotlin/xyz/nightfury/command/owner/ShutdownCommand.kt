@@ -20,6 +20,7 @@ import xyz.nightfury.NightFury
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.util.watching
+import kotlin.system.exitProcess
 
 /**
  * @author Kaidan Gustave
@@ -36,6 +37,7 @@ class ShutdownCommand : Command(OwnerGroup) {
         // Await to prevent shutting down while replying
         ctx.sendWarning("Shutting down...")
         ctx.jda.shutdown()
-    }
 
+        exitProcess(1)
+    }
 }

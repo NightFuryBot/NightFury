@@ -21,8 +21,12 @@ import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.listeners.EventWaiter
+import xyz.nightfury.util.*
 import xyz.nightfury.util.db.*
-import xyz.nightfury.util.ext.*
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.jda.findRoles
+import xyz.nightfury.util.jda.giveRole
+import xyz.nightfury.util.jda.removeRole
 import xyz.nightfury.util.menus.Paginator
 
 /**
@@ -60,7 +64,7 @@ class RoleMeCommand(waiter: EventWaiter): Command(StandardGroup) {
         val roleMeRolesFound = found.filter { it in roleMeRoles }
 
         val roleMeRole = when {
-            roleMeRolesFound.isEmpty() -> return ctx.replyError(noMatch("RoleMe roles", query))
+            roleMeRolesFound.isEmpty() -> return ctx.replyError(xyz.nightfury.util.noMatch("RoleMe roles", query))
             roleMeRolesFound.size > 1 -> return ctx.replyError(roleMeRolesFound.multipleRoles(query))
             else -> roleMeRolesFound[0]
         }
@@ -101,7 +105,7 @@ class RoleMeCommand(waiter: EventWaiter): Command(StandardGroup) {
             val found = ctx.guild.findRoles(query)
 
             val role = when {
-                found.isEmpty() -> return ctx.replyError(noMatch("roles", query))
+                found.isEmpty() -> return ctx.replyError(xyz.nightfury.util.noMatch("roles", query))
                 found.size > 1 -> return ctx.replyError(found.multipleRoles(query))
                 else -> found[0]
             }
@@ -135,7 +139,7 @@ class RoleMeCommand(waiter: EventWaiter): Command(StandardGroup) {
             val found = ctx.guild.findRoles(query).filter { it in roleMeRoles }
 
             val role = when {
-                found.isEmpty() -> return ctx.replyError(noMatch("RoleMe roles", query))
+                found.isEmpty() -> return ctx.replyError(xyz.nightfury.util.noMatch("RoleMe roles", query))
                 found.size > 1 -> return ctx.replyError(found.multipleRoles(query))
                 else -> found[0]
             }

@@ -18,7 +18,7 @@ package xyz.nightfury.util.menus
 
 import net.dv8tion.jda.core.Permission.MESSAGE_ADD_REACTION
 import net.dv8tion.jda.core.entities.ChannelType
-import xyz.nightfury.util.ext.message
+import xyz.nightfury.util.jda.message
 import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.MessageChannel
 import net.dv8tion.jda.core.entities.TextChannel
@@ -27,10 +27,11 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.core.exceptions.PermissionException
 import net.dv8tion.jda.core.requests.RestAction
-import xyz.nightfury.entities.promise
+import xyz.nightfury.entities.RestDeferred
+import xyz.nightfury.util.jda.await
 import xyz.nightfury.util.collections.unmodifiableList
-import xyz.nightfury.util.ext.embed
-import xyz.nightfury.util.ext.modifyIf
+import xyz.nightfury.util.jda.embed
+import xyz.nightfury.util.modifyIf
 import java.awt.Color
 import java.util.*
 
@@ -92,9 +93,8 @@ class OrderedMenu(builder: OrderedMenu.Builder): Menu(builder) {
         initialize(message.editMessage(this.message))
     }
 
-    private fun initialize(action: RestAction<Message?>) {
-        action.promise() then {
-            it ?: return@then
+    private fun initialize(action: RestAction<Message>) {
+        RestDeferred(action, waiter).promise { m ->
             try {
                 // From 0 until the number of choices.
                 // The last run of this loop will be used to queue
@@ -103,28 +103,27 @@ class OrderedMenu(builder: OrderedMenu.Builder): Menu(builder) {
                 // was built.
                 for(i in choices.indices) {
                     // If this is not the last run of this loop
-                    if(i < choices.size - 1)
-                        it.addReaction(i.emoji).queue()
-                    else {
-                        var re = it.addReaction(i.emoji)
+                    if(i < choices.size - 1) {
+                        m.addReaction(i.emoji).await()
+                    } else {
+                        var re = m.addReaction(i.emoji)
                         // If we're using the cancel function we want
                         // to add a "step" so we queue the last emoji being
                         // added and then make the RestAction to start waiting
                         // on the cancel reaction being added.
                         if(useCancel) {
-                            re.queue() // queue the last emoji
-                            re = it.addReaction(cancel)
+                            re.await() // queue the last emoji
+                            re = m.addReaction(cancel)
                         }
                         // queue the last emoji or the cancel button
-                        re.promise() then { _ ->
-                            if(allowTypedInput) waitGeneric(it) else waitReactionOnly(it)
-                        }
+                        re.await()
+                        if(allowTypedInput) waitGeneric(m) else waitReactionOnly(m)
                     } // If this is the last run of this loop
                 }
             } catch (ex: PermissionException) {
                 // If there is a permission exception mid process, we'll still
                 // attempt to make due with what we have.
-                if(allowTypedInput) waitGeneric(it) else waitReactionOnly(it)
+                if(allowTypedInput) waitGeneric(m) else waitReactionOnly(m)
             }
         }
     }

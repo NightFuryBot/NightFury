@@ -18,7 +18,7 @@ package xyz.nightfury.command.music
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.music.MusicManager
-import xyz.nightfury.util.ext.doesNotMatch
+import xyz.nightfury.util.doesNotMatch
 
 /**
  * @author Kaidan Gustave

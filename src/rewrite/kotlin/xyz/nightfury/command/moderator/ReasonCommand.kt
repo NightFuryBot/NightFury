@@ -26,8 +26,8 @@ import xyz.nightfury.util.commandArgs
 import xyz.nightfury.util.db.casesWithoutReason
 import xyz.nightfury.util.db.getCase
 import xyz.nightfury.util.db.modLog
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.ext.doesNotMatch
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.doesNotMatch
 
 /**
  * @author Kaidan Gustave

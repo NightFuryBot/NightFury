@@ -17,7 +17,6 @@
 package xyz.nightfury.util.collections
 
 import xyz.nightfury.command.Command
-import xyz.nightfury.util.ext.accumulate
 
 class CommandMap(private vararg val commands: Command): Map<String, Command> {
     companion object {

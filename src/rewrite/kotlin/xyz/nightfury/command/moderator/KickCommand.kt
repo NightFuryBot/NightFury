@@ -21,9 +21,9 @@ import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.listeners.ModLog
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.ext.formattedName
-import xyz.nightfury.util.ext.kick
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.formattedName
+import xyz.nightfury.util.jda.kick
 import xyz.nightfury.util.parseModeratorArgument
 
 /**

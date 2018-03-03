@@ -15,7 +15,6 @@
  */
 package xyz.nightfury.util
 
-import xyz.nightfury.util.ext.niceName
 import java.time.temporal.TemporalAccessor
 import java.util.*
 

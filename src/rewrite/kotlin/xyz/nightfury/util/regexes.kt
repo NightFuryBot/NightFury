@@ -30,3 +30,5 @@ fun parseModeratorArgument(args: String): Pair<Long, String?>? {
 
     return groups[1].trim().toLong() to groups[2].trim().takeIf { it.isNotEmpty() }
 }
+
+infix fun String.doesNotMatch(regex: Regex): Boolean = !(this matches regex)

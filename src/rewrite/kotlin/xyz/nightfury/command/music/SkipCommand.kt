@@ -17,8 +17,8 @@ package xyz.nightfury.command.music
 
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.music.MusicManager
-import xyz.nightfury.util.ext.formattedInfo
-import xyz.nightfury.util.ext.formattedName
+import xyz.nightfury.util.formattedInfo
+import xyz.nightfury.util.formattedName
 
 /**
  * @author Kaidan Gustave

@@ -19,7 +19,7 @@ import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.requests.YouTubeAPI
 import xyz.nightfury.util.Cleanable
-import xyz.nightfury.util.ext.await
+import xyz.nightfury.util.jda.await
 
 /**
  * @author Kaidan Gustave

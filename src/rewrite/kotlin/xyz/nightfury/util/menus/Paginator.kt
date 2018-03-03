@@ -22,9 +22,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.core.requests.RestAction
 import xyz.nightfury.entities.RestDeferred
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.ext.embed
-import xyz.nightfury.util.ext.message
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.jda.embed
+import xyz.nightfury.util.jda.message
 import xyz.nightfury.util.ignored
 import java.awt.Color
 import kotlin.math.ceil
@@ -84,9 +84,8 @@ class Paginator(builder: Paginator.Builder): Menu(builder) {
         initialize(channel.sendMessage(renderPage(num)), num)
     }
 
-    private fun initialize(action: RestAction<Message?>, pageNum: Int) {
+    private fun initialize(action: RestAction<Message>, pageNum: Int) {
         RestDeferred(action, waiter).promise { m ->
-            m ?: return@promise
             when {
                 pages > 1 -> {
                     ignored {
@@ -253,7 +252,7 @@ class Paginator(builder: Paginator.Builder): Menu(builder) {
 
         return message {
             text(pageNum, pages)?.let { this@message.append(it) }
-            embed embed@ {
+            embed embed@{
                 if(columns == 1) {
                     for(i in start until end) {
                         this@embed.appendln()
@@ -263,7 +262,7 @@ class Paginator(builder: Paginator.Builder): Menu(builder) {
                 } else {
                     val per = ceil((end - start).toDouble() / columns).roundToInt()
                     for(k in 0 until columns) {
-                        this@embed.field field@ {
+                        this@embed.field field@{
                             this@field.name = ""
                             var i = start + k * per
                             while((i < end) && (i < start + (k + 1) * per)) {

@@ -21,11 +21,14 @@ import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.User
-import xyz.nightfury.entities.embed
+import xyz.nightfury.util.jda.embed
 import xyz.nightfury.util.Emojis
+import xyz.nightfury.util.jda.await
 import xyz.nightfury.util.db.starCount
 import xyz.nightfury.util.db.stars
-import xyz.nightfury.util.ext.*
+import xyz.nightfury.util.formattedName
+import xyz.nightfury.util.jda.message
+import java.awt.Color
 import xyz.nightfury.ndb.starboard.StarboardEntriesHandler as StarEntries
 
 /**
@@ -87,7 +90,7 @@ data class StarMessage constructor(val starboard: Starboard, val starred: Messag
             append { this@StarMessage.toString() }
             setEmbed(createEmbed())
         }
-        entry.edit(msg).queue()
+        entry.editMessage(msg).queue()
     }
 
     fun isStarring(user: User): Boolean {
@@ -120,14 +123,11 @@ data class StarMessage constructor(val starboard: Starboard, val starred: Messag
             icon = starred.author.effectiveAvatarUrl
             value = starred.author.formattedName(false)
         }
-        if(starred.contentRaw.isNotEmpty())
-            description { starred.contentRaw }
-        if(starred.attachments.isNotEmpty())
-            starred.attachments[0].takeIf { it.isImage }?.let { image { it.url } }
+        if(starred.contentRaw.isNotEmpty()) description { starred.contentRaw }
+        if(starred.attachments.isNotEmpty()) starred.attachments[0].takeIf { it.isImage }?.let { image { it.url } }
         // Image embeds take precedence over attachments
-        if(starred.embeds.isNotEmpty())
-            image { starred.embeds[0].url }
-        color { starColor(count) }
+        if(starred.embeds.isNotEmpty()) image { starred.embeds[0].url }
+        color { Color(255, 255, (25.44 * Math.min(count, 10)).toInt()) }
         time { starred.creationTime }
     }
 }

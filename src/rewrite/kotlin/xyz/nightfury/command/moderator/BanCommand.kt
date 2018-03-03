@@ -23,9 +23,9 @@ import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.listeners.ModLog
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.ext.banFrom
-import xyz.nightfury.util.ext.formattedName
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.jda.banFrom
+import xyz.nightfury.util.formattedName
 import xyz.nightfury.util.parseModeratorArgument
 
 /**
@@ -79,7 +79,6 @@ class BanCommand : Command(ModeratorGroup) {
                     !ctx.member.canInteract(member) -> return ctx.replyError {
                         "You cannot ban ${target.formattedName(true)}!"
                     }
-                    else -> null
                 }
             }
         }

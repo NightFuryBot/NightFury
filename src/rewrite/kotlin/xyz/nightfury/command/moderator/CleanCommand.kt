@@ -22,7 +22,7 @@ import xyz.nightfury.NightFury
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
-import xyz.nightfury.entities.await
+import xyz.nightfury.util.jda.await
 import xyz.nightfury.listeners.ModLog
 import xyz.nightfury.util.discordID
 import xyz.nightfury.util.reasonPattern

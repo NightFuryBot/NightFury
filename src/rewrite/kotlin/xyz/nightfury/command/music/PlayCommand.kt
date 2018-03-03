@@ -25,7 +25,9 @@ import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.music.MemberTrack
 import xyz.nightfury.music.MusicManager
-import xyz.nightfury.util.ext.*
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.jda.editMessage
+import xyz.nightfury.util.formattedInfo
 
 /**
  * @author Kaidan Gustave
@@ -50,13 +52,13 @@ class PlayCommand(manager: MusicManager): MusicCommand(manager) {
         } catch(e: FriendlyException) {
             val message = loading.await()
             return when(e.severity) {
-                COMMON -> message.edit("An error occurred${e.message?.let { ": $it" } ?: ""}.").queue()
-                else -> message.edit("An error occurred.").queue()
+                COMMON -> message.editMessage("An error occurred${e.message?.let { ": $it" } ?: ""}.").queue()
+                else -> message.editMessage("An error occurred.").queue()
             }
         }
 
         when(item) {
-            null -> return ctx.replyWarning(noMatch("results", query))
+            null -> return ctx.replyWarning(xyz.nightfury.util.noMatch("results", query))
 
             is AudioTrack -> {
                 val info = item.info.formattedInfo
@@ -85,7 +87,7 @@ class PlayCommand(manager: MusicManager): MusicCommand(manager) {
             }
 
             // This shouldn't happen, but...
-            else -> loading.await().edit("The loaded item is unsupported by this player.").queue()
+            else -> loading.await().editMessage("The loaded item is unsupported by this player.").queue()
         }
     }
 }

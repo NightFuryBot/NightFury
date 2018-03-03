@@ -24,8 +24,8 @@ import net.dv8tion.jda.core.requests.RestAction
 import xyz.nightfury.Client
 import xyz.nightfury.NightFury
 import xyz.nightfury.util.emoteRegex
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.filterMassMentions
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.jda.filterMassMentions
 import kotlin.coroutines.experimental.CoroutineContext
 
 /**

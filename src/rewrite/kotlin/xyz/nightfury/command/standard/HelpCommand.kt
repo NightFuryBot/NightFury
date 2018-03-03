@@ -19,8 +19,8 @@ import xyz.nightfury.NightFury
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.util.db.getCommandLevel
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.ext.formattedName
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.formattedName
 
 /**
  * @author Kaidan Gustave

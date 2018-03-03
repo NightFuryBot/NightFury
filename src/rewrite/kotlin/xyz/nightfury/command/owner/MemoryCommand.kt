@@ -18,7 +18,7 @@ package xyz.nightfury.command.owner
 import net.dv8tion.jda.core.Permission
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
-import xyz.nightfury.entities.embed
+import xyz.nightfury.util.jda.embed
 
 /**
  * @author Kaidan Gustave

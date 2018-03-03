@@ -22,7 +22,7 @@ import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.util.commandArgs
 import xyz.nightfury.util.db.getCommandLevel
 import xyz.nightfury.util.db.setCommandLevel
-import xyz.nightfury.util.ext.niceName
+import xyz.nightfury.util.niceName
 
 /**
  * @author Kaidan Gustave

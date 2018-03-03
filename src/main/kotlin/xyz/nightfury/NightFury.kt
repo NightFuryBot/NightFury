@@ -72,7 +72,7 @@ class NightFury {
     }
 
     init {
-        if(!WebhookAppender.IS_INITIALIZED) {
+        if(!WebhookAppender.isInitialized) {
             LOG.info("Webhook Appender was not initialized!")
         }
 

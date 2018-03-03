@@ -20,10 +20,10 @@ import net.dv8tion.jda.core.entities.Member
 import xyz.nightfury.command.AutoCooldown
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
-import xyz.nightfury.entities.embed
 import xyz.nightfury.listeners.EventWaiter
+import xyz.nightfury.util.*
 import xyz.nightfury.util.db.*
-import xyz.nightfury.util.ext.*
+import xyz.nightfury.util.jda.*
 import xyz.nightfury.util.menus.OrderedMenu
 import xyz.nightfury.util.menus.Paginator
 import java.util.Comparator

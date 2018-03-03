@@ -23,7 +23,7 @@ import xyz.nightfury.command.standard.StandardGroup
 import xyz.nightfury.util.commandArgs
 import xyz.nightfury.util.db.getCommandLevel
 import xyz.nightfury.util.db.isMod
-import xyz.nightfury.util.ext.isAdmin
+import xyz.nightfury.util.jda.isAdmin
 import java.util.LinkedList
 import kotlin.reflect.full.findAnnotation
 

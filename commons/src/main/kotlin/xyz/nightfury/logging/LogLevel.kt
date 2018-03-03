@@ -17,8 +17,6 @@ package xyz.nightfury.logging
 
 import ch.qos.logback.classic.Level
 
-val Level.logLevel: LogLevel get() = LogLevel.byLevel(this)
-
 enum class LogLevel(val int: Int, val logbackLevel: Level) {
     ALL(0, Level.ALL),
     TRACE(1, Level.TRACE),

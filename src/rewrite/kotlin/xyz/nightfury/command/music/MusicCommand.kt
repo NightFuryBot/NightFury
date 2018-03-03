@@ -28,7 +28,7 @@ import net.dv8tion.jda.core.entities.VoiceChannel
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.music.MusicManager
-import xyz.nightfury.util.ext.isConnected
+import xyz.nightfury.util.jda.isConnected
 import kotlin.coroutines.experimental.Continuation
 import kotlin.coroutines.experimental.suspendCoroutine
 

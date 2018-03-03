@@ -17,8 +17,10 @@ package xyz.nightfury.command.standard
 
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
-import xyz.nightfury.entities.embed
-import xyz.nightfury.util.ext.*
+import xyz.nightfury.util.jda.embed
+import xyz.nightfury.util.*
+import xyz.nightfury.util.jda.findMembers
+import xyz.nightfury.util.jda.findUsers
 
 /**
  * @author Kaidan Gustave
@@ -45,7 +47,7 @@ class AvatarCommand : Command(StandardGroup) {
 
         val user = temp?.user ?: ctx.author.takeIf { query.isEmpty() } ?: ctx.jda.findUsers(query).let { users ->
             return@let when {
-                users.isEmpty() -> return ctx.replyError(noMatch("users", query))
+                users.isEmpty() -> return ctx.replyError(xyz.nightfury.util.noMatch("users", query))
                 users.size > 1 -> return ctx.replyError(users.multipleUsers(query))
                 else -> users[0]
             }
@@ -54,7 +56,7 @@ class AvatarCommand : Command(StandardGroup) {
         ctx.reply(embed {
             title { "Avatar For ${user.formattedName(true)}" }
             val imageUrl = "${user.effectiveAvatarUrl}?size=1024"
-            url   { imageUrl }
+            url { imageUrl }
             image { imageUrl }
             if(ctx.isGuild) {
                 val member = ctx.guild.getMember(user)

@@ -15,6 +15,7 @@
  */
 package xyz.nightfury.command.standard
 
+import net.dv8tion.jda.core.Permission
 import xyz.nightfury.command.AutoCooldown
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
@@ -23,13 +24,14 @@ import xyz.nightfury.entities.TagErrorException
 import xyz.nightfury.util.menus.Paginator
 import xyz.nightfury.listeners.EventWaiter
 import xyz.nightfury.ndb.entities.DBTag
-import xyz.nightfury.util.commandArgs
+import xyz.nightfury.util.*
 import xyz.nightfury.util.db.addTag
 import xyz.nightfury.util.db.getTagByName
 import xyz.nightfury.util.db.isTag
 import xyz.nightfury.util.db.tags
-import xyz.nightfury.util.ext.*
-import xyz.nightfury.util.ignored
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.jda.findMembers
+import xyz.nightfury.util.jda.findUsers
 
 /**
  * @author Kaidan Gustave
@@ -280,7 +282,7 @@ class TagCommand(waiter: EventWaiter): Command(StandardGroup) {
                 else -> {
                     val found = ctx.jda.findUsers(query)
                     when {
-                        found.isEmpty() -> return ctx.replyError(noMatch("users", query))
+                        found.isEmpty() -> return ctx.replyError(xyz.nightfury.util.noMatch("users", query))
                         found.size > 1 -> return ctx.replyError(found.multipleUsers(query))
                         else -> found[0]
                     }
@@ -306,7 +308,8 @@ class TagCommand(waiter: EventWaiter): Command(StandardGroup) {
                 }
                 finalAction {
                     ctx.linkMessage(it)
-                    it.removeMenuReactions()
+                    if(ctx.isGuild && ctx.selfMember.hasPermission(ctx.textChannel, Permission.MESSAGE_MANAGE))
+                        it.clearReactions()
                 }
                 user { ctx.author }
             }

@@ -15,16 +15,12 @@
  */
 
 dependencies {
-    // JDA
-    compileOnly "net.dv8tion:JDA:$jda_version"
-    compileOnly "com.jagrosh:jda-utilities-commons:$jda_utilities_version"
-
-    // Lava
-    compileOnly "com.sedmelluq:lavaplayer:$lavaplayer_version"
+    // Kotlin Reflect
+    compileOnly kotlinModule("reflect")
 
     // Config
-    compileOnly "ninja.leaping.configurate:configurate-hocon:3.3"
+    compileOnly hocon()
 
     // Logging
-    compileOnly "ch.qos.logback:logback-classic:$logback_version"
+    compileOnly logback()
 }

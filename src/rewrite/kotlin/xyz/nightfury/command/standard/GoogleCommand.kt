@@ -20,7 +20,7 @@ import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.requests.GoogleAPI
 import xyz.nightfury.util.Cleanable
-import xyz.nightfury.util.ext.await
+import xyz.nightfury.util.jda.await
 
 /**
  * @author Kaidan Gustave

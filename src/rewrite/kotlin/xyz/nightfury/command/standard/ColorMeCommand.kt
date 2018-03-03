@@ -23,10 +23,10 @@ import xyz.nightfury.command.MustHaveArguments
 import xyz.nightfury.listeners.EventWaiter
 import xyz.nightfury.util.db.colorMeRoles
 import xyz.nightfury.util.db.isColorMe
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.ext.findRoles
-import xyz.nightfury.util.ext.multipleRoles
-import xyz.nightfury.util.ext.noMatch
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.jda.findRoles
+import xyz.nightfury.util.multipleRoles
+import xyz.nightfury.util.noMatch
 import xyz.nightfury.util.menus.Paginator
 import java.awt.Color
 

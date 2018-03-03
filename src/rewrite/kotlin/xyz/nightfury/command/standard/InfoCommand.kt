@@ -15,14 +15,17 @@
  */
 package xyz.nightfury.command.standard
 
+import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.MessageEmbed
 import net.dv8tion.jda.core.entities.User
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
-import xyz.nightfury.entities.embed
-import xyz.nightfury.util.ext.*
+import xyz.nightfury.util.jda.embed
+import xyz.nightfury.util.*
+import xyz.nightfury.util.jda.findMembers
+import xyz.nightfury.util.jda.findUsers
 import java.time.format.DateTimeFormatter
 import java.util.Comparator
 import kotlin.math.max
@@ -35,21 +38,29 @@ class InfoCommand: Command(StandardGroup) {
         private const val BULLET = "\uD83D\uDD39 "
         private const val STREAMING_EMOTE_ID = 313956277132853248L
 
+
+        private val OnlineStatus.emoteId : Long
+            get() = when(this) {
+                OnlineStatus.ONLINE -> 313956277808005120L
+                OnlineStatus.IDLE -> 313956277220802560L
+                OnlineStatus.DO_NOT_DISTURB -> 313956276893646850L
+                OnlineStatus.OFFLINE -> 313956277237710868L
+                OnlineStatus.INVISIBLE -> 313956277107556352L
+                OnlineStatus.UNKNOWN -> 313956277107556352L
+            }
+
         // Kept here for usage in the 'server' command
         fun infoEmbed(ctx: CommandContext, user: User, member: Member?): MessageEmbed = embed {
-            title = "${if(user.isBot) ctx.jda.getEmoteById(230105988211015680L)!!.asMention else "\u2139"} " +
-                "__Information on ${user.formattedName(false)}:__"
+            title = "${if(user.isBot) ctx.jda.getEmoteById(230105988211015680L)!!.asMention else "\u2139"} " + "__Information on ${user.formattedName(false)}:__"
             thumbnail = if(user.avatarUrl == null) user.defaultAvatarUrl else user.avatarUrl
             append(BULLET).appendln("**ID:** ${user.id}")
             member?.let {
                 color { member.color }
-
                 // Nickname
                 member.nickname?.let { nickname ->
                     append(BULLET).append("**Nickname:** $nickname")
                     appendln()
                 }
-
                 // Roles
                 val roles = member.roles
                 if(roles.isNotEmpty()) {
@@ -60,7 +71,6 @@ class InfoCommand: Command(StandardGroup) {
                     }
                     appendln()
                 }
-
                 // Status
                 append(BULLET).append("**Status:** ")
                 val game = member.game
@@ -92,11 +102,8 @@ class InfoCommand: Command(StandardGroup) {
                 append(BULLET).appendln("**Join Order:** ")
                 index = max(index - 3, 0)
                 joins[index].let { m -> append(m.user.name.modifyIf(member == m) { "**[$it]()**" }) }
-                @Suppress("LoopToCallChain")
-                for(i in index + 1 until index + 7) {
-                    if(i >= joins.size)
-                        break
-
+                @Suppress("LoopToCallChain") for(i in index + 1 until index + 7) {
+                    if(i >= joins.size) break
                     val m = joins[i]
                     val name = m.user.name.modifyIf(member == m) { "**[$it]()**" }
                     append(" > $name")
@@ -126,7 +133,7 @@ class InfoCommand: Command(StandardGroup) {
 
         val user = temp?.user ?: ctx.author.takeIf { query.isEmpty() } ?: ctx.jda.findUsers(query).let { users ->
             return@let when {
-                users.isEmpty() -> return ctx.replyError(noMatch("users", query))
+                users.isEmpty() -> return ctx.replyError(xyz.nightfury.util.noMatch("users", query))
                 users.size > 1 -> return ctx.replyError(users.multipleUsers(query))
                 else -> users[0]
             }

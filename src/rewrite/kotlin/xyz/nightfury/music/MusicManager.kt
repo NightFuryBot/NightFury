@@ -33,13 +33,13 @@ import net.dv8tion.jda.core.events.guild.voice.GenericGuildVoiceEvent
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent
 import net.dv8tion.jda.core.hooks.EventListener
 import xyz.nightfury.util.createLogger
-import xyz.nightfury.util.ext.formatTrackTime
+import xyz.nightfury.util.formatTrackTime
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author Kaidan Gustave
  */
-class MusicManager: AudioEventListener, EventListener, AudioPlayerManager by DefaultAudioPlayerManager() {
+class MusicManager : AudioEventListener, EventListener, AudioPlayerManager by DefaultAudioPlayerManager() {
     companion object {
         internal val LOG = createLogger(MusicManager::class)
         internal val context by lazy { newSingleThreadContext("AudioCloseContext") }

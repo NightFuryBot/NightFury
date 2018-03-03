@@ -30,10 +30,9 @@ import net.dv8tion.jda.core.events.guild.member.GuildMemberRoleRemoveEvent
 import xyz.nightfury.ndb.entities.Case
 import xyz.nightfury.util.createLogger
 import xyz.nightfury.util.db.*
-import xyz.nightfury.util.ext.await
-import xyz.nightfury.util.ext.edit
-import xyz.nightfury.util.ext.formattedName
-import xyz.nightfury.util.ext.isSelf
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.formattedName
+import xyz.nightfury.util.jda.isSelf
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
@@ -141,7 +140,7 @@ object ModLog : SuspendedListener {
 
         val newContent = "${parts[0]}\n${REASON_LINE_FORMAT.format(reason)}"
 
-        logMessage.edit(newContent).await()
+        logMessage.editMessage(newContent).await()
     }
 
     private fun start() {

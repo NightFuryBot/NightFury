@@ -19,8 +19,8 @@ import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.Role
 import xyz.nightfury.ndb.roles.*
-import xyz.nightfury.util.ext.giveRole
-import xyz.nightfury.util.ext.removeRole
+import xyz.nightfury.util.jda.giveRole
+import xyz.nightfury.util.jda.removeRole
 
 inline var <reified R: Role> R.isRoleMe: Boolean
     inline get() = RoleMeHandler.isRole(guild.idLong, idLong)

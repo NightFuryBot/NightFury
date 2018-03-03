@@ -17,7 +17,6 @@ package xyz.nightfury.command.standard
 
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
-import xyz.nightfury.util.ext.edit
 import java.time.temporal.ChronoUnit
 
 /**
@@ -34,7 +33,7 @@ class PingCommand: Command(StandardGroup) {
     override suspend fun execute(ctx: CommandContext) {
         val message = ctx.send("Ping...")
         val ping = ctx.message.creationTime.until(message.creationTime, ChronoUnit.MILLIS)
-        message.edit("Ping: ${ping}ms").queue()
+        message.editMessage("Ping: ${ping}ms").queue()
     }
 
     private inner class WebSocketPingCommand: Command(this@PingCommand) {

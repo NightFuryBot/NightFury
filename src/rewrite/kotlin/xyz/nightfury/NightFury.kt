@@ -23,28 +23,22 @@ import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission.*
 import net.dv8tion.jda.core.utils.SessionControllerAdapter
 import okhttp3.OkHttpClient
-import xyz.nightfury.command.administrator.CustomCmdCommand
-import xyz.nightfury.command.administrator.LevelCommand
-import xyz.nightfury.command.administrator.LogCommand
-import xyz.nightfury.command.administrator.PrefixCommand
+import xyz.nightfury.command.administrator.*
 import xyz.nightfury.command.moderator.*
 import xyz.nightfury.command.music.*
-import xyz.nightfury.command.owner.EvalCommand
-import xyz.nightfury.command.owner.GuildListCommand
-import xyz.nightfury.command.owner.MemoryCommand
-import xyz.nightfury.command.owner.ShutdownCommand
+import xyz.nightfury.command.owner.*
 import xyz.nightfury.command.standard.*
-import xyz.nightfury.ndb.Database
+import xyz.nightfury.entities.WebhookAppender
 import xyz.nightfury.entities.tagMethods
 import xyz.nightfury.listeners.*
-import xyz.nightfury.util.ext.sessionController
-// TODO import xyz.nightfury.listeners.AutoLoggingListener
 import xyz.nightfury.music.MusicManager
+import xyz.nightfury.ndb.Database
 import xyz.nightfury.requests.GoogleAPI
 import xyz.nightfury.requests.GoogleImageAPI
 import xyz.nightfury.requests.YouTubeAPI
-import xyz.nightfury.util.createLogger
-import xyz.nightfury.util.ext.*
+import xyz.nightfury.util.*
+import xyz.nightfury.util.jda.*
+import xyz.nightfury.util.reflect.packageOf
 
 /**
  * @author Kaidan Gustave
@@ -59,10 +53,12 @@ object NightFury {
     const val GITHUB = "https://github.com/NightFuryBot/NightFury/"
     const val SERVER_INVITE = "https://discord.gg/xkkw54u"
 
-    val VERSION = this::class.java.`package`.implementationVersion ?: "BETA"
     val LOG = createLogger(NightFury::class)
-    val HTTP_CLIENT_BUILDER = OkHttpClient.Builder()
-    val PERMISSIONS = arrayOf(
+
+    val packageInfo = packageOf(this::class)
+    val version = packageInfo.version.implementation ?: "BETA"
+    val httpClientBuilder = OkHttpClient.Builder()
+    val permissions = arrayOf(
         MESSAGE_HISTORY,
         MESSAGE_EMBED_LINKS,
         MESSAGE_ATTACH_FILES,
@@ -81,11 +77,19 @@ object NightFury {
     )
 
     @JvmStatic fun main(args: Array<String>) {
+        start()
+    }
+
+    fun start(): Client {
         LOG.info("Starting...")
 
         val config = NightFury.Config()
 
         Database.connect(config.databaseURL, config.databaseUser, config.databasePass)
+
+        if(!WebhookAppender.isInitialized) {
+            LOG.debug("Webhook appender is not initialized.")
+        }
 
         val google = GoogleAPI()
         val image = GoogleImageAPI()
@@ -94,7 +98,6 @@ object NightFury {
         val parser = JagTag.newDefaultBuilder().addMethods(tagMethods).build()
 
         val waiter = EventWaiter()
-        val invisTracker = InvisibleTracker()
         val musicManager = MusicManager()
 
         // Standard Commands
@@ -134,27 +137,25 @@ object NightFury {
         PrefixCommand(waiter)
         LogCommand(waiter)
         LevelCommand()
+        WelcomeCommand()
 
         // Owner Commands
         EvalCommand()
         GuildListCommand(waiter)
         MemoryCommand()
+        RestartCommand()
         ShutdownCommand()
 
         val client = Client(if(config.test) TEST_PREFIX else PREFIX, config.dBotsKey, config.dBotsListKey, parser)
-
-        client.mode = ClientMode.DEBUG
 
         JDABuilder(AccountType.BOT).buildAsync {
             manager    { ContextEventManager() }
 
             listener   { client }
-            listener   { invisTracker }
             listener   { musicManager }
             listener   { waiter }
             listener   { StarboardListener() }
             listener   { ModLog }
-            //listener   { AutoLoggingListener() }
             listener   { DatabaseListener() }
 
             contextMap { null }
@@ -162,6 +163,8 @@ object NightFury {
             status     { OnlineStatus.DO_NOT_DISTURB }
             watching   { "Everything Start Up..." }
         }
+
+        return client
     }
 
     private inline fun <reified T: JDABuilder> T.buildAsync(lazy: JDABuilder.() -> Unit) {
@@ -183,7 +186,7 @@ object NightFury {
 
     class Config {
         private val conf = hocon {
-            setSource { this::class.java.getResourceAsStream("/bot.conf").bufferedReader(Charsets.UTF_8) }
+            setSource { this::class.resourceStreamOf("/bot.conf")?.bufferedReader(Charsets.UTF_8) }
             parseOptions.allowMissing = false
             renderOptions.comments = true
         }

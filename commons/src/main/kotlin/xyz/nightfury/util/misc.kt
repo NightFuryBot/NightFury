@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("Unused")
 package xyz.nightfury.util
 
 /**
@@ -25,3 +26,13 @@ package xyz.nightfury.util
  * @return `null` typed as [T?][T].
  */
 fun <T> nullOf(): T? = null
+
+inline val <reified E: Enum<E>> E.niceName: String inline get() {
+    return name.replace('_', ' ').run {
+        if(length < 2) this.toUpperCase()
+        else "${this[0].toUpperCase()}${substring(1).toLowerCase()}"
+    }
+}
+
+inline fun <reified T> T.modifyIf(condition: Boolean, block: (T) -> T): T = if(condition) block(this) else this
+inline fun <reified T> T.modifyUnless(condition: Boolean, block: (T) -> T): T = modifyIf(!condition, block)

@@ -30,6 +30,7 @@ class GuildListCommand(waiter: EventWaiter): Command(OwnerGroup) {
     override val hasAdjustableLevel = false
 
     private val builder = Paginator.Builder {
+        timeout          { delay { 20 } }
         waiter           { waiter }
         waitOnSinglePage { true }
         numberItems      { true }

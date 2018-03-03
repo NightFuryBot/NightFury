@@ -23,7 +23,7 @@ import kotlinx.coroutines.experimental.launch
 import net.dv8tion.jda.core.audio.AudioSendHandler
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.VoiceChannel
-import xyz.nightfury.util.ext.modifyIf
+import xyz.nightfury.util.modifyIf
 import java.util.*
 import kotlin.NoSuchElementException
 import kotlin.collections.HashSet

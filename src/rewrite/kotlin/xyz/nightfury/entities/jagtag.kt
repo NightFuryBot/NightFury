@@ -21,15 +21,15 @@ import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.core.entities.User
-import xyz.nightfury.util.ext.*
+import xyz.nightfury.util.*
+import xyz.nightfury.util.jda.findMembers
+import xyz.nightfury.util.jda.findTextChannels
+import xyz.nightfury.util.jda.findUsers
 import java.awt.Color
 import java.time.OffsetDateTime
 import java.time.format.DateTimeParseException
 import kotlin.streams.toList
 
-/**
- * @author Kaidan Gustave
- */
 val tagMethods: Collection<Method> by lazy {
     arrayListOf(
         Method("user", ParseFunction { env ->
@@ -260,7 +260,7 @@ internal fun userSearch(env: Environment, input: Array<out String>): User {
     if(env.contains("guild")) { // is from guild
         with(env.get<Guild>("guild").findMembers(input[0])) {
             if(this.isEmpty())
-                throw TagErrorException(xyz.nightfury.util.ext.noMatch("members", input[0]))
+                throw TagErrorException(xyz.nightfury.util.noMatch("members", input[0]))
             if(this.size>1)
                 throw TagErrorException(this.multipleMembers(input[0]))
             return this[0].user
@@ -268,7 +268,7 @@ internal fun userSearch(env: Environment, input: Array<out String>): User {
     } else {
         with(env.get<User>("user").jda.findUsers(input[0])) {
             if(this.isEmpty())
-                throw TagErrorException(xyz.nightfury.util.ext.noMatch("users", input[0]))
+                throw TagErrorException(xyz.nightfury.util.noMatch("users", input[0]))
             if(this.size>1)
                 throw TagErrorException(this.multipleUsers(input[0]))
             return this[0]
@@ -284,7 +284,7 @@ internal fun channelSearch(env: Environment, input: Array<out String>): TextChan
     with(env.get<Guild>("guild").findTextChannels(input[0]))
     {
         if(this.isEmpty())
-            throw TagErrorException(xyz.nightfury.util.ext.noMatch("channels", input[0]))
+            throw TagErrorException(xyz.nightfury.util.noMatch("channels", input[0]))
         if(this.size>1)
             throw TagErrorException(this.multipleTextChannels(input[0]))
         return this[0]

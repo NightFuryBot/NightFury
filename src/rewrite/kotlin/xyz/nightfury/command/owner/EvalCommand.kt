@@ -19,9 +19,8 @@ import kotlinx.coroutines.experimental.delay
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
 import xyz.nightfury.command.MustHaveArguments
-import xyz.nightfury.util.ext.connectedChannel
-import xyz.nightfury.util.ext.edit
-import xyz.nightfury.util.ext.modifyIf
+import xyz.nightfury.util.jda.connectedChannel
+import xyz.nightfury.util.modifyIf
 import java.util.concurrent.TimeUnit
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
@@ -57,7 +56,7 @@ class EvalCommand: Command(OwnerGroup) {
             args matches SYS_EXIT_REGEX -> {
                 val message = ctx.sendWarning("Shutting Down...")
                 delay(4, TimeUnit.SECONDS)
-                message.edit("Naaaah, just kidding!").queue()
+                message.editMessage("Naaaah, just kidding!").queue()
             }
 
             else -> {

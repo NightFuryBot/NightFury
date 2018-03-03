@@ -14,31 +14,7 @@
  * limitations under the License.
  */
 dependencies {
-    // JDA
-    compileOnly "net.dv8tion:JDA:$jda_version"
-    // h2
-    compileOnly "com.h2database:h2:$h2_version"
+    compileOnly h2()
 
     compileOnly project(':commons')
-}
-
-jar {
-    manifest {
-        attributes 'Implementation-Version': version.toString(),
-                'Main-Class': mainClassName
-    }
-}
-
-shadowJar {
-    baseName 'NightFury'
-    version ''
-    classifier ''
-
-    exclude('com/jagrosh/jdautilities/commandclient/**')
-    exclude('android/**')
-    exclude('README.md')
-
-    manifest {
-        attributes 'Manifest-Version': "${versionObj.major}.${versionObj.minor}"
-    }
 }
