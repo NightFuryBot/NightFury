@@ -15,65 +15,107 @@
  */
 package xyz.nightfury.requests
 
+import kotlinx.coroutines.experimental.sync.Mutex
+import kotlinx.coroutines.experimental.sync.withLock
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import xyz.nightfury.util.Cleanable
 import xyz.nightfury.util.createLogger
 import java.io.IOException
-import java.net.URLDecoder
-import java.net.URLEncoder
+import java.net.URLDecoder.*
+import java.net.URLEncoder.*
+import java.time.OffsetDateTime
+import java.time.OffsetDateTime.*
+import kotlin.coroutines.experimental.suspendCoroutine
+import kotlin.streams.toList
 
 /**
  * @author Kaidan Gustave
  */
-class GoogleImageAPI : AbstractAPICache<List<String>>()
-{
-    override val hoursToDecay = 5L
-
+class GoogleImageAPI : Cleanable {
     companion object {
-        private const val URL = "https://www.google.com/search?site=imghp&tbm=isch&source=hp&biw=1680&bih=940&q=%s&safe=active"
-        private const val ENCODING = "UTF-8"
+        private const val URL_FORMAT = "https://www.google.com/search?site=imghp&tbm=isch&" +
+                                       "source=hp&biw=1680&bih=940&q=%s&safe=active"
+        private const val ENCODING   = "UTF-8"
         private const val USER_AGENT = "Mozilla/5.0 (Windows NT 6.3; WOW64) " +
                                        "AppleWebKit/537.36 (KHTML, like Gecko) " +
                                        "Chrome/53.0.2785.116 Safari/537.36"
-
         private val LOG = createLogger(GoogleImageAPI::class)
     }
 
-    fun search(query: String) : List<String>?
-    {
-        getFromCache(query)?.let { return it }
+    private val cache = HashMap<String, Pair<List<String>, OffsetDateTime>>()
+    private val mutex = Mutex(locked = false)
+
+    suspend fun search(query: String): List<String>? {
+        getCached(query)?.let { return it }
         val request = try {
-            URL.format(URLEncoder.encode(query, ENCODING))
+            URL_FORMAT.format(encode(query, ENCODING))
         } catch (e: UnsupportedOperationException) {
             LOG.error("Error processing request: $e")
-            return@search null
+            return null
         }
 
-        val result = ArrayList<String>()
-        try {
-            Jsoup.connect(request).userAgent(USER_AGENT)
-                    .referrer("https://google.com/")
-                    .timeout(7500) // Timeout
-                    .get().select("div.rg_meta").stream()
-                    .filter  { it.childNodeSize() > 0 }
-                    .forEach {
-                        try {
-                            val node = it.childNode(0).toString()
-                            val frontIndex = node.indexOf("\"ou\":") + 6 // Find the front index of the json key
+        val results = try {
+            val document = makeRequest(request)
 
-                            result += URLDecoder.decode(node.substring(frontIndex,
-                                node.indexOf("\",", frontIndex)), ENCODING)
-                        } catch (e: UnsupportedOperationException) {
-                            LOG.error("An exception was thrown while decoding an image URL: $e")
-                        } catch (e: IndexOutOfBoundsException) {
-                            LOG.error("An exception was thrown due to improper indexing: $e")
-                        }
+            document.select("div.rg_meta").stream()
+                .filter { it.childNodeSize() > 0 }
+                .map {
+                    try {
+                        val node = it.childNode(0).toString()
+                        val frontIndex = node.indexOf("\"ou\":") + 6 // Find the front index of the json key
+                        return@map decode(node.substring(frontIndex, node.indexOf("\",", frontIndex)), ENCODING)
+                    } catch (e: UnsupportedOperationException) {
+                        LOG.error("An exception was thrown while decoding an image URL: $e")
+                    } catch (e: IndexOutOfBoundsException) {
+                        LOG.error("An exception was thrown due to improper indexing: $e")
                     }
-        } catch (e: IOException) {
+                    return@map ""
+                }
+                .filter { it.isNotBlank() }
+                .toList()
+        } catch(e: IOException) {
             LOG.error("Encountered an IOException: $e")
-            return@search null
+            return null
+        } catch(t: Throwable) {
+            LOG.error("Caught an exception: $t")
+            return null
         }
+        addToCache(query, results)
+        return results
+    }
 
-        addToCache(query, result)
-        return result
+    private suspend fun getCached(query: String): List<String>? {
+        return mutex.withLock(cache) {
+            cache[query]?.first
+        }
+    }
+
+    private suspend fun addToCache(query: String, results: List<String>) {
+        mutex.withLock(cache) {
+            cache[query] = results to now()
+        }
+    }
+
+    private suspend fun makeRequest(request: String): Document = suspendCoroutine { cont ->
+        try {
+            val document = Jsoup.connect(request).apply {
+                userAgent(USER_AGENT)
+                referrer("https://google.com/")
+                timeout(7500)
+            }.get()
+            requireNotNull(document) { "Document retrieved for request '$request' was null!" }
+            cont.resume(document)
+        } catch(t: Throwable) {
+            cont.resumeWithException(t)
+        }
+    }
+
+    override fun clean() {
+        val now = now()
+        synchronized(cache) {
+            cache.keys.stream().filter { now.isAfter(cache[it]!!.second.plusHours(2)) }
+                .toList().forEach { cache.remove(it) }
+        }
     }
 }

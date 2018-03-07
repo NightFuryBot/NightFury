@@ -1,2 +1,0 @@
-This quotes a previous message by its ID. If no channel is specified, it will look in the current channel.<br>
-To be able to copy message IDs, enable Developer Mode in the appearance settings, and then right-click messages and select Copy ID.

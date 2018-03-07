@@ -1,1 +1,0 @@
-This will show the settings for the current server, including the server's prefixes, moderator role, moderation log, muted role, and cases.

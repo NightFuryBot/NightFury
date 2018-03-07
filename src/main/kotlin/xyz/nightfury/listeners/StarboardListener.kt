@@ -22,10 +22,8 @@ package xyz.nightfury.listeners
 //
 // P.S. Yes I actually yelled this out at the top of my lungs when I finished this.
 
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.CoroutineScope
 import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.Guild
-import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.message.guild.GenericGuildMessageEvent
 import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent
@@ -33,22 +31,20 @@ import net.dv8tion.jda.core.events.message.guild.react.GenericGuildMessageReacti
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveAllEvent
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveEvent
-import net.dv8tion.jda.core.hooks.EventListener
-import xyz.nightfury.entities.await
-import xyz.nightfury.entities.promise
-import xyz.nightfury.db.entities.starboard.StarboardHandler
-import xyz.nightfury.entities.starboard.isStarReaction
+import xyz.nightfury.util.jda.await
+import xyz.nightfury.util.db.starboard
+import xyz.nightfury.util.ignored
 
 /**
  * @author Kaidan Gustave
  */
-class StarboardListener : EventListener {
-    override fun onEvent(event: Event?) {
+class StarboardListener : SuspendedListener {
+    override suspend fun CoroutineScope.onEvent(event: Event) {
         if(event !is GenericGuildMessageEvent)
             return
 
-        val guild: Guild = event.guild
-        val starboard = StarboardHandler.getStarboard(guild) ?: return
+        val guild = event.guild
+        val starboard = guild.starboard ?: return
 
         if(!guild.selfMember.hasPermission(event.channel, Permission.MESSAGE_MANAGE))
             return
@@ -56,16 +52,19 @@ class StarboardListener : EventListener {
         if(event is GuildMessageDeleteEvent) {
             starboard[event.messageIdLong]?.delete()
         } else if(event is GenericGuildMessageReactionEvent) {
-
-            event.reaction.takeIf { it.isStarReaction } ?: return
-
+            event.reaction.takeIf {
+                val name = it.reactionEmote.name
+                when(name) {
+                    "\u2B50", "\uD83C\uDF1F", "\uD83D\uDCAB" -> true
+                    else -> name.contains("star", ignoreCase = true)
+                }
+            } ?: return
             when(event) {
                 is GuildMessageReactionAddEvent -> {
                     val starMessage = starboard[event.messageIdLong]
-                    if(starMessage == null) {
-                        event.channel.getMessageById(event.messageId).promise() then { it ?: return@then
-                            starboard.addStar(event.user, it)
-                        }
+                    if(starMessage === null) {
+                        val message = event.channel.getMessageById(event.messageIdLong).await()
+                        message?.let { starboard.addStar(event.user, message) }
                     } else {
                         if(starMessage.isStarring(event.user))
                             return
@@ -74,27 +73,21 @@ class StarboardListener : EventListener {
                 }
 
                 is GuildMessageReactionRemoveEvent -> {
-                    val starMessage = synchronized(starboard) { starboard[event.messageIdLong] ?: return }
+                    // Shouldn't ever be null
+                    val starMessage = starboard[event.messageIdLong] ?: return
+                    val updated = ignored(null) { event.channel.getMessageById(event.messageIdLong).await() } ?: return
 
-                    launch {
-                        val updated: Message = try {
-                            // This shouldn't ever return null
-                            event.channel.getMessageById(event.messageIdLong).await()!!
-                        } catch(e: Exception) { return@launch }
-
-                        var noneRemain = true
-
-                        @Suppress("LoopToCallChain") // Nice try foxbot.
-                        for(reaction in updated.reactions) {
-                            if(reaction.users.any(event.user::equals)) {
-                                noneRemain = false
-                                break
-                            }
+                    var noneRemain = true
+                    @Suppress("LoopToCallChain") // Nice try foxbot.
+                    for(reaction in updated.reactions) {
+                        if(reaction.users.any(event.user::equals)) {
+                            noneRemain = false
+                            break
                         }
+                    }
 
-                        if(noneRemain) {
-                            starMessage.removeStar(event.user)
-                        }
+                    if(noneRemain) {
+                        starMessage.removeStar(event.user)
                     }
                 }
             }

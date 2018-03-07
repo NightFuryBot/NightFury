@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.music
+@file:Suppress("Unused")
+package xyz.nightfury.util.jda
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import net.dv8tion.jda.core.entities.Member
+import kotlinx.coroutines.experimental.delay
+import net.dv8tion.jda.core.requests.RestAction
+import java.util.concurrent.TimeUnit
+import kotlin.coroutines.experimental.suspendCoroutine
 
-/**
- * @author Kaidan Gustave
- */
-class MemberTrack(member: Member, val originalTrack: AudioTrack): AudioTrack by originalTrack {
-    init {
-        userData = member
-    }
+suspend inline fun <reified T> RestAction<T>.await() = suspendCoroutine<T> { cont ->
+    queue({ cont.resume(it) }, { cont.resumeWithException(it) })
+}
 
-    val member: Member get() = requireNotNull(userData as? Member) {
-        "User Data was not a Member instance, possibly overwritten?"
-    }
+suspend inline fun <reified T> RestAction<T>.awaitAfter(time: Long, unit: TimeUnit): T {
+    delay(time, unit)
+    return await()
 }

@@ -15,6 +15,15 @@
  */
 rootProject.name = 'NightFury'
 
-include 'commons'
-include 'database'
-include 'api'
+def createModule(String name, String dir = null) {
+    include name
+    if(dir != null) {
+        ProjectDescriptor module = project ":$name"
+        module.projectDir = file dir
+    }
+}
+
+
+createModule 'commons'
+createModule 'database'
+createModule 'api'

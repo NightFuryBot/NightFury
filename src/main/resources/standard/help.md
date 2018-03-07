@@ -1,2 +1,0 @@
-This will get a list of the available commands for the user's permission level in the specified channel.<br>
-You can only see commands that you can use. For example, a regular user only see public commands, while a server moderator would see moderator and public commands.

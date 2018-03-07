@@ -10,9 +10,10 @@
 /**/build/
 
 # Configurations
-/src/rewrite/resources/bot.conf
-/src/rewrite/resources/webhook.conf
+/src/main/resources/webhook.conf
 /src/main/resources/bot.conf
+/src/main/resources/api.conf
+/src/main/resources/setup.sql
 
 # Data Files
 /logs/

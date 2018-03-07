@@ -19,3 +19,5 @@ package xyz.nightfury.util
 val Int.name: String? get() = Character.getName(this)
 fun Int.toChars(): CharArray = Character.toChars(this)
 fun Int.toHexString(): String = Integer.toHexString(this)
+
+inline val Long.length: Int inline get() = "$this".length

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+@file:Suppress("MemberVisibilityCanBePrivate")
 package xyz.nightfury.listeners
 
 import net.dv8tion.jda.core.OnlineStatus
@@ -23,13 +23,14 @@ import net.dv8tion.jda.core.events.user.UserOnlineStatusUpdateEvent
 import net.dv8tion.jda.core.events.user.UserTypingEvent
 import net.dv8tion.jda.core.hooks.EventListener
 import java.time.OffsetDateTime
+import java.time.OffsetDateTime.*
 import java.time.temporal.ChronoUnit
 
 /**
  * @author Kaidan Gustave
  */
 class InvisibleTracker : EventListener {
-    private val map : HashMap<Long, OffsetDateTime> = HashMap()
+    private val map = HashMap<Long, OffsetDateTime>()
 
     override fun onEvent(event: Event?) {
         if(event is UserOnlineStatusUpdateEvent) {
@@ -43,7 +44,7 @@ class InvisibleTracker : EventListener {
                 return
             if(event.member.onlineStatus == OnlineStatus.OFFLINE) {
                 synchronized(map) {
-                    map.put(event.user.idLong, OffsetDateTime.now())
+                    map.put(event.user.idLong, now())
                 }
             }
         }
@@ -51,21 +52,20 @@ class InvisibleTracker : EventListener {
 
     fun isInvisible(user: User): Boolean = synchronized(map) {
         if(map.contains(user.idLong)) {
-            if(map[user.idLong]?.plusMinutes(5)?.isAfter(OffsetDateTime.now()) == true)
+            if(map[user.idLong]?.plusMinutes(5)?.isAfter(now()) == true)
                 true // Is invisible
             else {
                 map.remove(user.idLong)
                 false // Was invisible but past the 5 minute mark
             }
-        }
-        else false // Was not invisible
+        } else false // Was not invisible
     }
 
     fun getLastTimeTyping(user: User): Long? {
         if(!isInvisible(user))
             return null
         synchronized(map) {
-            return map[user.idLong]?.until(OffsetDateTime.now(), ChronoUnit.MINUTES)
+            return map[user.idLong]?.until(now(), ChronoUnit.MINUTES)
         }
     }
 }

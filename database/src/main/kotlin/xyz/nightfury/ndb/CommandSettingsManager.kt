@@ -22,7 +22,6 @@ package xyz.nightfury.ndb
 object CommandSettingsManager : Database.Table() {
     private const val GET_SETTINGS        = "SELECT * FROM COMMAND_SETTINGS WHERE GUILD_ID = ? AND COMMAND = UPPER(?)"
     private const val ADD_SETTINGS        = "INSERT INTO COMMAND_SETTINGS(GUILD_ID, COMMAND, LEVEL, LIMIT_NUMBER) VALUES (?, UPPER(?), UPPER(?), ?)"
-    private const val REMOVE_SETTINGS     = "DELETE FROM COMMAND_SETTINGS WHERE GUILD_ID = ? AND COMMAND = UPPER(?)"
     private const val REMOVE_ALL_SETTINGS = "DELETE FROM COMMAND_SETTINGS WHERE GUILD_ID = ?"
     private const val CHECK_TO_REMOVE     = "DELETE FROM COMMAND_SETTINGS WHERE GUILD_ID = ? AND COMMAND = UPPER(?) " +
                                             "AND LEVEL IS NULL AND LIMIT_NUMBER IS NULL"

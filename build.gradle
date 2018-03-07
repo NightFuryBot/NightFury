@@ -67,25 +67,43 @@ allprojects {
         versionObj = ver
 
         project.repositories {
-            jitpack = { maven { url 'https://jitpack.io/' } }
+            jitpack = {
+                maven {
+                    url 'https://jitpack.io/'
+                }
+            }
         }
 
         project.dependencies {
             kotlinModule = { String module -> "org.jetbrains.kotlin:kotlin-$module:$kotlin_version" }
+
             kotlinxModule = { String module -> "org.jetbrains.kotlinx:kotlinx-$module:$kotlinx_version" }
+
             JDA = { "net.dv8tion:JDA:$jda_version" }
-            JDAUtilities = { String module -> "com.jagrosh:jda-utilities-$module:$jda_utilities_version" }
+
+            JDAUtilities = { String module -> "com.github.JDA-Applications.JDA-Utilities" +
+                    ":jda-utilities-$module:feature~oauth2-SNAPSHOT" }
+
             lavaplayer = { "com.sedmelluq:lavaplayer:$lavaplayer_version" }
+
             hocon = { "ninja.leaping.configurate:configurate-hocon:$hocon_version" }
+
             youtube = { "com.google.apis:google-api-services-youtube:$youtube_api_version" }
+
             jsoup = { "org.jsoup:jsoup:$jsoup_version" }
 
             h2 = { "com.h2database:h2:$h2_version" }
 
             slf4j = { "org.slf4j:slf4j-api:$slf4j_version" }
+
             logback = { "ch.qos.logback:logback-classic:$logback_version" }
 
             jagtag = { "com.jagrosh:JagTag:$jagtag_version" }
+
+            kotlinJdk8 = { kotlinModule("stdlib-jdk8") }
+            kotlinJdk7 = { kotlinModule("stdlib-jdk7") }
+            kotlinReflect = { kotlinModule("reflect") }
+            kotlinxCoroutines = { kotlinxModule("coroutines-core") }
         }
     }
 
@@ -94,13 +112,13 @@ allprojects {
         jitpack()
     }
 
-    dependencies {
-        // Kotlin
-        compileOnly kotlinModule("stdlib-jdk8")
-        compileOnly kotlinModule("stdlib-jdk7")
+    sourceSets {
+        test {
+            kotlin.srcDirs += 'src/test/kotlin'
 
-        // Logging
-        compileOnly slf4j()
+            compileClasspath = main.output + main.resources
+            runtimeClasspath = main.output + main.resources
+        }
     }
 
     kotlin {
@@ -127,6 +145,17 @@ allprojects {
 
     compileTestJava {
         options.encoding = 'UTF-8'
+    }
+}
+
+subprojects {
+    dependencies {
+        // Kotlin
+        compileOnly kotlinModule("stdlib-jdk8")
+        compileOnly kotlinModule("stdlib-jdk7")
+
+        // Logging
+        compileOnly slf4j()
     }
 
     jar {
@@ -160,32 +189,12 @@ apply plugin: 'application'
 
 mainClassName = "${group}.$rootProject.name"
 
-sourceSets {
-    main {
-        java.srcDirs = ['src/rewrite/java']
-        java.srcDirs -= 'src/main/java'
-
-        kotlin.srcDirs = ['src/rewrite/kotlin']
-        kotlin.srcDirs -= 'src/main/kotlin'
-
-        resources.srcDirs = ['src/rewrite/resources']
-        resources.srcDirs -= 'src/main/resources'
-    }
-
-    test {
-        kotlin.srcDirs += 'src/test/kotlin'
-
-        compileClasspath = main.output + main.resources
-        runtimeClasspath = main.output + main.resources
-    }
-}
-
 dependencies {
     // Kotlin
-    compile kotlinModule("stdlib-jdk8")
-    compile kotlinModule("stdlib-jdk7")
-    compile kotlinModule("reflect")
-    compile kotlinxModule("coroutines-core")
+    compile kotlinJdk8()
+    compile kotlinJdk7()
+    compile kotlinReflect()
+    compile kotlinxCoroutines()
 
     // JDA
     compile JDA()
@@ -230,8 +239,14 @@ wrapper {
     gradleVersion '4.3.1'
 }
 
-build {
-    doFirst {
-        rootProject.childProjects.values().forEach { it.build }
+shadowJar {
+    baseName 'nightfury'
+    version ''
+    classifier ''
+
+    manifest {
+        attributes 'Manifest-Version': "${ver.major}.${ver.minor}",
+                   'Implementation-Version': "$version",
+                   'Main-Class': mainClassName
     }
 }

@@ -1,1 +1,0 @@
-What the command outputs is based on one of the sub-commands listed below. If no sub-command is specified, this will generate a menu where you can select which category to get info from.

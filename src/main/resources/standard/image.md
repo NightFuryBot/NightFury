@@ -1,1 +1,0 @@
-This searches web for the given query and returns the first image.

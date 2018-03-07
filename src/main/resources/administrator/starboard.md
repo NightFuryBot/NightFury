@@ -1,1 +1,0 @@
-Use reactions to star funny, creative, and thoughtful messages. Messages that have the required amount of stars will show up in the server's starboard.

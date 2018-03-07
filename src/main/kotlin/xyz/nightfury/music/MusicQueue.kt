@@ -13,83 +13,90 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("MemberVisibilityCanBePrivate")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 package xyz.nightfury.music
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackState
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame
+import kotlinx.coroutines.experimental.launch
 import net.dv8tion.jda.core.audio.AudioSendHandler
 import net.dv8tion.jda.core.entities.Member
 import net.dv8tion.jda.core.entities.VoiceChannel
+import xyz.nightfury.util.modifyIf
+import java.util.*
+import kotlin.NoSuchElementException
+import kotlin.collections.HashSet
 
 /**
  * @author Kaidan Gustave
  */
-class MusicQueue
-constructor(val voiceChannel: VoiceChannel,
-            val audioPlayer: AudioPlayer, firstTrack: MemberTrack): AudioSendHandler,
-    MutableList<MemberTrack> by ArrayList() {
-    private lateinit var lastFrame: AudioFrame
-    private val skipping = ArrayList<Long>()
-
-    var currentTrack: MemberTrack
-        private set
+class MusicQueue(
+    val channel: VoiceChannel,
+    val player: AudioPlayer,
+    initTrack: MemberTrack
+): AudioSendHandler, List<MemberTrack>, Queue<MemberTrack>, AutoCloseable {
+    @Volatile private lateinit var lastFrame: AudioFrame
 
     var isDead = false
         private set
+    var currentTrack = initTrack
+        private set
 
-    val skips: Int
-        get() {
-            val currentIds = voiceChannel.members.map { it.user.idLong }
-            skipping.removeIf { !currentIds.contains(it) }
-            return skipping.size
-        }
-
-    val totalToSkip : Int
-        get() {
-            val totalMembers = listeners.size
-            return if(totalMembers % 2 == 0) (totalMembers / 2) else ((totalMembers / 2) + 1)
-        }
-
-    val listeners : List<Member>
-        get() = voiceChannel.members.filter { !it.user.isBot }
+    private val queued = LinkedList<MemberTrack>()
+    private val skipping = HashSet<Long>()
 
     init {
-        voiceChannel.guild.audioManager.sendingHandler = this
-        currentTrack = firstTrack
-        audioPlayer.playTrack(currentTrack.originalTrack)
+        with(channel.guild.audioManager) {
+            openAudioConnection(channel)
+            sendingHandler = this@MusicQueue
+        }
+        player.playTrack(currentTrack.originalTrack)
     }
 
-    fun next() {
-        if(isNotEmpty()) {
-            if(currentTrack.state != AudioTrackState.FINISHED)
-                currentTrack.stop()
-
-            currentTrack = removeAt(0)
-            audioPlayer.playTrack(currentTrack.originalTrack)
-            skipping.clear()
-        } else dispose()
+    val listening: List<Member> get() {
+        return channel.members.filter { !it.user.isBot }
     }
+
+    val listeningCount: Int get() {
+        return channel.members.count { !it.user.isBot }
+    }
+
+    val totalToSkip: Int get() {
+        val totalMembers = listeningCount
+        return (totalMembers / 2).modifyIf(totalMembers % 2 != 0) { it + 1 }
+    }
+
+    val skips: Int get() {
+        val currentIds = channel.members.mapNotNull { it.user.takeIf { !it.isBot }?.idLong }
+        skipping.removeIf { it !in currentIds }
+        return skipping.size
+    }
+
+    var volume: Int get() = player.volume
+        set(value) { player.volume = value }
 
     fun queue(track: MemberTrack): Int {
         add(track)
         return indexOf(track) + 1
     }
 
-    // Credit to jagrosh for the original shuffle code
     fun shuffle(userId: Long): Int {
+
+        // Credit to jagrosh for the original shuffle code
+
         val indexList = ArrayList<Int>()
 
         @Suppress("LoopToCallChain")
         for(i in indices) {
-            if(this[i].member.user.idLong == userId)
+            if(this[i].member.user.idLong == userId) {
                 indexList += i
+            }
         }
 
         for(i in indexList.indices) {
             val first = indexList[i]
-            val second = indexList[(Math.random()*indexList.size).toInt()]
+            val second = indexList[(Math.random() * indexList.size).toInt()]
             val temp = this[first]
             this[first] = this[second]
             this[second] = temp
@@ -98,7 +105,7 @@ constructor(val voiceChannel: VoiceChannel,
         return indexList.size
     }
 
-    fun isSkipping(member: Member): Boolean = skipping.contains(member.user.idLong)
+    fun isSkipping(member: Member): Boolean = member.user.idLong in skipping
 
     fun voteToSkip(member: Member): Int {
         skipping.add(member.user.idLong)
@@ -108,30 +115,98 @@ constructor(val voiceChannel: VoiceChannel,
     fun skip(): MemberTrack {
         val skippedTrack = currentTrack
         currentTrack.stop()
-        next()
+        poll()
         return skippedTrack
     }
 
+    // Queue Implementations
+
+    override fun element(): MemberTrack = queued.element()
+    override fun peek(): MemberTrack? = queued.peek()
+
+    override fun add(element: MemberTrack): Boolean = queued.add(element)
+    override fun offer(e: MemberTrack?): Boolean = queued.offer(e)
+
+    override fun remove(): MemberTrack {
+        return poll() ?: throw NoSuchElementException("Could not remove current track because the MusicQueue is empty")
+    }
+    override fun poll(): MemberTrack? {
+        if(isNotEmpty()) {
+            val current = currentTrack
+            if(current.state != AudioTrackState.FINISHED) {
+                current.stop()
+            }
+            currentTrack = remove()
+            player.playTrack(currentTrack.originalTrack)
+            skipping.clear()
+            return currentTrack
+        } else close()
+        return null
+    }
+
+    fun removeAt(index: Int): MemberTrack = queued.removeAt(index)
+    operator fun set(index: Int, element: MemberTrack): MemberTrack = queued.set(index, element)
+
+    // List Implementations
+
+    override fun get(index: Int): MemberTrack = queued[index]
+    override fun indexOf(element: MemberTrack): Int = queued.indexOf(element)
+    override fun lastIndexOf(element: MemberTrack): Int = queued.lastIndexOf(element)
+    override fun listIterator(): ListIterator<MemberTrack> = queued.listIterator()
+    override fun listIterator(index: Int): ListIterator<MemberTrack> = queued.listIterator(index)
+    override fun subList(fromIndex: Int, toIndex: Int): List<MemberTrack> = queued.subList(fromIndex, toIndex)
+
+    // MutableCollection Implementations
+
+    override val size: Int get() = queued.size
+
+    override fun contains(element: MemberTrack): Boolean = queued.contains(element)
+    override fun containsAll(elements: Collection<MemberTrack>): Boolean = queued.containsAll(elements)
+    override fun isEmpty(): Boolean = queued.isEmpty()
+    override fun iterator(): MutableIterator<MemberTrack> = queued.iterator()
+    override fun addAll(elements: Collection<MemberTrack>): Boolean = queued.addAll(elements)
+    override fun remove(element: MemberTrack): Boolean = queued.remove(element)
+    override fun removeAll(elements: Collection<MemberTrack>): Boolean = queued.removeAll(elements)
+    override fun retainAll(elements: Collection<MemberTrack>): Boolean = queued.retainAll(elements)
+    override fun clear() {
+        queued.clear()
+        skipping.clear()
+        close()
+    }
+
+    // AudioSendHandler Implementations
+
     override fun canProvide(): Boolean {
-        lastFrame = audioPlayer.provide() ?: return false
+        lastFrame = player.provide() ?: return false
         return true
     }
 
     override fun provide20MsAudio(): ByteArray = lastFrame.data
+    override fun isOpus(): Boolean = true
 
-    override fun isOpus() = true
+    // AutoCloseable Implementation
 
-    fun dispose() {
-        // Destroy
-        // Close Connection
-        // Die
-        // Repeat...
-        audioPlayer.destroy()
+    override fun close() {
+        player.destroy()
 
         // JDA Audio Connections MUST be closed on a separate thread
-        MusicManager.threadpool.submit { voiceChannel.guild.audioManager.closeAudioConnection() }
+        launch(MusicManager.context) { channel.guild.audioManager.closeAudioConnection() }
 
-        // We mark this as dead because it might need to be cleared later manually.
         isDead = true
+    }
+
+    // Other Implementations
+
+    override fun hashCode(): Int = channel.idLong.hashCode()
+
+    override fun equals(other: Any?): Boolean {
+        if(other !is MusicQueue)
+            return false
+
+        return channel == other.channel
+    }
+
+    override fun toString(): String {
+        return "MusicQueue(VC: ${channel.idLong}, Queued: $size, Now Playing: ${currentTrack.identifier})"
     }
 }

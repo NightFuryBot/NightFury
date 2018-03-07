@@ -13,225 +13,212 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("MemberVisibilityCanBePrivate")
 package xyz.nightfury
 
 import com.jagrosh.jagtag.Parser
-import xyz.nightfury.entities.menus.EventWaiter
-import xyz.nightfury.annotations.APICache
-import xyz.nightfury.resources.Arguments
-import xyz.nightfury.listeners.CommandListener
-import xyz.nightfury.resources.*
+import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.newSingleThreadContext
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.*
-import net.dv8tion.jda.core.entities.impl.JDAImpl
+import net.dv8tion.jda.core.Permission.MESSAGE_MANAGE
+import net.dv8tion.jda.core.entities.ChannelType
+import net.dv8tion.jda.core.entities.Guild
+import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.ReadyEvent
 import net.dv8tion.jda.core.events.ShutdownEvent
-import net.dv8tion.jda.core.events.guild.GuildJoinEvent
-import net.dv8tion.jda.core.events.guild.GuildLeaveEvent
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.core.events.message.MessageDeleteEvent
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.EventListener
 import net.dv8tion.jda.core.requests.Requester
-import okhttp3.*
+import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import org.json.JSONObject
 import org.json.JSONTokener
 import org.slf4j.Logger
-import xyz.nightfury.db.*
+import xyz.nightfury.command.Command
+import xyz.nightfury.command.CommandContext
+import xyz.nightfury.command.administrator.AdministratorGroup
+import xyz.nightfury.command.moderator.ModeratorGroup
+import xyz.nightfury.command.music.MusicGroup
+import xyz.nightfury.command.owner.OwnerGroup
+import xyz.nightfury.command.standard.StandardGroup
+import xyz.nightfury.ndb.Database
+import xyz.nightfury.listeners.SuspendedListener
+import xyz.nightfury.logging.LogLevel
+import xyz.nightfury.logging.NormalFilter
 import xyz.nightfury.util.collections.FixedSizeCache
-import xyz.nightfury.util.createLogger
-import xyz.nightfury.util.ext.formattedName
+import xyz.nightfury.util.*
+import xyz.nightfury.util.collections.CaseInsensitiveHashMap
+import xyz.nightfury.util.collections.CommandMap
+import xyz.nightfury.util.db.*
+import xyz.nightfury.util.newRequest
 import java.io.IOException
 import java.time.OffsetDateTime
+import java.time.OffsetDateTime.*
 import java.time.temporal.ChronoUnit
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
-import kotlin.reflect.full.findAnnotation
-import kotlin.reflect.full.functions
-import kotlin.streams.toList
+import kotlin.collections.HashSet
 
 /**
  * @author Kaidan Gustave
  */
-class Client internal constructor(val prefix: String,      val devId: Long,
-                                  val success: String,     val warning: String,
-                                  val error: String,       val server: String,
-                                  val dBotsKey: String?,   val dBorgKey: String?,
-                                  val waiter: EventWaiter, val parser: Parser,
-                                  vararg commands: Command): EventListener {
+class Client(
+    val prefix: String,
+    private val dBotsKey: String?,
+    private val dBorgKey: String?,
+    val parser: Parser
+): SuspendedListener, EventListener {
+    companion object LOG: Logger by createLogger(Client::class)
 
-    //////////////////////
-    // PRE-INIT MEMBERS //
-    //////////////////////
+    private val cooldowns = ConcurrentHashMap<String, OffsetDateTime>()
+    private val uses = CaseInsensitiveHashMap<Int>()
+    private val cycleContext = newSingleThreadContext("CycleContext")
+    private val callCache = FixedSizeCache<Long, HashSet<Message>>(300)
 
+    val httpClient: OkHttpClient = NightFury.httpClientBuilder.build()
+    val startTime: OffsetDateTime = now()
+
+    val groups = arrayOf(StandardGroup, MusicGroup, ModeratorGroup, AdministratorGroup, OwnerGroup)
+    val commands: Map<String, Command> = CommandMap(*groups)
+
+    val messageCacheSize: Int get() = callCache.size
+
+    var mode = ClientMode.SERVICE
+        set(value) {
+            field = value
+            NormalFilter.level = LogLevel.byLevel(field.level)
+        }
     var totalGuilds: Int = 0
         private set
 
-    var mode: CommandListener.Mode = CommandListener.Mode.STANDARD
-        set(value) {
-            listener = value.listener
-            field = value
-        }
-
-    val commands: CommandMap = CommandMap(*commands)
-    val startTime: OffsetDateTime = OffsetDateTime.now()
-    val messageCacheSize: Int
-        get() = callCache.size
-
-    internal var listener: CommandListener = CommandListener.Mode.STANDARD.listener
-
-    private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
-    private val cooldowns: MutableMap<String, OffsetDateTime> = HashMap()
-    private val uses: MutableMap<String, Int> = HashMap()
-    private val callCache: FixedSizeCache<Long, MutableSet<Message>> = FixedSizeCache(300)
-
-    companion object {
-        private val log: Logger = createLogger(Client::class)
-    }
-
-    //////////////////////
-    // MEMBER FUNCTIONS //
-    //////////////////////
-
     fun getRemainingCooldown(name: String): Int {
-        return if(cooldowns.containsKey(name)) {
-            val time = OffsetDateTime.now().until(cooldowns[name], ChronoUnit.SECONDS).toInt()
+        return if(name in cooldowns) {
+            val time = now().until(cooldowns[name]!!, ChronoUnit.SECONDS).toInt()
             if(time <= 0) {
-                cooldowns.remove(name); 0 // Return zero because the cooldown is expired
+                cooldowns.remove(name)
+                return 0 // Return zero because the cooldown is expired
             } else time
         } else 0
     }
 
     fun applyCooldown(name: String, seconds: Int) {
-        cooldowns.put(name, OffsetDateTime.now().plusSeconds(seconds.toLong()))
+        cooldowns[name] = now().plusSeconds(seconds.toLong())
     }
 
     fun cleanCooldowns() {
-        val now = OffsetDateTime.now()
-        cooldowns.keys.stream().filter { cooldowns[it]!!.isBefore(now) }.toList().forEach { cooldowns.remove(it) }
-    }
-
-    @Suppress("unused")
-    fun getUsesFor(command: Command): Int {
-        synchronized(uses) { return uses.getOrDefault(command.name, 0) }
+        val now = now()
+        cooldowns.entries.filter { it.value.isBefore(now) }.forEach { cooldowns -= it.key }
     }
 
     fun incrementUses(command: Command) {
-        synchronized(uses) { uses.put(command.name, uses.getOrDefault(command.name, 0)+1) }
+        uses[command.name] = (uses[command.name] ?: 0) + 1
     }
 
     fun searchCommand(query: String): Command? {
-        val splitQuery = query.split(Arguments.commandArgs, 2)
-        return commands.firstOrNull { it.isForCommand(splitQuery[0]) }
-                ?.findChild(if(splitQuery.size > 1) splitQuery[1] else "")
+        val splitQuery = query.split(commandArgs, 2)
+        if(splitQuery.isEmpty())
+            return null
+        return commands[splitQuery[0]]?.findChild(if(splitQuery.size > 1) splitQuery[1] else "")
     }
 
-    //////////////////////
-    //      EVENTS      //
-    //////////////////////
-
-    override fun onEvent(event: Event?) {
+    override suspend fun CoroutineScope.onEvent(event: Event) {
         when(event) {
             is MessageReceivedEvent -> onMessageReceived(event)
-            is MessageDeleteEvent   -> onMessageDelete(event)
-            is GuildMemberJoinEvent -> onGuildMemberJoin(event)
-            is ReadyEvent           -> onReady(event)
-            is GuildJoinEvent       -> {
-                if(event.guild.selfMember.joinDate.plusMinutes(5).isAfter(OffsetDateTime.now())) {
-                    val guild = event.guild
-                    val guildDesc =
-                        "Name: ${guild.name}\n" +
-                        "ID: ${guild.idLong}\n" +
-                        "Owner: ${guild.owner.user.formattedName(false)} (ID: ${guild.owner.user.idLong})\n" +
-                        "Members: ${guild.memberCache.size()} (Bots: ${guild.memberCache.count { it.user.isBot }})"
-                    if(guild.isGood || SQLJoinWhitelist.isGuild(guild)) {
-                        log.info("New Guild!\n$guildDesc")
-                        updateStats(event.jda)
-                    } else {
-                        log.warn("Bad Guild!\n$guildDesc")
-                        event.guild.leave().queue()
-                    }
-                }
-            }
-            is GuildLeaveEvent      -> updateStats(event.jda)
-            is ShutdownEvent        -> onShutdown(event)
-
-            else -> Unit
+            is ReadyEvent -> onReady(event)
         }
     }
 
-    private fun onReady(event: ReadyEvent) {
-        event.jda.presence.status = OnlineStatus.ONLINE
-        event.jda.presence.game = Game.listening("type ${prefix}help")
+    override fun onEvent(event: Event) {
+        when(event) {
+            is ShutdownEvent -> onShutdown(event)
+            is MessageDeleteEvent -> onMessageDelete(event)
+            is GuildMemberJoinEvent -> onGuildMemberJoin(event)
+        }
+    }
+
+    private suspend fun CoroutineScope.onReady(event: ReadyEvent) {
+        with(event.jda.presence) {
+            status = OnlineStatus.ONLINE
+            game = listeningTo("type ${prefix}help")
+        }
 
         val si = event.jda.shardInfo
-        log.info("${if(si == null) "NightFury" else "[${si.shardId} / ${si.shardTotal - 1}]"} is Online!")
+        LOG.info("${si?.let { "[${it.shardId} / ${it.shardTotal - 1}]" } ?: "NightFury"} is Online!")
 
-        val toLeave = event.jda.guilds.stream().filter { !it.isGood }.toList()
+        val toLeave = event.jda.guilds.filter { !it.isGood }
         if(toLeave.isNotEmpty()) {
             toLeave.forEach { it.leave().queue() }
-            log.info("Left ${toLeave.size} bad guilds!")
+            LOG.info("Left ${toLeave.size} bad guilds!")
         }
 
         // Clear Caches every hour
-        if(si == null || si.shardId == 0) {
-            executor.scheduleAtFixedRate({
-                try {
-                    clearAPICaches()
+        if(si === null || si.shardId == 0) {
+            launch(cycleContext) {
+                while(isActive) {
+                    commands.mapNotNull { it as? Cleanable }.forEach { it.clean() }
                     cleanCooldowns()
-                } catch(e: Exception) {
-                    log.error("Failed to clear caches!", e)
+                    delay(1, TimeUnit.HOURS)
                 }
-            }, 0, 1, TimeUnit.HOURS)
+            }
         }
 
         updateStats(event.jda)
     }
 
-    private fun onMessageReceived(event: MessageReceivedEvent) {
+    private suspend fun CoroutineScope.onMessageReceived(event: MessageReceivedEvent) {
+        // Do not allow bots to trigger any sort of command
         if(event.author.isBot)
             return
-        val rawContent = event.message.contentRaw.trim()
-        val parts: List<String> = when {
-            rawContent.startsWith(prefix, true) -> { // From Anywhere with default prefix
-                rawContent.substring(prefix.length).trim().split(Arguments.commandArgs, 2)
+
+        val raw = event.message.contentRaw
+        val guild = event.guild
+
+        val parts = when {
+            raw.startsWith(prefix, true) -> {
+                raw.substring(prefix.length).trim().split(commandArgs, 2)
             }
 
-            event.guild != null -> { // From Guild without default prefix
-                val prefixes = SQLPrefixes.getPrefixes(event.guild)
-                if(prefixes.isNotEmpty()) {
-                    val prefix = prefixes.find { rawContent.startsWith(it, true) } ?: return
+            guild !== null -> {
+                val prefixes = event.guild.prefixes
 
-                    rawContent.substring(prefix.length).trim().split(Arguments.commandArgs, 2)
-                } else return
+                if(prefixes.isEmpty())
+                    return
+
+                val prefix = prefixes.find { raw.startsWith(it, true) } ?: return
+                raw.substring(prefix.length).trim().split(commandArgs, 2)
             }
 
-            else -> return // No match, not a command call
+            else -> return
         }
 
-        val name = parts[0]
+        val name = parts[0].toLowerCase()
         val args = if(parts.size == 2) parts[1] else ""
-        if(listener.checkCall(event, this, name, args)) {
-            val command = commands[name]
-            val commandEvent = CommandEvent(event, args.trim(), this)
-            if(command != null) {
-                listener.onCommandCall(commandEvent, command)
-                return command.run(commandEvent)
+        if(mode.checkCall(event, this@Client, name, args)) {
+            val ctx = CommandContext(event, this@Client, args, coroutineContext)
+            commands[name]?.let { command ->
+                mode.onCommandCall(ctx, command)
+                return command.run(ctx)
             }
 
-            if(event.isFromType(ChannelType.TEXT)) {
-                val customCommandContent = SQLCustomCommands.getContentFor(name, event.guild)
-                if(customCommandContent.isNotEmpty())
-                    return commandEvent.reply(parser.clear()
-                            .put("user", event.author)
-                            .put("guild", event.guild)
-                            .put("channel", event.textChannel)
-                            .put("args", args)
-                            .parse(customCommandContent))
+            if(ctx.isGuild) {
+                ctx.guild.getCustomCommand(name)?.let { customCommand ->
+                    with(parser) {
+                        clear()
+                        put("user", event.author)
+                        put("guild", event.guild)
+                        put("channel", event.textChannel)
+                        put("args", args)
+                    }
+
+                    ctx.reply(parser.parse(customCommand))
+                }
             }
         }
     }
@@ -239,47 +226,44 @@ class Client internal constructor(val prefix: String,      val devId: Long,
     private fun onMessageDelete(event: MessageDeleteEvent) {
         if(!event.isFromType(ChannelType.TEXT))
             return
+
         synchronized(callCache) {
-            val messages = callCache[event.messageIdLong] ?: return
-            if(messages.size > 1 && event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_MANAGE))
-                event.textChannel.deleteMessages(messages).queue({},{})
-            else if(messages.size == 1)
-                messages.forEach { it.delete().queue({},{}) }
+            callCache[event.messageIdLong]?.let {
+                val channel = event.textChannel
+                if(it.size > 1 && event.guild.selfMember.hasPermission(channel, MESSAGE_MANAGE)) {
+                    channel.deleteMessages(it).queue()
+                } else {
+                    it.forEach { it.delete().queue() }
+                }
+            }
         }
     }
 
-    private fun onShutdown(event: ShutdownEvent) {
-        val si = event.jda.shardInfo
-        val identifier = if(si != null) "Shard [${si.shardId} / ${si.shardTotal - 1}]" else "JDA"
-        val cc = event.closeCode
-        log.info("$identifier has shutdown.")
-        log.debug("Shutdown Info:\n" +
-                  "- Shard ID: ${si?.shardId ?: "0 (No Shard)"}\n" +
-                  "- Close Code: ${if(cc != null) "${cc.code} - ${cc.meaning}" else "${event.code} - Unknown Code!"}\n" +
-                  "- Time: ${event.shutdownTime}")
-        executor.shutdownNow()
-        Database.close()
-    }
-
     private fun onGuildMemberJoin(event: GuildMemberJoinEvent) {
+        val guild = event.guild
         // If there's no welcome channel then we just return.
-        val welcomeChannel = SQLWelcomes.getChannel(event.guild) ?: return
+        val welcomeChannel = guild.welcomeChannel ?: return
+
+        // Past here we should have a non-null message, so we log it if by some chance it is null
+        val welcomeMessage = guild.welcomeMessage ?: return LOG.warn(
+            "Got a null welcome message for a registered guild (ID: ${guild.idLong})"
+        )
 
         // We can't even send messages to the channel so we return
-        if(!event.guild.selfMember.hasPermission(welcomeChannel, Permission.MESSAGE_WRITE)) return
+        if(!guild.selfMember.hasPermission(welcomeChannel, Permission.MESSAGE_WRITE)) return
 
         // We prevent possible spam by creating a cooldown key 'welcomes|U:<User ID>|G:<Guild ID>'
-        val cooldownKey = "welcomes|U:${event.user.idLong}|G:${event.guild.idLong}"
+        val cooldownKey = "welcomes|U:${event.user.idLong}|G:${guild.idLong}"
         val remaining = getRemainingCooldown(cooldownKey)
 
         // Still on cooldown - we're done here
         if(remaining > 0) return
 
         val message = parser.clear()
-                .put("guild", event.guild)
-                .put("channel", welcomeChannel)
-                .put("user", event.user)
-                .parse(SQLWelcomes.getMessage(event.guild))
+            .put("guild", guild)
+            .put("channel", welcomeChannel)
+            .put("user", event.user)
+            .parse(welcomeMessage)
 
         // Too long or empty means we can't send, so we just return because it'll break otherwise
         if(message.isEmpty() || message.length > 2000) return
@@ -291,112 +275,89 @@ class Client internal constructor(val prefix: String,      val devId: Long,
         applyCooldown(cooldownKey, 100)
     }
 
-    //////////////////////
-    // INTERNAL MEMBERS //
-    //////////////////////
-
-    internal fun linkIds(id: Long, message: Message) {
-        synchronized(callCache) {
-            val stored = callCache[id]
-            if(stored != null)
-                stored.add(message)
-            else {
-                val toStore = HashSet<Message>()
-                toStore.add(message)
-                callCache[id] = toStore
-            }
-        }
+    private fun onShutdown(event: ShutdownEvent) {
+        val identifier = event.jda.shardInfo?.let { "Shard [${it.shardId} / ${it.shardTotal - 1}]" } ?: "JDA"
+        LOG.info("$identifier has shutdown.")
+        cycleContext.close()
+        Database.close()
     }
 
-    /////////////////////
-    // PRIVATE MEMBERS //
-    /////////////////////
-
-    private inline val Guild.isGood : Boolean
-        inline get() = members.stream().filter { it.user.isBot }.count()<=30 || getMemberById(devId)!=null
-
-    private fun clearAPICaches() {
-        commands.stream().filter {
-            it::class.findAnnotation<APICache>() != null
-        }.forEach { cmd ->
-            cmd::class.functions.stream()
-                .filter { it.findAnnotation<APICache>() != null }
-                .findFirst().ifPresent { it.call(cmd) }
-        }
+    private inline val Guild.isGood : Boolean inline get() {
+        if(isBlacklisted)
+            return false
+        if(isJoinWhitelisted)
+            return true
+        return members.count { it.user.isBot } <= 30 || getMemberById(NightFury.DEV_ID) !== null
     }
 
-    private fun updateStats(jda: JDA) {
-        val client = (jda as JDAImpl).httpClientBuilder.build()
+    private suspend fun CoroutineScope.updateStats(jda: JDA) {
         val body = JSONObject().put("server_count", jda.guilds.size)
 
         jda.shardInfo?.let { body.put("shard_id", it.shardId).put("shard_count", it.shardTotal) }
 
-        if(dBotsKey != null) {
-            // Create POST request to bots.discord.pw
-            client.newRequest({
-                post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
-                url("https://bots.discord.pw/api/bots/${jda.selfUser.id}/stats")
-                header("Authorization", dBotsKey)
-                header("Content-Type", "application/json")
-            }).enqueue(object : Callback {
-                override fun onResponse(call: Call, response: Response) = response.close()
-
-                override fun onFailure(call: Call, e: IOException)
-                {
-                    log.error("Failed to send information to bots.discord.pw", e)
+        dBotsKey?.let {
+            // Run this as a child job
+            launch(coroutineContext) {
+                try {
+                    // Send POST request to bots.discord.pw
+                    httpClient.newRequest({
+                        post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
+                        url("https://bots.discord.pw/api/bots/${jda.selfUser.id}/stats")
+                        header("Authorization", dBotsKey)
+                        header("Content-Type", "application/json")
+                    }).await().close()
+                } catch(e: IOException) {
+                    LOG.error("Failed to send information to bots.discord.pw", e)
                 }
-            })
+            }
         }
 
-        if(dBorgKey != null) {
-            // Send POST request to discordbots.org
-            client.newRequest({
-                post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
-                url("https://discordbots.org/api/bots/${jda.selfUser.id}/stats")
-                header("Authorization", dBorgKey)
-                header("Content-Type", "application/json")
-            }).enqueue(object : Callback {
-                override fun onResponse(call: Call, response: Response) = response.close()
-
-                override fun onFailure(call: Call, e: IOException) {
-                    log.error("Failed to send information to discordbots.org", e)
+        dBorgKey?.let {
+            // Run this as a child job
+            launch(coroutineContext) {
+                try {
+                    // Send POST request to discordbots.org
+                    httpClient.newRequest({
+                        post(RequestBody.create(Requester.MEDIA_TYPE_JSON, body.toString()))
+                        url("https://discordbots.org/api/bots/${jda.selfUser.id}/stats")
+                        header("Authorization", dBorgKey)
+                        header("Content-Type", "application/json")
+                    }).await().close()
+                } catch(e: IOException) {
+                    LOG.error("Failed to send information to discordbots.org", e)
                 }
-            })
+            }
         }
 
         // If we're not sharded there's no reason to send a GET request
-        if(jda.shardInfo == null || dBotsKey == null) {
+        if(jda.shardInfo === null || dBotsKey === null) {
             totalGuilds = jda.guilds.size
             return
         }
 
-        // Send GET request to bots.discord.pw
         try {
-            client.newRequest({
+            // Send GET request to bots.discord.pw
+            httpClient.newRequest {
                 get().url("https://bots.discord.pw/api/bots/${jda.selfUser.id}/stats")
                 header("Authorization", dBotsKey)
                 header("Content-Type", "application/json")
-            }).execute().body()!!.charStream().use {
+            }.await().body()?.charStream()?.use {
                 val json = JSONObject(JSONTokener(it))
-
-                var total = 0
-
-                log.debug("Received JSON from bots.discord.pw:\n${json.toString(2)}")
-
-                json.getJSONArray("stats").mapNotNull {
-                    (it as? JSONObject).takeIf { it?.has("server_count") == true }
-                }.forEach { total += it["server_count"] as Int }
-
-                totalGuilds = total
+                LOG.debug("Received JSON from bots.discord.pw:\n${json.toString(2)}")
+                totalGuilds = json.getJSONArray("stats").mapNotNull {
+                    val obj = it as? JSONObject
+                    obj?.takeIf { obj.has("server_count") && !obj.isNull("server_count") }
+                }.sumBy { it["server_count"] as Int }
             }
         } catch (e: Exception) {
-            log.error("Failed to retrieve bot shard information from bots.discord.pw", e)
+            LOG.error("Failed to retrieve bot shard information from bots.discord.pw", e)
         }
     }
 
-    private inline fun OkHttpClient.newRequest(lazy: Request.Builder.() -> Unit) : Call {
-        val builder = Request.Builder()
-        builder.lazy()
-        return newCall(builder.build())
+    internal fun linkCall(id: Long, message: Message) {
+        if(!message.channelType.isGuild) return
+        synchronized(callCache) {
+            callCache.computeIfAbsent(id) { HashSet() } += message
+        }
     }
 }

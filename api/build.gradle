@@ -16,30 +16,30 @@
 sourceSets {
     test {
         kotlin.srcDirs += 'src/test/kotlin'
-
         compileClasspath = main.compileClasspath
     }
 }
 
 repositories {
     jcenter()
-    maven { url "https://dl.bintray.com/kaidangustave/maven" }
+    jitpack()
 }
 
 dependencies {
-    compileOnly "net.dv8tion:JDA:$jda_version"
-
-
     compileOnly "com.sparkjava:spark-core:2.7.1"
     compileOnly "com.sparkjava:spark-kotlin:1.0.0-alpha"
+    compileOnly "me.kgustave:kotlin-json-core:1.0.0"
+    compileOnly "org.apache.httpcomponents:httpcore:4.4.5"
 
-    compileOnly "me.kgustave:KSON-jvm:0.6"
-    compileOnly "org.apache.httpcomponents:httpcore:4.4.4"
+    compileOnly JDA()
+    compileOnly JDAUtilities("commons")
+    compileOnly JDAUtilities("oauth2")
 
-    compileOnly "com.h2database:h2:$h2_version"
+    compileOnly h2()
+    compileOnly hocon()
 
     compileOnly project(":commons")
     compileOnly project(":database")
 
-    testCompile "ch.qos.logback:logback-classic:$logback_version"
+    testCompile logback()
 }

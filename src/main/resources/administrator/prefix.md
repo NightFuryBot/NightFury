@@ -1,1 +1,0 @@
-This is for adding, removing, and viewing custom prefixes on the server. Prefixes may be up to 50 characters and the default prefix cannot be removed.

@@ -1,1 +1,0 @@
-This will update the reason for an entry in the moderation log. By default, this will only affect the most recent (or unclaimed) entry.

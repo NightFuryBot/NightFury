@@ -1,1 +1,0 @@
-This shows detailed information about an emote, emoji, or character.

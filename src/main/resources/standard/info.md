@@ -1,1 +1,0 @@
-Not specifying a user will get info on the person using the command.

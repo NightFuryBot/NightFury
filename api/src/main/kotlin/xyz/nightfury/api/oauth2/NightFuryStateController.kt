@@ -13,20 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.music
+package xyz.nightfury.api.oauth2
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import net.dv8tion.jda.core.entities.Member
+import com.jagrosh.jdautilities.oauth2.state.StateController
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author Kaidan Gustave
  */
-class MemberTrack(member: Member, val originalTrack: AudioTrack): AudioTrack by originalTrack {
-    init {
-        userData = member
+internal object NightFuryStateController : StateController {
+    private val states = ConcurrentHashMap<String, String>()
+
+    override fun generateNewState(redirectUri: String): String {
+        val state = UUID.randomUUID()
+        val stateString = "$state"
+        states[stateString] = redirectUri
+        return stateString
     }
 
-    val member: Member get() = requireNotNull(userData as? Member) {
-        "User Data was not a Member instance, possibly overwritten?"
+    override fun consumeState(state: String): String? {
+        return states[state]
     }
+
 }

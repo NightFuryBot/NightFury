@@ -17,6 +17,7 @@
 package xyz.nightfury.ndb
 
 import xyz.nightfury.util.createLogger
+import xyz.nightfury.util.resourceOf
 import java.sql.*
 
 /**
@@ -39,30 +40,13 @@ object Database : AutoCloseable {
 
     @Suppress("LoopToCallChain")
     private fun setup() {
-        for(table in TableData.values()) {
-            if(connection.hasTableNamed(table.name)) continue
-            val statement = buildString {
-                append("CREATE TABLE ${table.name}(")
-                var first = true
-                for(column in table.columns) {
-                    if(!first) {
-                        append(", ")
-                    } else {
-                        first = false
-                    }
-                    append(column.toString())
-                }
-                append(")")
-            }
-
-            connection.prepareStatement(statement).use {
-                it.execute()
-            }
+        val setup = checkNotNull(this::class.resourceOf("/setup.sql")) {
+            "Could not locate `setup.sql` resource!"
         }
-    }
 
-    private inline fun <reified C: Connection> C.hasTableNamed(name: String): Boolean {
-        return metaData.getTables(null, null, name, null).use { it.next() }
+        val statement = setup.readText(Charsets.UTF_8)
+
+        connection.prepareStatement(statement).use { it.execute() }
     }
 
     override fun close() {
@@ -92,22 +76,5 @@ object Database : AutoCloseable {
         protected inline fun <reified R> sql(default: R, block: Connection.() -> R): R {
             return sql(block) ?: default
         }
-    }
-
-    enum class TableData(vararg val columns: ColumnData) {
-        GUILD_SETTINGS(
-            ColumnData("GUILD_ID", "BIGINT"),
-            ColumnData("ROLE_ME_LIMIT", "INT", nullable = true).withDefault("NULL")
-        ),
-        GUILD_ROLES(
-            ColumnData("GUILD_ID", "BIGINT"),
-            ColumnData("ROLE_ID", "BIGINT"),
-            ColumnData("TYPE", "VARCHAR(200)")
-        ),
-        GUILD_CHANNELS(
-            ColumnData("GUILD_ID", "BIGINT"),
-            ColumnData("CHANNEL_ID", "BIGINT"),
-            ColumnData("TYPE", "VARCHAR(200)")
-        )
     }
 }

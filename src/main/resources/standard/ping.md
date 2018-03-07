@@ -1,1 +1,0 @@
-This checks the difference in time between when discord receives the command and when discord receives NightFury's response. The response is then edited to reflect the difference.

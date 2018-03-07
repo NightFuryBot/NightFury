@@ -13,20 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.nightfury.music
+package xyz.nightfury.api.routes.tags
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import net.dv8tion.jda.core.entities.Member
+import xyz.nightfury.api.API
+import xyz.nightfury.api.RouteGroup
 
 /**
  * @author Kaidan Gustave
  */
-class MemberTrack(member: Member, val originalTrack: AudioTrack): AudioTrack by originalTrack {
-    init {
-        userData = member
-    }
-
-    val member: Member get() = requireNotNull(userData as? Member) {
-        "User Data was not a Member instance, possibly overwritten?"
+object Tags : RouteGroup(API, "/tags") {
+    override fun initChildren() {
     }
 }
