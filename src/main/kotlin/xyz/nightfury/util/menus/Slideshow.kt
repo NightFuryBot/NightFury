@@ -233,7 +233,7 @@ class Slideshow(builder: Slideshow.Builder): Menu(builder) {
         embed embed@{
             image { urls[pageNum - 1] }
             this@embed.color { this@Slideshow.color(pageNum, pages) }
-            this@Slideshow.description(pageNum, urls.size)?.let { description { it } }
+            description(pageNum, urls.size)?.let { + it }
 
             if(showPageNumbers) {
                 this@embed.footer {

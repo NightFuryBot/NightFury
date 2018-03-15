@@ -22,3 +22,12 @@ import kotlin.reflect.KClass
 
 fun createLogger(name: String): Logger = LoggerFactory.getLogger(name)
 fun <T: Any> createLogger(klazz: KClass<T>): Logger = LoggerFactory.getLogger(klazz.java)
+
+inline fun <reified L: Logger> L.info(block: () -> String) = info(block())
+
+inline fun <reified L: Logger> L.warn(block: () -> String) = warn(block())
+
+inline fun <reified L: Logger> L.error(block: () -> String) = error(block())
+
+inline fun <reified L: Logger> L.debug(block: () -> String) = debug(block())
+

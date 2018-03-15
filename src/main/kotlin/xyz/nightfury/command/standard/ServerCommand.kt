@@ -142,36 +142,28 @@ class ServerCommand(waiter: EventWaiter): Command(StandardGroup) {
                     image = guild.iconUrl
                 }
                 color { ctx.selfMember.color }
-                field {
-                    this.name = "Prefixes"
-                    this.value = buildString {
-                        this.append("`${ctx.client.prefix}`")
-                        guild.prefixes.forEach { this.append(", `$it`") }
+
+                field("Prefixes", true) {
+                    append("`${ctx.client.prefix}`")
+                    guild.prefixes.forEach {
+                        append(", `$it`")
                     }
-                    this.inline = true
                 }
-                field {
-                    val modRole = guild.modRole
-                    this.name = "Moderator Role"
-                    this.value = modRole?.name ?: "None"
-                    this.inline = true
+
+                field("Moderator Role", true) {
+                    append(guild.modRole?.name ?: "None")
                 }
-                field {
-                    val modLog = guild.modLog
-                    this.name = "Moderation Log"
-                    this.value = modLog?.name ?: "None"
-                    this.inline = true
+
+                field("Moderation Log", true) {
+                    append(guild.modLog?.name ?: "None")
                 }
-                field {
-                    val mutedRole = guild.mutedRole
-                    this.name = "Muted Role"
-                    this.value = mutedRole?.name ?: "None"
-                    this.inline = true
+
+                field("Muted Role", true) {
+                    append(guild.mutedRole?.name ?: "None")
                 }
-                field {
-                    this.name = "Cases"
-                    this.value = "${guild.cases.size} cases"
-                    this.inline = true
+
+                field("Cases", true) {
+                    append("${guild.cases.size} Cases")
                 }
             })
         }

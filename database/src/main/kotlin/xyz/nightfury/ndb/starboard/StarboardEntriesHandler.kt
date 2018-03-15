@@ -49,13 +49,13 @@ object StarboardEntriesHandler : Database.Table() {
         }
     }
 
-    fun getStars(starredId: Long, guildId: Long): List<Pair<Long, Long>> {
-        val list = ArrayList<Pair<Long, Long>>()
+    fun getStars(starredId: Long, guildId: Long): List<Long> {
+        val list = ArrayList<Long>()
         sql {
             statement(GET_STARS) {
                 this[1] = starredId
                 this[2] = guildId
-                queryAll { list += it.getLong("MESSAGE_ID") to it.getLong("USER_ID") }
+                queryAll { list += it.getLong("USER_ID") }
             }
         }
         return list

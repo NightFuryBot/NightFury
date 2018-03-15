@@ -41,7 +41,9 @@ class PlayCommand(manager: MusicManager): MusicCommand(manager) {
     override suspend fun execute(ctx: CommandContext) {
         val query = ctx.args
         val member = ctx.member
-        val voiceChannel = member.voiceChannel ?: return ctx.notInPlayingChannel()
+        val voiceChannel = member.voiceChannel ?: return ctx.notInVoiceChannel()
+
+        if(ctx.guild.isPlaying && !member.isInPlayingChannel) return ctx.notInPlayingChannel()
 
         val loading = async(ctx) {
             ctx.send("Loading...")

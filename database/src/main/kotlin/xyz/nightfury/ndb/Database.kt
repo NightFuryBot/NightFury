@@ -50,6 +50,8 @@ object Database : AutoCloseable {
     }
 
     override fun close() {
+        if(connection.isClosed) return
+
         LOG.info("Closing JDBC Connection...")
         connection.close()
     }

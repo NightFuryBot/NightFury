@@ -45,11 +45,7 @@
     ~ Sends an embed message to #nightfury-log on the support server.
     -->
   <appender name="Webhook" class="xyz.nightfury.entities.WebhookAppender">
-    <filter class="ch.qos.logback.classic.filter.LevelFilter">
-      <level>DEBUG</level>
-      <onMatch>DENY</onMatch>
-      <onMismatch>ACCEPT</onMismatch>
-    </filter>
+    <filter class="xyz.nightfury.logging.NormalFilter"/>
   </appender>
 
   <!--

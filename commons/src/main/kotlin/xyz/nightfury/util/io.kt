@@ -25,6 +25,7 @@ import kotlin.reflect.KClass
 
 inline fun <reified T: Any> KClass<out T>.resourceOf(name: String): URL? = java.getResource(name)
 inline fun <reified T: Any> KClass<out T>.resourceStreamOf(name: String): InputStream? = java.getResourceAsStream(name)
+inline fun <reified T: Any> KClass<out T>.hasResourceOf(name: String): Boolean = resourceOf(name) !== null
 
 fun file(first: String, vararg more: String, fromUserDir: Boolean = true): File {
     val path = if(fromUserDir) path@ {
@@ -40,4 +41,8 @@ fun file(first: String, vararg more: String, fromUserDir: Boolean = true): File 
 fun path(first: String, vararg more: String): Path {
     if(more.isEmpty()) return Paths.get(first)
     return Paths.get(first, *more)
+}
+
+fun findFile(first: String, vararg more: String, fromUserDir: Boolean = true): File? {
+    return file(first, *more, fromUserDir = fromUserDir).takeIf { it.exists() }
 }

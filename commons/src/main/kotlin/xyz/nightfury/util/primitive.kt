@@ -21,3 +21,11 @@ fun Int.toChars(): CharArray = Character.toChars(this)
 fun Int.toHexString(): String = Integer.toHexString(this)
 
 inline val Long.length: Int inline get() = "$this".length
+
+fun emptyShortArray(): ShortArray = ShortArray(0)
+fun emptyIntArray(): IntArray = IntArray(0)
+fun emptyLongArray(): LongArray = LongArray(0)
+
+fun arrayOf(vararg shorts: Short): ShortArray = ShortArray(shorts.size) { shorts[it] }
+fun arrayOf(vararg ints: Int): IntArray = IntArray(ints.size) { ints[it] }
+fun arrayOf(vararg longs: Long): LongArray = LongArray(longs.size) { longs[it] }

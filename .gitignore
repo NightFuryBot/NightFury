@@ -37,3 +37,6 @@
 *.gif
 *.jpg
 *.png
+
+# Unimplemented Stuff
+/firelink/

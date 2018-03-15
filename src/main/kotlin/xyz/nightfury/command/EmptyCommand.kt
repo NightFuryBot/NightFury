@@ -18,8 +18,12 @@ package xyz.nightfury.command
 /**
  * @author Kaidan Gustave
  */
-abstract class EmptyCommand(group: Command.Group) : Command(group) {
+abstract class EmptyCommand: Command {
     override val arguments by lazy { children.joinToString("|", "[", "]", 4, "...") { it.name } }
+
+    constructor(group: Group): super(group)
+
+    constructor(parent: Command): super(parent)
 
     override suspend fun execute(ctx: CommandContext) {
         if(ctx.args.isEmpty()) {

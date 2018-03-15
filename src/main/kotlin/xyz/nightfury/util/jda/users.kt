@@ -15,7 +15,6 @@
  */
 package xyz.nightfury.util.jda
 
-
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.*
@@ -43,20 +42,26 @@ inline fun <reified U: User> U.unbanFrom(guild: Guild): AuditableRestAction<Void
 
 // Copied from club.minnced.kjda.entities.KJDAUser
 
-inline val <reified U: User> U.game: Game?
-    inline get() = mutualGuilds.first().getMember(this)?.game
+inline val <reified U: User> U.game: Game? inline get() {
+    return mutualGuilds.first().getMember(this)?.game
+}
 
-inline val <reified U: User> U.status: OnlineStatus
-    inline get() = mutualGuilds.first().getMember(this)?.onlineStatus ?: OnlineStatus.OFFLINE
+inline val <reified U: User> U.status: OnlineStatus inline get() {
+    return mutualGuilds.first().getMember(this)?.onlineStatus ?: OnlineStatus.OFFLINE
+}
 
-inline val <reified U: User> U.isSelf: Boolean
-    inline get() = this is SelfUser || jda.selfUser.idLong == idLong
+inline val <reified U: User> U.isSelf: Boolean inline get() {
+    return this is SelfUser || jda.selfUser.idLong == idLong
+}
 
-inline val <reified M: Member> M.connectedChannel: VoiceChannel?
-    inline get() = voiceState.channel
+inline val <reified M: Member> M.connectedChannel: VoiceChannel? inline get() {
+    return voiceState.channel
+}
 
-inline val <reified M: Member> M.isConnected: Boolean
-    inline get() = connectedChannel !== null
+inline val <reified M: Member> M.isConnected: Boolean inline get() {
+    return connectedChannel !== null
+}
 
-inline val <reified M: Member> M.isAdmin: Boolean
-    inline get() = Permission.ADMINISTRATOR in permissions || isOwner
+inline val <reified M: Member> M.isAdmin: Boolean inline get() {
+    return Permission.ADMINISTRATOR in permissions || isOwner
+}

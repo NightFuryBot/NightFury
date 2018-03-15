@@ -59,6 +59,12 @@ class ColorMeCommand(waiter: EventWaiter) : Command(StandardGroup) {
             return ctx.replyError("There are no ColorMe roles on this server!")
         }
 
+        val target = colorMeRoles.firstOrNull { it in ctx.member.roles }
+
+        if(target === null) {
+            return ctx.replyError("You do not have any ColorMe roles!")
+        }
+
         val value = ctx.args
 
         val color = if(value matches HEX_REGEX) {
@@ -93,12 +99,11 @@ class ColorMeCommand(waiter: EventWaiter) : Command(StandardGroup) {
             else                       -> return ctx.replyError("$value is not a valid color!")
         }
 
-        val requested = colorMeRoles[0]
 
-        if(!ctx.selfMember.canInteract(requested))
+        if(!ctx.selfMember.canInteract(target))
             return ctx.replyError("Cannot interact with your highest ColorMe role!")
 
-        requested.manager.setColor(color).await()
+        target.manager.setColor(color).await()
         ctx.replySuccess("Successfully changed your color to $value")
         ctx.invokeCooldown()
     }

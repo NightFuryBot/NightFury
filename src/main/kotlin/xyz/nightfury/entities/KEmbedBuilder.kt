@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("unused")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
 package xyz.nightfury.entities
 
 import net.dv8tion.jda.core.EmbedBuilder
 import net.dv8tion.jda.core.entities.IMentionable
 import net.dv8tion.jda.core.entities.MessageEmbed
 import xyz.nightfury.util.lineSeparator
+import xyz.nightfury.util.modifyIf
 import java.awt.Color
 import java.time.temporal.TemporalAccessor
 
@@ -28,10 +29,12 @@ import java.time.temporal.TemporalAccessor
 /**
  * @author Kaidan Gustave
  */
+@MessageDsl
 class KEmbedBuilder: Appendable {
-    val fields: MutableList<MessageEmbed.Field> = mutableListOf()
+    @PublishedApi
+    internal val fields = mutableListOf<MessageEmbed.Field>()
+    private val description = StringBuilder()
 
-    var description = StringBuilder()
     var title: String? = null
     var url: String? = null
     var thumbnail: String? = null
@@ -42,27 +45,20 @@ class KEmbedBuilder: Appendable {
     var time: TemporalAccessor? = null
     var color: Color? = null
 
-    fun build(): MessageEmbed = EmbedBuilder().apply {
+    @PublishedApi
+    internal fun build(): MessageEmbed = EmbedBuilder().apply {
         val(description, fields, title, url, time, color, author, thumbnail, footer, image) = this@KEmbedBuilder
 
         fields.forEach { addField(it) }
 
-        if(!description.isBlank())
-            setDescription(description.toString())
-        if(!title.isNullOrBlank())
-            setTitle(title, url)
-        if(image !== null)
-            setImage(image)
-        if(time !== null)
-            setTimestamp(time)
-        if(thumbnail !== null)
-            setThumbnail(thumbnail)
-        if(color !== null)
-            setColor(color)
-        if(footer !== null)
-            setFooter(footer.value, footer.icon)
-        if(author !== null)
-            setAuthor(author.value, author.url, author.icon)
+        if(!description.isBlank()) setDescription(description.toString())
+        if(!title.isNullOrBlank()) setTitle(title, url)
+        image?.let(::setImage)
+        time?.let(::setTimestamp)
+        thumbnail?.let(::setThumbnail)
+        color?.let(::setColor)
+        footer?.let { setFooter(it.value, it.icon) }
+        author?.let { setAuthor(it.value, it.url, it.icon) }
 
     }.build()
 
@@ -76,11 +72,6 @@ class KEmbedBuilder: Appendable {
     operator fun component8()  = thumbnail
     operator fun component9()  = footer
     operator fun component10() = image
-
-    operator fun plusAssign(init: Field.() -> Unit) = with(Field()) {
-        field(init)
-        Unit
-    }
 
     override fun append(csq: CharSequence?): KEmbedBuilder {
         description.append(csq)
@@ -97,86 +88,108 @@ class KEmbedBuilder: Appendable {
         return this
     }
 
-    infix fun append(any: Any?) = append(((any as? IMentionable)?.asMention) ?: any.toString())
+    fun append(any: Any?) = append(((any as? IMentionable)?.asMention) ?: any.toString())
 
-    infix fun appendln(any: Any?) = append(any).appendln()
+    fun appendln(any: Any?) = append(any).appendln()
 
     fun appendln() = append("\n")
 
     operator fun plusAssign(any: Any?) { append(any) }
 
-    inline infix fun description(lazy: () -> String): KEmbedBuilder {
-        description = StringBuilder(lazy())
-        return this
+    operator fun String.unaryPlus(): KEmbedBuilder {
+        description.append(this)
+        return this@KEmbedBuilder
     }
 
-    inline infix fun image(lazy: () -> String): KEmbedBuilder {
+    inline fun image(lazy: () -> String): KEmbedBuilder {
         image = lazy()
         return this
     }
 
-    inline infix fun url(lazy: () -> String): KEmbedBuilder {
+    inline fun url(lazy: () -> String): KEmbedBuilder {
         url = lazy()
         return this
     }
 
-    inline infix fun title(lazy: () -> String): KEmbedBuilder {
+    inline fun title(lazy: () -> String): KEmbedBuilder {
         title = lazy()
         return this
     }
 
-    inline infix fun thumbnail(lazy: () -> String): KEmbedBuilder {
+    inline fun thumbnail(lazy: () -> String): KEmbedBuilder {
         thumbnail = lazy()
         return this
     }
 
-    inline infix fun time(lazy: () -> TemporalAccessor): KEmbedBuilder {
+    inline fun time(lazy: () -> TemporalAccessor): KEmbedBuilder {
         time = lazy()
         return this
     }
 
-    inline infix fun color(lazy: () -> Color?): KEmbedBuilder {
+    inline fun color(lazy: () -> Color?): KEmbedBuilder {
         color = lazy()
         return this
     }
 
-    inline infix fun author(lazy: Entity.() -> Unit): KEmbedBuilder {
+    inline fun author(lazy: Entity.() -> Unit): KEmbedBuilder {
         val data = Entity()
         data.lazy()
         author = data
         return this
     }
 
-    inline infix fun footer(lazy: Entity.() -> Unit): KEmbedBuilder {
+    inline fun footer(lazy: Entity.() -> Unit): KEmbedBuilder {
         val data = Entity()
         data.lazy()
         footer = data
         return this
     }
 
-    inline infix fun field(lazy: Field.() -> Unit): KEmbedBuilder {
-        val builder = Field()
+    inline fun field(name: String = EmbedBuilder.ZERO_WIDTH_SPACE,
+                     inline: Boolean = true,
+                     lazy: Field.() -> Unit): KEmbedBuilder {
+        val builder = Field(name = name, inline = inline)
         builder.lazy()
-        fields.add(MessageEmbed.Field(builder.name, builder.value, builder.inline))
+        fields.add(MessageEmbed.Field(builder.name, builder.value.toString(), builder.inline))
         return this
     }
 
-    data class Entity(var value: String = EmbedBuilder.ZERO_WIDTH_SPACE,
-                      var url: String? = null,
-                      var icon: String? = null)
+    @MessageDsl
+    data class Entity @PublishedApi internal constructor(var value: String = EmbedBuilder.ZERO_WIDTH_SPACE,
+                                                         var url: String? = null,
+                                                         var icon: String? = null) {
+        inline fun value(lazy: () -> String): Entity {
+            val value = lazy()
+            this.value = value.modifyIf(value.isBlank()) { EmbedBuilder.ZERO_WIDTH_SPACE }
+            return this
+        }
 
-    data class Field(
+        inline fun url(lazy: () -> String?): Entity {
+            url = lazy()
+            return this
+        }
+
+        inline fun icon(lazy: () -> String?): Entity {
+            icon = lazy()
+            return this
+        }
+    }
+
+    @MessageDsl
+    data class Field @PublishedApi internal constructor(
         var name: String = EmbedBuilder.ZERO_WIDTH_SPACE,
-        var value: String = EmbedBuilder.ZERO_WIDTH_SPACE,
         var inline: Boolean = true
     ): Appendable {
+        @PublishedApi
+        internal val value = StringBuilder()
 
-        operator fun plusAssign(any: Any?) {
-            append(any)
+        operator fun String.unaryPlus(): Field {
+            append(this)
+            return this@Field
         }
 
         override fun append(csq: CharSequence?): Field {
-            value += csq
+            value.append(csq)
             return this
         }
 

@@ -31,34 +31,64 @@
 package xyz.nightfury
 
 import ch.qos.logback.classic.Level
+import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
-import xyz.nightfury.util.createLogger
+import xyz.nightfury.util.concurrent.KeyLockedContinuation
+import xyz.nightfury.util.concurrent.suspendAndLockCoroutine
 
 /**
  * @author Kaidan Gustave
  */
 enum class ClientMode(val level: Level): ClientListener {
     SERVICE(Level.INFO),
-    IDLE(Level.OFF),
+    IDLE(Level.OFF) {
+        override fun checkCall(event: MessageReceivedEvent, client: Client, name: String, args: String): Boolean {
+            return event.author.idLong == NightFury.DEV_ID
+        }
+    },
     DEBUG(Level.DEBUG) {
-        private val log = createLogger("Debugger")
-
         override fun onCommandCall(ctx: CommandContext, command: Command) {
-            log.debug("Call to Command \"${command.name}\"")
+            ClientListener.debug("Call to Command \"${command.name}\"")
         }
 
         override fun onCommandTerminated(ctx: CommandContext, command: Command, msg: String) {
             super.onCommandTerminated(ctx, command, msg)
-            log.debug("Terminated Command \"${command.name}\" with message: \"$msg\"")
+            ClientListener.debug("Terminated Command \"${command.name}\" with message: \"$msg\"")
         }
 
         override fun onCommandCompleted(ctx: CommandContext, command: Command) {
-            log.debug("Completed Command \"${command.name}\"")
+            ClientListener.debug("Completed Command \"${command.name}\"")
+        }
+    },
+    TEST(Level.DEBUG) {
+        override fun onCommandCall(ctx: CommandContext, command: Command) {
+            DEBUG.onCommandCall(ctx, command)
+        }
+
+        override fun onCommandTerminated(ctx: CommandContext, command: Command, msg: String) {
+            DEBUG.onCommandTerminated(ctx, command, msg)
+        }
+
+        override fun onCommandCompleted(ctx: CommandContext, command: Command) {
+            DEBUG.onCommandCompleted(ctx, command)
+            lock?.tryUnlockAndResume(command, Unit)
         }
 
         override fun onException(ctx: CommandContext, command: Command, exception: Throwable) {
-            log.debug("Exception Caught for Command \"${command.name}\"",exception)
+            DEBUG.onException(ctx, command, exception)
+            lock?.tryUnlockAndResumeWithException(command, exception)
         }
     };
+
+    companion object {
+        @Volatile private var lock: KeyLockedContinuation<Command, Unit>? = null
+
+        suspend fun loadContinuation(command: Command) {
+            ClientListener.debug("Loaded test for ${command.fullname}!")
+            suspendAndLockCoroutine<Command, Unit>(command) { cont ->
+                lock = cont
+            }
+        }
+    }
 }

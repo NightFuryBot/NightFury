@@ -177,6 +177,9 @@ class Client(
         if(event.author.isBot)
             return
 
+        if(event.textChannel?.canTalk() == false)
+            return
+
         val raw = event.message.contentRaw
         val guild = event.guild
 

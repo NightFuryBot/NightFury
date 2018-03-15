@@ -36,3 +36,5 @@ inline val <reified E: Enum<E>> E.niceName: String inline get() {
 
 inline fun <reified T> T.modifyIf(condition: Boolean, block: (T) -> T): T = if(condition) block(this) else this
 inline fun <reified T> T.modifyUnless(condition: Boolean, block: (T) -> T): T = modifyIf(!condition, block)
+
+val currentTime get() = System.currentTimeMillis()

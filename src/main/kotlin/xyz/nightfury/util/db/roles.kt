@@ -78,3 +78,7 @@ inline val <reified G: Guild> G.roleMeRoles: List<Role> inline get() {
 inline val <reified G: Guild> G.colorMeRoles: List<Role> inline get() {
     return ColorMeHandler.getRoles(idLong).mapNotNull { getRoleById(it) }
 }
+
+inline val <reified G: Guild> G.announcementRoles: List<Role> inline get() {
+    return AnnouncementRolesHandler.getRoles(idLong).mapNotNull { getRoleById(it) }
+}

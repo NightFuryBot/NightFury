@@ -32,9 +32,20 @@ import javax.script.ScriptException
 @MustHaveArguments
 class EvalCommand: Command(OwnerGroup) {
     private companion object {
-        private const val SCRIPT_ENGINE_NAME = "nashorn"
+        private const val SCRIPT_ENGINE_EXT = "kts"
         private val ENGINE_MANAGER = ScriptEngineManager()
-        private val SYS_EXIT_REGEX = Regex("System\\.exit\\(\\d+\\);?")
+        private val SYS_EXIT_REGEX = Regex("(?:System\\.)?exit(?:Process)?\\(\\d+\\);?")
+        private val DEFAULT_IMPORTS = arrayOf(
+            "xyz.nightfury.util.db.*",
+            "xyz.nightfury.util.jda.*",
+            "xyz.nightfury.util.*",
+            "xyz.nightfury.*",
+            "kotlinx.coroutines.experimental.*",
+            "kotlin.io.*",
+            "java.util.function.*",
+            "java.util.*",
+            "me.kgustave.json.*"
+        )
     }
 
     override val name = "Eval"
@@ -42,7 +53,8 @@ class EvalCommand: Command(OwnerGroup) {
     override val arguments = "[Script]"
     override val hasAdjustableLevel = false
 
-    private val engine: ScriptEngine = ENGINE_MANAGER.getEngineByName(SCRIPT_ENGINE_NAME)
+    private val engine: ScriptEngine = ENGINE_MANAGER.getEngineByExtension(SCRIPT_ENGINE_EXT)
+    private val engineContext = Context()
 
     override suspend fun execute(ctx: CommandContext) {
         // Trim off code block if present.
@@ -61,43 +73,91 @@ class EvalCommand: Command(OwnerGroup) {
 
             else -> {
                 try {
-                    val output = engine.load(ctx).eval(args)
-                    ctx.reply("```js\n$args```Evaluated:\n```\n$output```")
+                    engineContext.load(ctx)
+                    val output = engine.eval("${engineContext.scriptPrefix}\n$args")
+                    ctx.reply("```kotlin\n$args```Evaluated:\n```\n$output```")
                 } catch (e: ScriptException) {
-                    ctx.reply("```js\n$args```A ScriptException was thrown:\n```\n${e.message}```")
+                    ctx.reply("```kotlin\n$args```A ScriptException was thrown:\n```\n${e.message}```")
                 } catch (e: Exception) {
-                    ctx.reply("```js\n$args```An exception was thrown:\n```\n$e```")
+                    ctx.reply("```kotlin\n$args```An exception was thrown:\n```\n$e```")
                 }
+
+                engineContext.clear()
             }
         }
     }
 
-    private inline fun <reified T: ScriptEngine> T.load(ctx: CommandContext): T {
+    private fun Context.load(ctx: CommandContext) {
         // STANDARD
-        put("ctx", ctx)
-        put("jda", ctx.jda)
-        put("author", ctx.author)
-        put("channel", ctx.channel)
-        put("client", ctx.client)
+        this["ctx"] = ctx
+        this["jda"] = ctx.jda
+        this["author"] = ctx.author
+        this["channel"] = ctx.channel
+        this["client"] = ctx.client
 
         // GUILD
         if(ctx.isGuild) {
-            put("guild", ctx.guild)
-            put("member", ctx.member)
+            this["guild"] = ctx.guild
+            this["member"] = ctx.member
 
-            put("textChannel", ctx.textChannel)
+            this["textChannel"] = ctx.textChannel
             // VOICE
             if(ctx.selfMember.connectedChannel !== null) {
-                put("voiceChannel", ctx.selfMember.connectedChannel)
-                put("voiceState", ctx.member.voiceState)
+                this["voiceChannel"] = ctx.selfMember.connectedChannel
+                this["voiceState"] = ctx.member.voiceState
             }
         }
 
         // PRIVATE
         if(ctx.isPrivate) {
-            put("privateChannel", ctx.privateChannel)
+            this["privateChannel"] = ctx.privateChannel
+        }
+    }
+
+    private inner class Context {
+        val properties = HashMap<String, Any?>()
+        val imports = HashSet<String>()
+
+        operator fun set(key: String, value: Any?) {
+            properties[key] = value
+            if(value !== null) {
+                val qualifiedName = value::class.qualifiedName
+                if(qualifiedName !== null && qualifiedName !in imports) {
+                    imports += qualifiedName
+                }
+            }
+            engine.put(key, value)
         }
 
-        return this
+        fun clear() {
+            properties.clear()
+            imports.clear()
+        }
+
+        val scriptPrefix get() = buildString {
+            for(import in imports) {
+                appendln("import $import")
+            }
+
+            for(import in DEFAULT_IMPORTS.filter { it !in imports }) {
+                appendln("import $import")
+            }
+
+            for((key, value) in properties) {
+                if(value === null) {
+                    appendln("val $key = null")
+                    continue
+                }
+
+                val simpleName = value::class.simpleName
+
+                if(simpleName === null) {
+                    appendln("val $key = bindings[\"$key\"]")
+                    continue
+                }
+
+                appendln("val $key = bindings[\"$key\"] as $simpleName")
+            }
+        }
     }
 }

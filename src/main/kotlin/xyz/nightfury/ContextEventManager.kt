@@ -49,7 +49,7 @@ class ContextEventManager : IEventManager {
     companion object {
         private val LOG = createLogger(ContextEventManager::class)
         // For debugging
-        @JvmField val THREAD_NUMBER = AtomicInteger(0)
+        /*@JvmField*/ val THREAD_NUMBER = AtomicInteger(0)
     }
 
     private val context = newCachedThreadPool(Factory()).asCoroutineDispatcher()

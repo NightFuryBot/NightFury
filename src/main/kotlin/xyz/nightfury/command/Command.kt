@@ -23,7 +23,10 @@ import xyz.nightfury.command.standard.StandardGroup
 import xyz.nightfury.util.commandArgs
 import xyz.nightfury.util.db.getCommandLevel
 import xyz.nightfury.util.db.isMod
+import xyz.nightfury.util.ignored
+import xyz.nightfury.util.jda.await
 import xyz.nightfury.util.jda.isAdmin
+import xyz.nightfury.util.niceName
 import java.util.LinkedList
 import kotlin.reflect.full.findAnnotation
 
@@ -35,6 +38,91 @@ abstract class Command(val group: Command.Group, val parent: Command?): Comparab
         const val BOT_PERM = "${NightFury.ERROR} I need the %s permission in this %s!"
         const val MISSING_ARGUMENTS = "Missing Arguments"
         const val UNEXPECTED_ERROR = "An unexpected error occurred, please try again later!"
+
+        suspend fun sendSubHelp(ctx: CommandContext, command: Command) {
+            val helpMessage = buildString {
+                val aliases = command.aliases
+                val help = command.help
+                val arguments = command.arguments
+                val children = command.children.filter {
+                    if(ctx.isPrivate) {
+                        it.defaultLevel.test(ctx) && !it.guildOnly
+                    } else {
+                        (ctx.guild.getCommandLevel(it) ?: it.defaultLevel).test(ctx)
+                    }
+                }
+
+                append("__Available help for **${command.name} Command** in " +
+                       "${if(ctx.isPrivate) "DM" else "<#${ctx.channel.id}>"}__\n")
+
+                append("\n**Usage:** `${ctx.client.prefix}${command.fullname.toLowerCase()}")
+                append(if(arguments.isNotEmpty()) " $arguments`" else "`")
+
+                if(aliases.isNotEmpty()) {
+                    append("\n**Alias${if(aliases.size > 1) "es" else ""}:** `")
+                    for(i in aliases.indices) {
+                        append("${aliases[i]}`")
+                        if(i != aliases.lastIndex) {
+                            append(", `")
+                        }
+                    }
+                }
+
+                if(help != "No help available.") {
+                    append("\n**Function:** `$help`\n")
+                }
+
+                //command.docs?.let { append("\n$it\n") }
+
+                if(children.isNotEmpty()) {
+                    append("\n**Sub-Commands:**\n\n")
+                    var cat: Level? = null
+                    for((i, c) in children.sorted().withIndex()) {
+                        if(cat != c.defaultLevel) {
+                            if(!c.defaultLevel.test(ctx)) {
+                                continue
+                            }
+
+                            cat = c.defaultLevel
+
+                            if(cat != Level.STANDARD) {
+                                if(i != 0) {
+                                    append("\n")
+                                }
+
+                                append("__${cat.niceName}__\n\n")
+                            }
+                        }
+                        append("`${ctx.client.prefix}${c.fullname.toLowerCase()}")
+                        append(if(c.arguments.isNotEmpty()) " ${c.arguments}" else "")
+                        append("` - ").append(c.help)
+
+                        if(i < children.lastIndex) {
+                            append("\n")
+                        }
+                    }
+                }
+
+                val owner = ignored(null) { ctx.jda.retrieveUserById(NightFury.DEV_ID).await() }
+
+                if(owner !== null) {
+                    append("\n\nFor additional help, contact **")
+                    append(owner.name)
+                    append("**#")
+                    append(owner.discriminator)
+                    append(" or join his support server ")
+                } else {
+                    append("\n\nFor additional help, join my support server ")
+                }
+                append(NightFury.SERVER_INVITE)
+            }
+
+            if(ctx.isGuild) {
+                ctx.reactSuccess()
+            }
+
+            ctx.replyInDM(helpMessage)
+        }
     }
 
     abstract val name: String
@@ -85,6 +173,9 @@ abstract class Command(val group: Command.Group, val parent: Command?): Comparab
 
         if(!group.check(ctx))
             return
+
+        if(ctx.args.startsWith("help", true))
+            return sendSubHelp(ctx, this)
 
         val level = ctx.level
 

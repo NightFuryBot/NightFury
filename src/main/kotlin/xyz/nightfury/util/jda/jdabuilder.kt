@@ -17,20 +17,49 @@
 package xyz.nightfury.util.jda
 
 import com.neovisionaries.ws.client.WebSocketFactory
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.produce
+import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.launch
 import net.dv8tion.jda.core.AccountType
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.JDABuilder
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.audio.factory.IAudioSendFactory
+import net.dv8tion.jda.core.events.Event
+import net.dv8tion.jda.core.events.ReadyEvent
+import net.dv8tion.jda.core.hooks.EventListener
 import net.dv8tion.jda.core.hooks.IEventManager
 import net.dv8tion.jda.core.utils.SessionController
+import net.dv8tion.jda.core.utils.SessionControllerAdapter
 import okhttp3.OkHttpClient
+import xyz.nightfury.NightFury
 import xyz.nightfury.util.listeningTo
 import xyz.nightfury.util.playing
 import java.util.concurrent.ConcurrentMap
+import java.util.concurrent.TimeUnit
+import kotlin.coroutines.experimental.suspendCoroutine
 
-fun client(accountType: AccountType, init: JDABuilder.() -> Unit): JDA
-    = JDABuilder(accountType).apply(init).buildAsync()
+inline fun client(accountType: AccountType, init: JDABuilder.() -> Unit): JDA {
+    return JDABuilder(accountType).apply(init).buildAsync()
+}
+
+inline fun client(accountType: AccountType, shards: Int, lazy: JDABuilder.() -> Unit): ReceiveChannel<JDA> {
+    val builder = JDABuilder(accountType)
+    builder.lazy()
+    return produce {
+        builder.sessionController { SessionControllerAdapter() }
+        for(i in 0 until shards) {
+            builder.useSharding(i, shards)
+            NightFury.LOG.info("Shard [$i / ${shards - 1}] now building...")
+            launch(coroutineContext) {
+                val shard = builder.buildSuspended()
+                send(shard)
+            }
+            delay(5, TimeUnit.SECONDS) // Five second backoff
+        }
+    }
+}
 
 inline fun <reified T: JDABuilder> T.token(lazy: () -> String): T = apply { setToken(lazy()) }
 inline fun <reified T: JDABuilder> T.game(lazy: () -> String): T = apply { setGame(playing(lazy())) }
@@ -51,3 +80,17 @@ inline fun <reified T: JDABuilder> T.webSocketFactory(factory: WebSocketFactory 
                                                       init: WebSocketFactory.() -> Unit): T = apply { setWebsocketFactory(factory.apply(init)) }
 inline fun <reified T: JDABuilder> T.httpSettings(builder: OkHttpClient.Builder = OkHttpClient.Builder(),
                                                   init: OkHttpClient.Builder.() -> Unit = {}): T = apply { setHttpClientBuilder(builder.apply(init)) }
+
+suspend inline fun <reified T: JDABuilder> T.buildSuspended(): JDA = suspendCoroutine { cont ->
+    on<ReadyEvent> {
+        cont.resume(it.jda)
+    }
+}
+
+inline fun <reified E: Event> JDABuilder.on(crossinline handle: (E) -> Unit): JDABuilder = listener {
+    EventListener {
+        if(it is E) {
+            handle(it)
+        }
+    }
+}

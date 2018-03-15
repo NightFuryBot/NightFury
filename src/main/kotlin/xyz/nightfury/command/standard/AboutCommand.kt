@@ -55,34 +55,51 @@ class AboutCommand : Command(StandardGroup) {
                 this.icon = ctx.selfUser.avatarUrl
             }
 
-            appendln("Hello, I am **${ctx.selfUser.name}**!")
-            appendln("I am a discord bot with many functions from utility, to moderation, to fun commands!")
             val dev = ctx.jda.retrieveUserById(NightFury.DEV_ID).await()
-            appendln("I was written in Kotlin by ${dev.formattedName(true)} using the [JDA Library](${JDAInfo.GITHUB}) " + "(${JDAInfo.VERSION}).")
-            appendln("I am at [Version ${NightFury.version}](${NightFury.GITHUB}). To see a full list of my commands, " + "type `${ctx.client.prefix}help`, or if you require additional assistance, join my " + "[support server](${NightFury.SERVER_INVITE})!")
-            appendln("If you want to invite me to your server, click [here]($oAuth2Link) or use `${ctx.client.prefix}invite`!")
+
+            + "Hello, I am **${ctx.selfUser.name}**!\n"
+            + "I am a discord bot with many functions from utility, to moderation, to fun commands!\n"
+            + "I was written in Kotlin by ${dev.formattedName(true)} using the [JDA Library](${JDAInfo.GITHUB}) "
+            + "(${JDAInfo.VERSION}).\n"
+            + "I am at [Version ${NightFury.version}](${NightFury.GITHUB}). To see a full list of my commands, "
+            + "type `${ctx.client.prefix}help`, or if you require additional assistance, join my "
+            + "[support server](${NightFury.SERVER_INVITE})!\n"
+            + "If you want to invite me to your server, click [here]($oAuth2Link) or use "
+            + "`${ctx.client.prefix}invite`!"
+
             val shard = ctx.jda.shardInfo
+
             thumbnail { ctx.selfUser.effectiveAvatarUrl }
+
             field {
-                this.name = if(shard != null) "This Shard" else "Users"
-                this.value = "${ctx.jda.users.size} Unique${if(shard != null) " Users" else ""}\n" + if(shard != null) "${ctx.jda.guilds.size} Servers"
-                else "${ctx.jda.guilds.stream().mapToInt { it.members.size }.sum()} Total"
+                this.name = if(shard !== null) "This Shard" else "Users"
                 this.inline = true
-            }
-            field {
-                this.name = if(shard != null) "" else "Channels"
-                this.value = "${ctx.jda.textChannels.size} Text${if(shard != null) " Channels" else ""}\n" + "${ctx.jda.voiceChannels.size} Voice${if(shard != null) " Channels" else ""}"
-                this.inline = true
-            }
-            field {
-                this.name = "Stats"
-                this.value = if(shard != null) {
-                    "${ctx.client.totalGuilds} Servers\n" + "${ctx.client.messageCacheSize} Cached Messages\n" + "Shard ${shard.shardId + 1}"
+
+                + "${ctx.jda.users.size} Unique${if(shard !== null) " Users" else ""}\n"
+                if(shard !== null) {
+                    + "${ctx.jda.guilds.size} Servers"
                 } else {
-                    "${ctx.jda.guilds.size} Servers\n" + "${ctx.client.messageCacheSize} Cached Messages"
+                    + "${ctx.jda.guilds.stream().mapToInt { it.members.size }.sum()} Total"
                 }
-                this.inline = true
             }
+            field {
+                this.name = if(shard !== null) "" else "Channels"
+                this.inline = true
+
+                + "${ctx.jda.textChannels.size} Text${if(shard !== null) " Channels" else ""}\n"
+                + "${ctx.jda.voiceChannels.size} Voice${if(shard !== null) " Channels" else ""}"
+            }
+            field("Stats", true) {
+                if(shard !== null) {
+                    + "${ctx.client.totalGuilds} Servers\n"
+                    + "${ctx.client.messageCacheSize} Cached Messages\n"
+                    + "Shard ${shard.shardId + 1}"
+                } else {
+                    + "${ctx.jda.guilds.size} Servers\n"
+                    + "${ctx.client.messageCacheSize} Cached Messages"
+                }
+            }
+
             footer {
                 this.value = "Last Restart"
                 this.icon = null

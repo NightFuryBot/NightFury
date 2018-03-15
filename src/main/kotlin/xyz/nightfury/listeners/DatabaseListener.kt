@@ -24,6 +24,8 @@ import net.dv8tion.jda.core.events.channel.text.TextChannelCreateEvent
 import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent
 import net.dv8tion.jda.core.events.channel.voice.VoiceChannelCreateEvent
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent
+import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
+import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent
 import net.dv8tion.jda.core.events.role.RoleDeleteEvent
 import net.dv8tion.jda.core.hooks.EventListener
 import xyz.nightfury.util.db.*
@@ -41,6 +43,8 @@ class DatabaseListener : EventListener {
             is VoiceChannelCreateEvent -> onVoiceChannelCreate(event)
             is CategoryCreateEvent     -> onCategoryCreate(event)
             is GuildLeaveEvent         -> onGuildLeave(event)
+            is GuildMemberJoinEvent    -> onGuildMemberJoin(event)
+            is GuildMemberLeaveEvent   -> onGuildMemberLeave(event)
         }
     }
 
@@ -168,5 +172,23 @@ class DatabaseListener : EventListener {
 
     private fun onGuildLeave(event: GuildLeaveEvent) {
         event.guild.removeAllCommandSettings()
+    }
+
+    private fun onGuildMemberJoin(event: GuildMemberJoinEvent) {
+        val member = event.member
+        val settings = event.guild.settings
+        if(settings !== null && settings.isRolePersist && member.hasRolePersist) {
+            val roles = member.rolePersist
+            event.guild.controller.addRolesToMember(member, roles).queue()
+            member.removeRolePersist()
+        }
+    }
+
+    private fun onGuildMemberLeave(event: GuildMemberLeaveEvent) {
+        val member = event.member
+        val settings = event.guild.settings
+        if(settings !== null && settings.isRolePersist) {
+            member.saveRolePersist()
+        }
     }
 }

@@ -26,10 +26,16 @@ buildscript {
     ext {
         kotlin_version = '1.2.30'
         kotlinx_version = '0.22.3'
+        kotlin_json_version = '1.2.1'
+        ktor_version = '0.9.2-alpha-2'
         shadow_version = '2.0.1'
         jda_version = '3.5.0_338'
         jda_utilities_version = '2.1'
+        jda_audio_version = '91438c36d7107cf838c2f2eb147b08f989d929db'
+        jda_nas_version = '1.0.6.1-JDA-Audio'
+        jda_async_packet_version = '1.1'
         lavaplayer_version = '1.2.49'
+        lavalink_version = '67c4656'
         hocon_version = '3.3'
         jsoup_version = '1.10.2'
         youtube_api_version = 'v3-rev189-1.23.0'
@@ -37,6 +43,8 @@ buildscript {
         slf4j_version = '1.7.25'
         logback_version = '1.2.3'
         jagtag_version = '0.5'
+        junit_version = '1.0.1'
+        jupiter_version = '5.0.1'
     }
 
     repositories {
@@ -46,6 +54,7 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.github.jengelman.gradle.plugins:shadow:$shadow_version"
+        classpath "org.junit.platform:junit-platform-gradle-plugin:$junit_version"
     }
 }
 
@@ -67,6 +76,9 @@ allprojects {
         versionObj = ver
 
         project.repositories {
+            ktor = {
+                maven { url "http://dl.bintray.com/kotlin/ktor" }
+            }
             jitpack = {
                 maven {
                     url 'https://jitpack.io/'
@@ -76,34 +88,35 @@ allprojects {
 
         project.dependencies {
             kotlinModule = { String module -> "org.jetbrains.kotlin:kotlin-$module:$kotlin_version" }
-
             kotlinxModule = { String module -> "org.jetbrains.kotlinx:kotlinx-$module:$kotlinx_version" }
+            kotlinJson = { "me.kgustave:kotlin-json-core:$kotlin_json_version" }
+            ktorModule = { String module -> "io.ktor:ktor-$module:$ktor_version" }
+            ktorServer = { String module = "core" -> ktorModule("server-$module") }
 
             JDA = { "net.dv8tion:JDA:$jda_version" }
-
             JDAUtilities = { String module -> "com.github.JDA-Applications.JDA-Utilities" +
                     ":jda-utilities-$module:feature~oauth2-SNAPSHOT" }
-
+            JDAAudio = { String commit -> "com.github.DV8FromTheWorld:JDA-Audio:$commit" }
+            lavaServerResources = {
+                ["com.github.DV8FromTheWorld:JDA-Audio:$jda_audio_version",
+                 "com.github.FredBoat:jda-nas:$jda_nas_version",
+                 "com.github.shredder121:jda-async-packetprovider:$jda_async_packet_version"]
+            }
             lavaplayer = { "com.sedmelluq:lavaplayer:$lavaplayer_version" }
-
+            lavalink   = { "com.github.Frederikam:Lavalink:$lavalink_version" }
             hocon = { "ninja.leaping.configurate:configurate-hocon:$hocon_version" }
-
             youtube = { "com.google.apis:google-api-services-youtube:$youtube_api_version" }
-
             jsoup = { "org.jsoup:jsoup:$jsoup_version" }
-
             h2 = { "com.h2database:h2:$h2_version" }
-
             slf4j = { "org.slf4j:slf4j-api:$slf4j_version" }
-
             logback = { "ch.qos.logback:logback-classic:$logback_version" }
-
             jagtag = { "com.jagrosh:JagTag:$jagtag_version" }
-
             kotlinJdk8 = { kotlinModule("stdlib-jdk8") }
             kotlinJdk7 = { kotlinModule("stdlib-jdk7") }
             kotlinReflect = { kotlinModule("reflect") }
             kotlinxCoroutines = { kotlinxModule("coroutines-core") }
+
+            jupiter = { String module -> "org.junit.jupiter:junit-jupiter-$module:$jupiter_version" }
         }
     }
 
@@ -116,8 +129,8 @@ allprojects {
         test {
             kotlin.srcDirs += 'src/test/kotlin'
 
-            compileClasspath = main.output + main.resources
-            runtimeClasspath = main.output + main.resources
+            compileClasspath += main.compileClasspath
+            runtimeClasspath += main.runtimeClasspath
         }
     }
 
@@ -186,6 +199,7 @@ subprojects {
 }
 
 apply plugin: 'application'
+apply plugin: 'org.junit.platform.gradle.plugin'
 
 mainClassName = "${group}.$rootProject.name"
 
@@ -195,6 +209,10 @@ dependencies {
     compile kotlinJdk7()
     compile kotlinReflect()
     compile kotlinxCoroutines()
+    compile kotlinModule("script-runtime")
+    compile kotlinModule("script-util")
+    runtime kotlinModule("compiler-embeddable")
+    compile kotlinJson()
 
     // JDA
     compile JDA()
@@ -204,10 +222,6 @@ dependencies {
     // Config
     compile hocon()
 
-    // API Requests
-    compile jsoup()
-    compile youtube()
-
     // h2
     compile h2()
 
@@ -215,12 +229,18 @@ dependencies {
     compile slf4j()
     compile logback()
 
-    // JagTag
+    // Misc
     compile jagtag()
+    compile jsoup()
+    compile youtube()
 
     // Subprojects
     compile project(":commons")
     compile project(":database")
+
+    testCompile kotlinModule("test-junit")
+    testCompile jupiter("api")
+    testRuntime jupiter("engine")
 }
 
 jar {

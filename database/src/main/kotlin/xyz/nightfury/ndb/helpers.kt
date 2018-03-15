@@ -27,11 +27,11 @@ internal inline operator fun <reified T: PreparedStatement> T.set(index: Int, va
 }
 
 internal inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: String?): T = apply {
-    if(value == null) setNull(index, Value.STRING) else setString(index, value)
+    if(value === null) setNull(index, Value.STRING) else setString(index, value)
 }
 
 internal inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Int?): T = apply {
-    if(value == null) setNull(index, Value.INT) else setInt(index, value)
+    if(value === null) setNull(index, Value.INT) else setInt(index, value)
 }
 
 internal inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Boolean?): T = apply {
@@ -39,15 +39,27 @@ internal inline operator fun <reified T: PreparedStatement> T.set(index: Int, va
 }
 
 internal inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Short?): T = apply {
-    if(value == null) setNull(index, Value.SHORT) else setShort(index, value)
+    if(value === null) setNull(index, Value.SHORT) else setShort(index, value)
 }
 
 internal inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Timestamp?): T = apply {
-    if(value == null) setNull(index, Value.TIMESTAMP_TZ) else setTimestamp(index, value)
+    if(value === null) setNull(index, Value.TIMESTAMP_TZ) else setTimestamp(index, value)
 }
 
 internal inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Date?): T = apply {
-    if(value == null) setNull(index, Value.DATE) else setDate(index, value)
+    if(value === null) setNull(index, Value.DATE) else setDate(index, value)
+}
+
+internal inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Array<*>?): T = apply {
+    if(value === null) setNull(index, Value.ARRAY) else setObject(index, value, Value.ARRAY)
+}
+
+internal inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: IntArray?): T = apply {
+    if(value === null) setNull(index, Value.ARRAY) else setObject(index, value, Value.ARRAY)
+}
+
+internal inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: LongArray?): T = apply {
+    if(value === null) setNull(index, Value.ARRAY) else setObject(index, value, Value.ARRAY)
 }
 
 internal inline operator fun <reified T: PreparedStatement> T.set(index: Int, value: Enum<*>?): T = apply {

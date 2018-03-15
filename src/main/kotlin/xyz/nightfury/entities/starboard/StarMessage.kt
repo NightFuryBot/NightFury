@@ -86,6 +86,7 @@ data class StarMessage constructor(val starboard: Starboard, val starred: Messag
             return
         if(!entry.guild.selfMember.hasPermission(entry.textChannel, Permission.MESSAGE_EMBED_LINKS))
             return
+        msgBuilder.clear()
         val msg = message(msgBuilder) {
             append { this@StarMessage.toString() }
             setEmbed(createEmbed())
@@ -123,8 +124,10 @@ data class StarMessage constructor(val starboard: Starboard, val starred: Messag
             icon = starred.author.effectiveAvatarUrl
             value = starred.author.formattedName(false)
         }
-        if(starred.contentRaw.isNotEmpty()) description { starred.contentRaw }
-        if(starred.attachments.isNotEmpty()) starred.attachments[0].takeIf { it.isImage }?.let { image { it.url } }
+        if(starred.contentRaw.isNotEmpty())
+            + starred.contentRaw
+        if(starred.attachments.isNotEmpty())
+            starred.attachments[0].takeIf { it.isImage }?.let { image { it.url } }
         // Image embeds take precedence over attachments
         if(starred.embeds.isNotEmpty()) image { starred.embeds[0].url }
         color { Color(255, 255, (25.44 * Math.min(count, 10)).toInt()) }

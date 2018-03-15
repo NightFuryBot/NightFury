@@ -50,7 +50,7 @@ inline var <reified G: Guild> G.starboardChannel: TextChannel?
 
 inline val <reified M: Message> M.stars: List<Star> inline get() {
     requireNotNull(guild) { "Cannot get stars for a Message with null guild!" }
-    return Entries.getStars(idLong, guild.idLong).map { Star(this, it.second) }
+    return Entries.getStars(idLong, guild.idLong).map { Star(this, it) }
 }
 
 inline val <reified M: Message> M.starCount: Int inline get() {

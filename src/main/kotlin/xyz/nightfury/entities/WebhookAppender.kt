@@ -21,6 +21,7 @@ import ch.qos.logback.classic.spi.IThrowableProxy
 import ch.qos.logback.core.AppenderBase
 import net.dv8tion.jda.webhook.WebhookClient
 import net.dv8tion.jda.webhook.WebhookClientBuilder
+import xyz.nightfury.util.createLogger
 import xyz.nightfury.util.hocon
 import xyz.nightfury.util.ignored
 import xyz.nightfury.util.resourceStreamOf
@@ -39,28 +40,37 @@ class WebhookAppender : AppenderBase<ILoggingEvent>() {
     companion object : AppenderBase<ILoggingEvent>() {
         private const val EMBED_LIMIT = 750
         private val PACKAGE_REGEX = Regex("\\.")
+        private val backup = createLogger(WebhookAppender::class)
 
         private lateinit var client: WebhookClient
 
         var isInitialized = true
             private set
 
-        override fun start() {
-            super.start()
+        init {
             val hocon = hocon {
-                setSource { this::class.resourceStreamOf("/webhook.conf")?.bufferedReader(Charsets.UTF_8) }
+                setSource {
+                    this::class.resourceStreamOf("/webhook.conf")
+                        ?.bufferedReader(Charsets.UTF_8)
+                }
             }
+
             val idNode = hocon.getNode("webhook", "id")
             val tokenNode = hocon.getNode("webhook", "token")
-            if(idNode.isVirtual || tokenNode.isVirtual) {
-                isInitialized = false
-            } else {
-                val id = idNode.long
-                val token = tokenNode.getList { "$it" }.joinToString("_")
-                isInitialized = true
-                client = WebhookClientBuilder(id, token).apply {
-                    setThreadFactory { Thread(it, "WebhookLogger").apply { isDaemon = true } }
-                }.build()
+
+            isInitialized = !idNode.isVirtual && !tokenNode.isVirtual
+
+            if(isInitialized) {
+                try {
+                    val id = idNode.long
+                    val token = tokenNode.getList { "$it" }.joinToString("_")
+                    client = WebhookClientBuilder(id, token).setThreadFactory {
+                        Thread(it, "WebhookLogger").apply { isDaemon = true }
+                    }.build()
+                } catch(t: Throwable) {
+                    backup.error("Unable to initialize WebhookAppender:", t)
+                    isInitialized = false
+                }
             }
         }
 
@@ -71,8 +81,9 @@ class WebhookAppender : AppenderBase<ILoggingEvent>() {
                     title { event.loggerName.split(PACKAGE_REGEX).run { this[size - 1] } }
                     append(event.formattedMessage)
                     val proxy = event.throwableProxy
-                    if(proxy != null)
+                    if(proxy !== null) {
                         append("\n\n${buildStackTrace(proxy)}")
+                    }
                     color { colorFromLevel(event.level) }
                     footer { value = "Logged at" }
                     time {
@@ -86,7 +97,9 @@ class WebhookAppender : AppenderBase<ILoggingEvent>() {
 
         override fun stop() {
             super.stop()
-            client.close()
+            if(::client.isInitialized) {
+                client.close()
+            }
         }
 
         private fun colorFromLevel(level: Level): Color? {
@@ -104,8 +117,10 @@ class WebhookAppender : AppenderBase<ILoggingEvent>() {
             append(proxy.className)
             val message = proxy.message
 
-            if(message != null)
+            if(message !== null) {
                 append(": $message")
+            }
+
             append("\n")
 
             val arr = proxy.stackTraceElementProxyArray

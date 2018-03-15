@@ -59,11 +59,15 @@ abstract class MusicCommand(protected val manager: MusicManager): Command(MusicG
         val guild = guild
         val voiceChannel = voiceChannel ?: return false
         val queue = manager[guild] ?: return false
-        return queue.isDead || queue.channel == voiceChannel
+        return queue.channel == voiceChannel || !queue.isDead
     }
 
     protected fun CommandContext.notPlaying(): Unit = replyError {
         "I must be playing music to use that command!"
+    }
+
+    protected fun CommandContext.notInVoiceChannel(): Unit = replyError {
+        "You must be in a VoiceChannel to use music commands!"
     }
 
     protected fun CommandContext.notInPlayingChannel(): Unit = replyError {

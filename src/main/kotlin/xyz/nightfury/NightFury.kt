@@ -18,10 +18,8 @@ package xyz.nightfury
 
 import com.jagrosh.jagtag.JagTag
 import net.dv8tion.jda.core.AccountType
-import net.dv8tion.jda.core.JDABuilder
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission.*
-import net.dv8tion.jda.core.utils.SessionControllerAdapter
 import okhttp3.OkHttpClient
 import xyz.nightfury.command.administrator.*
 import xyz.nightfury.command.moderator.*
@@ -88,7 +86,7 @@ object NightFury {
         Database.connect(config.databaseURL, config.databaseUser, config.databasePass)
 
         if(!WebhookAppender.isInitialized) {
-            LOG.debug("Webhook appender is not initialized.")
+            LOG.warn("Webhook appender is not initialized.")
         }
 
         val google = GoogleAPI()
@@ -111,6 +109,7 @@ object NightFury {
         InfoCommand()
         InviteCommand()
         PingCommand()
+        QuoteCommand()
         RoleMeCommand(waiter)
         ServerCommand(waiter)
         TagCommand(waiter)
@@ -133,6 +132,7 @@ object NightFury {
         UnmuteCommand()
 
         // Administrator Commands
+        AnnouncementCommand()
         CustomCmdCommand(waiter)
         PrefixCommand(waiter)
         LogCommand(waiter)
@@ -148,7 +148,8 @@ object NightFury {
 
         val client = Client(if(config.test) TEST_PREFIX else PREFIX, config.dBotsKey, config.dBotsListKey, parser)
 
-        JDABuilder(AccountType.BOT).buildAsync {
+        client(AccountType.BOT) {
+            token      { config.token }
             manager    { ContextEventManager() }
 
             listener   { client }
@@ -159,29 +160,11 @@ object NightFury {
             listener   { DatabaseListener() }
 
             contextMap { null }
-            token      { config.token }
             status     { OnlineStatus.DO_NOT_DISTURB }
             watching   { "Everything Start Up..." }
         }
 
         return client
-    }
-
-    private inline fun <reified T: JDABuilder> T.buildAsync(lazy: JDABuilder.() -> Unit) {
-        lazy()
-        buildAsync()
-    }
-
-    @Suppress("UNUSED")
-    private inline fun <reified T: JDABuilder> T.buildAsync(shards: Int, lazy: JDABuilder.() -> Unit) {
-        lazy()
-        sessionController { SessionControllerAdapter() }
-        for(i in 0 until shards) {
-            useSharding(i, shards)
-            buildAsync()
-            LOG.info("Shard [$i / ${shards - 1}] now building...")
-            Thread.sleep(5000) // Five second backoff
-        }
     }
 
     class Config {

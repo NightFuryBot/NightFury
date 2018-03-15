@@ -16,16 +16,22 @@
 package xyz.nightfury
 
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
+import org.slf4j.Logger
 import xyz.nightfury.command.Command
 import xyz.nightfury.command.CommandContext
+import xyz.nightfury.util.createLogger
 
 /**
  * @author Kaidan Gustave
  */
 interface ClientListener {
+    companion object LOG : Logger by createLogger(ClientListener::class)
+
     fun checkCall(event: MessageReceivedEvent, client: Client, name: String, args: String): Boolean = true
     fun onCommandCall(ctx: CommandContext, command: Command) {}
     fun onCommandTerminated(ctx: CommandContext, command: Command, msg: String) { ctx.reply(msg) }
     fun onCommandCompleted(ctx: CommandContext, command: Command) {}
-    fun onException(ctx: CommandContext, command: Command, exception: Throwable) {}
+    fun onException(ctx: CommandContext, command: Command, exception: Throwable) {
+        LOG.error("${command.fullname} encountered an exception:", exception)
+    }
 }
